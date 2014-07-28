@@ -48,7 +48,7 @@ public final class Skus {
 	@Nonnull
 	public final List<Sku> list;
 
-	public Skus(@Nonnull String product, @Nonnull List<Sku> list) {
+	Skus(@Nonnull String product, @Nonnull List<Sku> list) {
 		this.product = product;
 		this.list = Collections.unmodifiableList(list);
 	}
@@ -65,7 +65,7 @@ public final class Skus {
 				final String price = object.getString("price");
 				final String title = object.getString("title");
 				final String description = object.getString("description");
-				skus.add(new Sku(sku, price, title, description));
+				skus.add(new Sku(product, sku, price, title, description));
 			} catch (JSONException e) {
 				throw new RequestException(e);
 			}

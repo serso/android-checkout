@@ -1,4 +1,5 @@
-<?xml version="1.0" encoding="utf-8"?><!--
+<?xml version="1.0" encoding="utf-8"?>
+<!--
   ~ Copyright 2014 serso aka se.solovyev
   ~
   ~ Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,9 +22,5 @@
   -->
 
 <resources>
-	<string name="app_name">Android Checkout Library</string>
-	<string name="skus_empty">There are no items for purchase</string>
-	<string name="skus_billing_not_supported">In-App billing is not supported.\n\nProbable reasons:\n1. Google Play is not installed or is not updated\n2. The app is running in emulator\n3. Bug in the library</string>
-	<string name="thank_you_for_purchase">Thank you for purchase!</string>
-	<string name="items_bought">Items bought: %1$s</string>
+	<item name="sku_view_holder" type="id"/>
 </resources>

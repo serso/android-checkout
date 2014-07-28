@@ -23,29 +23,34 @@
   -->
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	android:orientation="horizontal"
 	android:layout_width="match_parent"
-	android:layout_height="match_parent"
-	android:orientation="vertical"
-	android:paddingBottom="@dimen/activity_vertical_margin"
-	android:paddingLeft="@dimen/activity_horizontal_margin"
-	android:paddingRight="@dimen/activity_horizontal_margin"
-	android:paddingTop="@dimen/activity_vertical_margin">
+	android:layout_height="match_parent">
 
-	<FrameLayout
-		android:id="@+id/fragment_skus_list"
-		android:layout_width="match_parent"
-		android:layout_height="0dp"
-		android:layout_weight="1" />
+	<ImageView
+		android:id="@+id/sku_icon"
+		android:layout_gravity="center_vertical|left"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content" />
 
-	<FrameLayout
-		android:layout_width="match_parent"
+	<LinearLayout
+		android:layout_width="0dp"
+		android:layout_weight="1"
 		android:layout_height="wrap_content"
-		style="@style/Tile">
+		android:orientation="vertical">
 
 		<TextView
-			android:id="@+id/purchases_counter"
-			style="@style/ListItemText"
-			android:layout_width="wrap_content"
-			android:layout_height="match_parent" />
-	</FrameLayout>
+			android:id="@+id/sku_title"
+			style="@style/ListItemText" />
+
+		<TextView
+			android:id="@+id/sku_description"
+			style="@style/ListItemSubText" />
+	</LinearLayout>
+
+	<TextView
+		android:id="@+id/sku_price"
+		android:layout_width="wrap_content"
+		style="@style/ListItemText" />
+
 </LinearLayout>

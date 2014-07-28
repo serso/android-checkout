@@ -58,7 +58,7 @@ public final class Purchases {
 	@Nullable
 	public final String continuationToken;
 
-	public Purchases(@Nonnull String product, @Nonnull List<Purchase> list, @Nullable String continuationToken) {
+	Purchases(@Nonnull String product, @Nonnull List<Purchase> list, @Nullable String continuationToken) {
 		this.product = product;
 		this.list = Collections.unmodifiableList(list);
 		this.continuationToken = continuationToken;

@@ -22,30 +22,32 @@
   ~ Site:  http://se.solovyev.org
   -->
 
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout
+	style="@style/Tile"
+	xmlns:android="http://schemas.android.com/apk/res/android"
 	android:layout_width="match_parent"
-	android:layout_height="match_parent"
-	android:orientation="vertical"
-	android:paddingBottom="@dimen/activity_vertical_margin"
-	android:paddingLeft="@dimen/activity_horizontal_margin"
-	android:paddingRight="@dimen/activity_horizontal_margin"
-	android:paddingTop="@dimen/activity_vertical_margin">
+	android:layout_height="match_parent">
 
-	<FrameLayout
-		android:id="@+id/fragment_skus_list"
+	<ListView
+		style="@style/ListView"
+		android:id="@+id/skus_listview"
 		android:layout_width="match_parent"
-		android:layout_height="0dp"
-		android:layout_weight="1" />
+		android:visibility="invisible"
+		android:layout_height="match_parent" />
 
-	<FrameLayout
-		android:layout_width="match_parent"
+	<ProgressBar
+		android:id="@+id/skus_progressbar"
+		android:layout_width="wrap_content"
 		android:layout_height="wrap_content"
-		style="@style/Tile">
+		android:layout_gravity="center"
+		android:indeterminate="true"/>
 
-		<TextView
-			android:id="@+id/purchases_counter"
-			style="@style/ListItemText"
-			android:layout_width="wrap_content"
-			android:layout_height="match_parent" />
-	</FrameLayout>
-</LinearLayout>
+	<TextView
+		android:id="@+id/skus_emptyview"
+		style="@style/ListItemText"
+		android:layout_gravity="center"
+		android:gravity="center"
+		android:text="@string/skus_empty"
+		android:visibility="gone" />
+
+</FrameLayout>

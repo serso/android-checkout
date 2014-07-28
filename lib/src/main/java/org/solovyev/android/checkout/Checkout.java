@@ -211,6 +211,7 @@ public class Checkout {
 		}
 
 		if (isReady()) {
+			Check.isNotNull(requests, "Checkout is stopped");
 			listener.onReady(requests);
 		} else {
 			// still waiting
@@ -249,6 +250,7 @@ public class Checkout {
 	 */
 	public void stop() {
 		Check.isMainThread();
+		supportedProducts.clear();
 		listeners.clear();
 		if (requests != null) {
 			requests.cancelAll();

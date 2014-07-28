@@ -29,6 +29,9 @@ import javax.annotation.concurrent.Immutable;
 public final class Sku {
 
 	@Nonnull
+	public final String product;
+
+	@Nonnull
 	public final String id;
 
 	@Nonnull
@@ -40,7 +43,8 @@ public final class Sku {
 	@Nonnull
 	public final String description;
 
-	public Sku(@Nonnull String id, @Nonnull String price, @Nonnull String title, @Nonnull String description) {
+	Sku(@Nonnull String product, @Nonnull String id, @Nonnull String price, @Nonnull String title, @Nonnull String description) {
+		this.product = product;
 		this.id = id;
 		this.price = price;
 		this.title = title;
