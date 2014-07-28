@@ -45,7 +45,7 @@ import java.util.Set;
  * 	}
  *
  * 	protected void purchase(@Nonnull final String product, @Nonnull final String sku) {
- * 		checkout.onReady(new Checkout.BaseListener() {
+ * 		checkout.whenReady(new Checkout.BaseListener() {
  * 			public void onReady(@Nonnull BillingRequests requests) {
  * 				requests.purchase(product, sku, null, checkout.getPurchaseFlow());
  * 			}
@@ -166,7 +166,7 @@ public final class ActivityCheckout extends Checkout {
 	 * 	}
 	 *
 	 * 	protected void purchase(@Nonnull final String product, @Nonnull final String sku) {
-	 * 		checkout.onReady(new Checkout.BaseListener() {
+	 * 		checkout.whenReady(new Checkout.BaseListener() {
 	 * 			public void onReady(@Nonnull BillingRequests requests) {
 	 * 				// listener will be unregistered when the purchase flow finishes. If this method is called with the same requestCode during
 	 * 				// the purchase process exception will be raised

@@ -37,7 +37,7 @@ public class SkusListFragment extends ListFragment {
 	@Override
 	public void onViewCreated(View view, Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
-		getCheckout().onReady(new Checkout.ListenerAdapter() {
+		getCheckout().whenReady(new Checkout.ListenerAdapter() {
 			@Override
 			public void onReady(@Nonnull BillingRequests requests) {
 				requests.getSkus(IN_APP, IN_APP_SKUS, new RequestListener<Skus>() {
