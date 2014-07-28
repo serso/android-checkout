@@ -3,6 +3,7 @@
 .idea/checkstyle-idea.xml
 .idea/gradle.xml
 .idea/libraries/
+.idea/dictionaries/
 out/
 gradle/
 build/
