@@ -1,0 +1,80 @@
+#
+#*********************************************************************
+#
+#                          BILLING
+#
+#*********************************************************************
+#
+-keep class com.android.vending.billing.**
+
+#
+#*********************************************************************
+#
+#                          LOGS
+#
+#*********************************************************************
+#
+
+-assumenosideeffects class android.util.Log {
+    public static int v(...);
+    public static int d(...);
+    public static int i(...);
+    public static int w(...);
+    public static int e(...);
+}
+
+#
+#*********************************************************************
+#
+#                          ACRA
+#
+#*********************************************************************
+#
+
+# we need line numbers in our stack traces otherwise they are pretty useless
+-renamesourcefileattribute SourceFile
+-keepattributes SourceFile,LineNumberTable
+
+# ACRA needs "annotations" so add this...
+-keepattributes *Annotation*
+
+# keep this class so that logging will show 'ACRA' and not a obfuscated name like 'a'.
+# Note: if you are removing log messages elsewhere in this file then this isn't necessary
+-keep class org.acra.ACRA {
+        *;
+}
+
+-keep class org.acra.ReportField {
+        *;
+}
+
+
+# keep this around for some enums that ACRA needs
+-keep class org.acra.ReportingInteractionMode {
+   *;
+}
+
+# keep this otherwise it is removed by ProGuard
+-keep public class org.acra.ErrorReporter
+{
+public void addCustomData(java.lang.String,java.lang.String);
+}
+
+# keep this otherwise it is removed by ProGuard
+-keep public class org.acra.ErrorReporter
+{
+public org.acra.ErrorReporter$ReportsSenderWorker handleSilentException(java.lang.Throwable);
+}
+
+#
+#*********************************************************************
+#
+#                          EVENT BUS
+#
+#*********************************************************************
+#
+
+-keepclassmembers class ** {
+    @com.squareup.otto.Subscribe public *;
+    @com.squareup.otto.Produce public *;
+}
