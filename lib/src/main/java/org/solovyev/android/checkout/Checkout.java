@@ -204,7 +204,7 @@ public class Checkout {
 		}
 	}
 
-	public void onReady(@Nonnull Listener listener) {
+	public void whenReady(@Nonnull Listener listener) {
 		Check.isMainThread();
 		for (Map.Entry<String, Boolean> entry : supportedProducts.entrySet()) {
 			listener.onReady(requests, entry.getKey(), entry.getValue());
@@ -239,6 +239,7 @@ public class Checkout {
 		listeners.onReady(requests, product, supported);
 		if (isReady()) {
 			listeners.onReady(requests);
+			listeners.clear();
 		}
 	}
 
