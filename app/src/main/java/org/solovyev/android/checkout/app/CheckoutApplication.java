@@ -34,7 +34,6 @@ import java.util.List;
 import static java.util.Arrays.asList;
 import static org.solovyev.android.checkout.Billing.newInMemoryCache;
 import static org.solovyev.android.checkout.ProductTypes.IN_APP;
-import static org.solovyev.android.checkout.ProductTypes.SUBSCRIPTION;
 
 @ReportsCrashes(formKey = "",
 		mailTo = "se.solovyev@gmail.com",
@@ -42,13 +41,10 @@ import static org.solovyev.android.checkout.ProductTypes.SUBSCRIPTION;
 public class CheckoutApplication extends Application {
 
 	@Nonnull
-	public static final List<String> IN_APP_SKUS = asList("coffee", "beer");
+	public static final List<String> SKU_IDS = asList("coffee", "beer", "cake", "hamburger");
 
 	@Nonnull
-	public static final List<String> SUBSCRIPTION_SKUS = asList("coffee", "beer");
-
-	@Nonnull
-	public static final List<String> PRODUCTS = asList(IN_APP, SUBSCRIPTION);
+	public static final List<String> PRODUCTS = asList(IN_APP);
 
 	/**
 	 * For better performance billing class should be used as singleton

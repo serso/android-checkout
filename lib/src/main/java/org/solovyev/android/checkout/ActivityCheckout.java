@@ -54,7 +54,6 @@ import java.util.Set;
  * }
  * </pre>
  * Another usage with "one-shot" purchase flows can be found in documentation for {@link ActivityCheckout#createOneShotPurchaseFlow(int, RequestListener)}.
- * See {@link BillingActivity} for more examples.
  */
 public final class ActivityCheckout extends Checkout {
 

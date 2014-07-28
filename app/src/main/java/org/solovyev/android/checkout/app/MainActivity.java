@@ -24,27 +24,51 @@ package org.solovyev.android.checkout.app;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
-import org.solovyev.android.checkout.ActivityCheckout;
-import org.solovyev.android.checkout.Checkout;
+import android.widget.TextView;
+import org.solovyev.android.checkout.*;
 
 import javax.annotation.Nonnull;
 
+import static java.util.Arrays.asList;
+
 public class MainActivity extends FragmentActivity {
 
-	/**
-	 * {@link org.solovyev.android.checkout.ActivityCheckout} instance with default products from application wide
-	 * {@link org.solovyev.android.checkout.Checkout}
-	 */
 	@Nonnull
-	private final ActivityCheckout checkout = Checkout.forActivity(this, CheckoutApplication.get().getCheckout());
+	private final ActivityCheckout checkout = Checkout.forActivity(this, CheckoutApplication.get().getBilling(), asList(ProductTypes.IN_APP));
+
+	@Nonnull
+	private TextView purchasesCounter;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
-
+		if (savedInstanceState == null) {
+			addFragment(new SkusListFragment(), R.id.fragment_skus_list, false);
+		}
+		purchasesCounter = (TextView) findViewById(R.id.purchases_counter);
+		purchasesCounter.setText(getString(R.string.items_bought, 0));
 		checkout.start();
+		checkout.whenReady(new Checkout.ListenerAdapter() {
+			@Override
+			public void onReady(@Nonnull BillingRequests requests) {
+				requests.getPurchases(ProductTypes.IN_APP, null, new RequestListenerAdapter<Purchases>() {
+					@Override
+					public void onSuccess(@Nonnull Purchases purchases) {
+						purchasesCounter.setText(getString(R.string.items_bought, purchases.list.size()));
+					}
+				});
+			}
+		});
+	}
+
+	private void addFragment(@Nonnull Fragment fragment, int viewId, boolean retain) {
+		fragment.setRetainInstance(retain);
+		getSupportFragmentManager().beginTransaction()
+				.add(viewId, fragment)
+				.commit();
 	}
 
 	@Override

@@ -48,7 +48,7 @@ public final class Purchase {
 	@Nonnull
 	public final String signature;
 
-	public Purchase(@Nonnull String sku, @Nonnull String orderId, @Nonnull String packageName, long time, int state, @Nonnull String payload, @Nonnull String token, @Nonnull String signature) {
+	Purchase(@Nonnull String sku, @Nonnull String orderId, @Nonnull String packageName, long time, int state, @Nonnull String payload, @Nonnull String token, @Nonnull String signature) {
 		this.sku = sku;
 		this.orderId = orderId;
 		this.packageName = packageName;
@@ -60,7 +60,7 @@ public final class Purchase {
 	}
 
 	@Nonnull
-	public static Purchase fromData(@Nonnull String data, @Nullable String signature) throws JSONException {
+	static Purchase fromData(@Nonnull String data, @Nullable String signature) throws JSONException {
 		final JSONObject json = new JSONObject(data);
 		final String sku = json.optString("productId");
 		final String orderId = json.optString("orderId");

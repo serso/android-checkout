@@ -102,6 +102,8 @@ public interface BillingRequests {
 	 */
 	int purchase(@Nonnull String product, @Nonnull String sku, @Nullable String payload, @Nonnull PurchaseFlow purchaseFlow);
 
+	int purchase(@Nonnull Sku sku, @Nullable String payload, @Nonnull PurchaseFlow purchaseFlow);
+
 	/**
 	 * Consumes previously purchased item.
 	 * See <a href="http://developer.android.com/google/play/billing/billing_integrate.html#Consume">Consume</a> for more
