@@ -1,0 +1,2 @@
+# should be copied to application proguard rules config
+-keep class com.android.vending.billing.**

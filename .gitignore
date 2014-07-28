@@ -1,0 +1,9 @@
+.idea/workspace.xml
+.idea/uiDesigner.xml
+.idea/checkstyle-idea.xml
+.idea/gradle.xml
+.idea/libraries/
+out/
+gradle/
+build/
+atlassian-ide-plugin.xml
