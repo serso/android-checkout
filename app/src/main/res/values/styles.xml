@@ -68,11 +68,19 @@
 		<item name="android:ellipsize">end</item>
 	</style>
 
+	<style name="SkuPrice" parent="ListItemText">
+		<item name="android:textAppearance">@android:style/TextAppearance.Large</item>
+		<item name="android:textColor">@color/pressed_text</item>
+		<item name="android:textStyle">bold</item>
+	</style>
+
 	<style name="ListItemText" parent="SearchText">
 		<item name="android:layout_width">match_parent</item>
 		<item name="android:layout_height">wrap_content</item>
 		<item name="android:layout_gravity">left|center_vertical</item>
 		<item name="android:gravity">left|center_vertical</item>
+		<item name="android:paddingTop">5dp</item>
+		<item name="android:paddingBottom">5dp</item>
 		<item name="android:paddingLeft">10dp</item>
 		<item name="android:paddingRight">10dp</item>
 		<item name="android:textColor">@color/clickable_text_selector</item>

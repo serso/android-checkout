@@ -39,6 +39,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.GuardedBy;
 import javax.annotation.concurrent.ThreadSafe;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -594,14 +595,19 @@ public final class Billing {
 		}
 
 		@Override
-		public int isPurchased(@Nonnull final String product, @Nonnull final String sku, @Nonnull final RequestListener<Boolean> listener) {
-			Check.isNotEmpty(sku);
-			return isPurchased(product, sku, null, listener);
+		public int getAllPurchases(@Nonnull String product, @Nonnull RequestListener<Purchases> listener) {
+			Check.isNotEmpty(product);
+			final GetAllPurchasesListener getAllPurchasesListener = new GetAllPurchasesListener(listener);
+			final GetPurchasesRequest request = new GetPurchasesRequest(product, null);
+			getAllPurchasesListener.request = request;
+			return runWhenConnected(request, wrapListener(getAllPurchasesListener), tag);
 		}
 
-		private int isPurchased(@Nonnull final String product, @Nonnull final String sku, @Nullable String continuationToken, final RequestListener<Boolean> listener) {
+		@Override
+		public int isPurchased(@Nonnull final String product, @Nonnull final String sku, @Nonnull final RequestListener<Boolean> listener) {
+			Check.isNotEmpty(sku);
 			final IsPurchasedListener isPurchasedListener = new IsPurchasedListener(sku, listener);
-			final GetPurchasesRequest request = new GetPurchasesRequest(product, continuationToken);
+			final GetPurchasesRequest request = new GetPurchasesRequest(product, null);
 			isPurchasedListener.request = request;
 			return runWhenConnected(request, wrapListener(isPurchasedListener), tag);
 		}
@@ -671,6 +677,43 @@ public final class Billing {
 					} else {
 						listener.onSuccess(false);
 					}
+				}
+			}
+
+			@Override
+			public void onError(int response, @Nonnull Exception e) {
+				listener.onError(response, e);
+			}
+
+			@Override
+			public void cancel() {
+				Billing.cancel(listener);
+			}
+		}
+
+		private final class GetAllPurchasesListener implements CancellableRequestListener<Purchases> {
+
+			@Nonnull
+			private GetPurchasesRequest request;
+
+			@Nonnull
+			private final RequestListener<Purchases> listener;
+
+			private final List<Purchase> result = new ArrayList<Purchase>();
+
+			public GetAllPurchasesListener(@Nonnull RequestListener<Purchases> listener) {
+				this.listener = listener;
+			}
+
+			@Override
+			public void onSuccess(@Nonnull Purchases purchases) {
+				result.addAll(purchases.list);
+				// we need to check continuation token
+				if (purchases.continuationToken != null) {
+					request = new GetPurchasesRequest(request, purchases.continuationToken);
+					runWhenConnected(request, tag);
+				} else {
+					listener.onSuccess(new Purchases(purchases.product, result, null));
 				}
 			}
 

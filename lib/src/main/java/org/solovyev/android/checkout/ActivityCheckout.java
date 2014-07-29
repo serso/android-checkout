@@ -28,11 +28,9 @@ import android.util.SparseArray;
 
 import javax.annotation.Nonnull;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 /**
- *
  * Recommended usage of this class with {@link android.app.Activity}:
  * <pre>
  * {@code
@@ -65,7 +63,7 @@ public final class ActivityCheckout extends Checkout {
 	@Nonnull
 	private final Set<Integer> oneShotPurchaseFlows = new HashSet<Integer>();
 
-	ActivityCheckout(@Nonnull Activity activity, @Nonnull Billing billing, @Nonnull List<String> products) {
+	ActivityCheckout(@Nonnull final Activity activity, @Nonnull Billing billing, @Nonnull Products products) {
 		super(activity, billing, products);
 	}
 
@@ -90,8 +88,9 @@ public final class ActivityCheckout extends Checkout {
 	 * Permanent purchase flows are not destroyed when are finished (comparing to "one-shot" purchase flows), thus,
 	 * <var>listener</var> methods might be called several times if several purchases with same <var>requestCode</var>
 	 * are done.
+	 *
 	 * @param requestCode request code associated with purchase
-	 * @param listener purchase listener
+	 * @param listener    purchase listener
 	 */
 	public void createPurchaseFlow(int requestCode, @Nonnull RequestListener<Purchase> listener) {
 		createPurchaseFlow(requestCode, listener, false);
@@ -106,6 +105,7 @@ public final class ActivityCheckout extends Checkout {
 
 	/**
 	 * Destroys previously created purchase flow. Nothing happens if flow has already been destroyed.
+	 *
 	 * @param requestCode request code associated with purchase
 	 */
 	public void destroyPurchaseFlow(int requestCode) {
@@ -130,7 +130,6 @@ public final class ActivityCheckout extends Checkout {
 	/**
 	 * @param requestCode request request code associated with purchase
 	 * @return previously created purchase flow associated with <var>requestCode</var>
-	 *
 	 * @throws IllegalArgumentException if purchase flow for <var>requestCode</var> doesn't exist
 	 */
 	@Nonnull
@@ -192,7 +191,7 @@ public final class ActivityCheckout extends Checkout {
 	private PurchaseFlow createPurchaseFlow(final int requestCode, @Nonnull RequestListener<Purchase> listener, boolean oneShot) {
 		PurchaseFlow flow = purchaseFlows.get(requestCode);
 		if (flow == null) {
-			if(oneShot) {
+			if (oneShot) {
 				// one-shot purchase flows must be destroyed in case of errors
 				listener = new RequestListenerWrapper<Purchase>(listener) {
 					@Override

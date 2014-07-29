@@ -25,6 +25,7 @@ package org.solovyev.android.checkout;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Collection;
+import java.util.Map;
 
 final class Check {
 
@@ -97,6 +98,12 @@ final class Check {
 	static void isNotEmpty(@Nullable Collection<?> c) {
 		if (c == null || c.size() == 0) {
 			throw new AssertionException("Collection should not be empty");
+		}
+	}
+
+	static void isNotEmpty(@Nullable Map<?, ?> c) {
+		if (c == null || c.size() == 0) {
+			throw new AssertionException("Map should not be empty");
 		}
 	}
 
