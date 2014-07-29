@@ -51,6 +51,6 @@
 	<TextView
 		android:id="@+id/sku_price"
 		android:layout_width="wrap_content"
-		style="@style/ListItemText" />
+		style="@style/SkuPrice" />
 
 </LinearLayout>

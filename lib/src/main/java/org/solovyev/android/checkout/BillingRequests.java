@@ -68,6 +68,11 @@ public interface BillingRequests {
 	int getPurchases(@Nonnull String product, @Nullable String continuationToken, @Nonnull RequestListener<Purchases> listener);
 
 	/**
+	 * Same as {@link #getPurchases(String, String, RequestListener)} but will load all the purchases.
+	 */
+	int getAllPurchases(@Nonnull String product, @Nonnull RequestListener<Purchases> listener);
+
+	/**
 	 * Method checks if item with <var>sku</var> of <var>product</var> is purchased (i.e. there exists purchase with SKU=<var>sku</var> and state={@link org.solovyev.android.checkout.Purchase.State#PURCHASED}).
 	 * This method checks ALL the purchases, even if there are more than 700 items.
 	 * @param product type of product, see {@link org.solovyev.android.checkout.ProductTypes}

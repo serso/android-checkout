@@ -24,6 +24,7 @@ package org.solovyev.android.checkout;
 
 import android.os.Bundle;
 import android.os.RemoteException;
+import android.text.TextUtils;
 import com.android.vending.billing.IInAppBillingService;
 
 import javax.annotation.Nonnull;
@@ -164,7 +165,12 @@ abstract class Request<R> {
 
 	@Override
 	public String toString() {
-		return getClass().getSimpleName();
+		final String cacheKey = getCacheKey();
+		if (!TextUtils.isEmpty(cacheKey)) {
+			return getClass().getSimpleName() + "(" + cacheKey + ")";
+		} else {
+			return getClass().getSimpleName();
+		}
 	}
 
 	/**

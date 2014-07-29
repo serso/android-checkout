@@ -23,7 +23,6 @@
 package org.solovyev.android.checkout.app;
 
 import android.app.Activity;
-import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -34,8 +33,10 @@ import android.widget.*;
 import org.solovyev.android.checkout.*;
 
 import javax.annotation.Nonnull;
+import java.util.Comparator;
 
 import static android.view.animation.AnimationUtils.loadAnimation;
+import static org.solovyev.android.checkout.ProductTypes.IN_APP;
 
 public class SkusListFragment extends Fragment {
 
@@ -56,18 +57,21 @@ public class SkusListFragment extends Fragment {
 	@Nonnull
 	private TextView emptyView;
 
+	@Nonnull
+	private Inventory inventory;
+
 	@Override
 	public void onAttach(Activity activity) {
 		super.onAttach(activity);
-		checkout = Checkout.forActivity(activity, CheckoutApplication.get().getCheckout());
+		checkout = ((MainActivity) activity).getCheckout();
 	}
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-		checkout.start();
 		checkout.createPurchaseFlow(new PurchaseListener());
+		inventory = checkout.loadInventory();
 	}
 
 	@Override
@@ -79,67 +83,36 @@ public class SkusListFragment extends Fragment {
 		listView.setOnItemClickListener(new OnSkuClickListener());
 		progressBar = (ProgressBar) view.findViewById(R.id.skus_progressbar);
 		emptyView = (TextView) view.findViewById(R.id.skus_emptyview);
-		return view;
-	}
 
-	@Override
-	public void onViewCreated(View view, Bundle savedInstanceState) {
-		super.onViewCreated(view, savedInstanceState);
-		final SkusRequestListener listener = new SkusRequestListener();
-		checkout.whenReady(new Checkout.ListenerAdapter() {
+		inventory.whenLoaded(new Inventory.Listener() {
 			@Override
-			public void onReady(@Nonnull BillingRequests requests, @Nonnull String product, boolean billingSupported) {
-				if (billingSupported) {
-					requests.getSkus(product, CheckoutApplication.SKU_IDS, listener);
+			public void onLoaded(@Nonnull Inventory inventory) {
+				final Inventory.Product product = inventory.getProduct(IN_APP);
+				if (product.isSupported()) {
+					for (Sku sku : product.getSkus()) {
+						adapter.add(sku);
+					}
+					adapter.sort(new SkuComparator());
+					adapter.notifyDataSetChanged();
 				} else {
 					emptyView.setText(R.string.skus_billing_not_supported);
-					setListShown(true);
 				}
+				setListShown(true);
 			}
 		});
-	}
 
-	@Override
-	public void onActivityResult(int requestCode, int resultCode, Intent data) {
-		super.onActivityResult(requestCode, resultCode, data);
-		checkout.onActivityResult(requestCode, resultCode, data);
-	}
-
-	@Override
-	public void onDestroy() {
-		checkout.stop();
-		super.onDestroy();
+		return view;
 	}
 
 	private static class PurchaseListener implements RequestListener<Purchase> {
 		@Override
 		public void onSuccess(@Nonnull Purchase purchase) {
+			CheckoutApplication.get().getBus().post(new NewPurchaseEvent(purchase));
 			Toast.makeText(CheckoutApplication.get(), R.string.thank_you_for_purchase, Toast.LENGTH_SHORT).show();
 		}
 
 		@Override
 		public void onError(int response, @Nonnull Exception e) {
-		}
-	}
-
-	private class SkusRequestListener implements RequestListener<Skus> {
-
-		@Override
-		public void onSuccess(@Nonnull Skus skus) {
-			for (Sku sku : skus.list) {
-				adapter.add(sku);
-			}
-			adapter.notifyDataSetChanged();
-			onResult();
-		}
-
-		private void onResult() {
-			setListShown(true);
-		}
-
-		@Override
-		public void onError(int response, @Nonnull Exception e) {
-			onResult();
 		}
 	}
 
@@ -186,6 +159,13 @@ public class SkusListFragment extends Fragment {
 					requests.purchase(sku, null, checkout.getPurchaseFlow());
 				}
 			});
+		}
+	}
+
+	private class SkuComparator implements Comparator<Sku> {
+		@Override
+		public int compare(@Nonnull Sku l, @Nonnull Sku r) {
+			return l.title.compareTo(r.title);
 		}
 	}
 }

@@ -27,16 +27,15 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.widget.TextView;
+import com.squareup.otto.Subscribe;
 import org.solovyev.android.checkout.*;
 
 import javax.annotation.Nonnull;
 
-import static java.util.Arrays.asList;
-
 public class MainActivity extends FragmentActivity {
 
 	@Nonnull
-	private final ActivityCheckout checkout = Checkout.forActivity(this, CheckoutApplication.get().getBilling(), asList(ProductTypes.IN_APP));
+	private final ActivityCheckout checkout = Checkout.forActivity(this, CheckoutApplication.get().getCheckout());
 
 	@Nonnull
 	private TextView purchasesCounter;
@@ -45,16 +44,21 @@ public class MainActivity extends FragmentActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
+		CheckoutApplication.get().getBus().register(this);
 		if (savedInstanceState == null) {
 			addFragment(new SkusListFragment(), R.id.fragment_skus_list, false);
 		}
 		purchasesCounter = (TextView) findViewById(R.id.purchases_counter);
 		purchasesCounter.setText(getString(R.string.items_bought, 0));
 		checkout.start();
+		updateCounter();
+	}
+
+	private void updateCounter() {
 		checkout.whenReady(new Checkout.ListenerAdapter() {
 			@Override
 			public void onReady(@Nonnull BillingRequests requests) {
-				requests.getPurchases(ProductTypes.IN_APP, null, new RequestListenerAdapter<Purchases>() {
+				requests.getAllPurchases(ProductTypes.IN_APP, new RequestListenerAdapter<Purchases>() {
 					@Override
 					public void onSuccess(@Nonnull Purchases purchases) {
 						purchasesCounter.setText(getString(R.string.items_bought, purchases.list.size()));
@@ -86,5 +90,10 @@ public class MainActivity extends FragmentActivity {
 	@Nonnull
 	public ActivityCheckout getCheckout() {
 		return checkout;
+	}
+
+	@Subscribe
+	public void onNewPurchased(@Nonnull NewPurchaseEvent e) {
+		updateCounter();
 	}
 }

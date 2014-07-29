@@ -23,13 +23,14 @@
 package org.solovyev.android.checkout.app;
 
 import android.app.Application;
+import com.squareup.otto.Bus;
 import org.acra.ReportingInteractionMode;
 import org.acra.annotation.ReportsCrashes;
 import org.solovyev.android.checkout.Billing;
 import org.solovyev.android.checkout.Checkout;
+import org.solovyev.android.checkout.Products;
 
 import javax.annotation.Nonnull;
-import java.util.List;
 
 import static java.util.Arrays.asList;
 import static org.solovyev.android.checkout.Billing.newInMemoryCache;
@@ -41,10 +42,7 @@ import static org.solovyev.android.checkout.ProductTypes.IN_APP;
 public class CheckoutApplication extends Application {
 
 	@Nonnull
-	public static final List<String> SKU_IDS = asList("coffee", "beer", "cake", "hamburger");
-
-	@Nonnull
-	public static final List<String> PRODUCTS = asList(IN_APP);
+	private static final Products products = Products.create().add(IN_APP, asList("coffee", "beer", "cake", "hamburger"));
 
 	/**
 	 * For better performance billing class should be used as singleton
@@ -57,7 +55,10 @@ public class CheckoutApplication extends Application {
 	 * This instance contains all available products in the app.
 	 */
 	@Nonnull
-	private final Checkout checkout = Checkout.forApplication(billing, PRODUCTS);
+	private final Checkout checkout = Checkout.forApplication(billing, products);
+
+	@Nonnull
+	private final Bus bus = new Bus();
 
 	@Nonnull
 	private static CheckoutApplication instance;
@@ -83,7 +84,7 @@ public class CheckoutApplication extends Application {
 	}
 
 	@Nonnull
-	public Billing getBilling() {
-		return billing;
+	public Bus getBus() {
+		return bus;
 	}
 }

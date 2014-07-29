@@ -40,7 +40,7 @@ import java.util.Map;
  * of this class should be called from appropriate methods of activity:<br/>
  * <pre>{@code
  * public class MainActivity extends Activity {
- *
+ * <p/>
  *    private final ActivityCheckout checkout = Checkout.forActivity(this, App.getCheckout());
  *    private final RequestListener<Purchase> purchaseListener = new BillingListener<Purchase>() {
  *        public void onSuccess(@Nonnull Purchase purchase) {
@@ -48,14 +48,14 @@ import java.util.Map;
  *            // ...
  *        }
  *    };
- *
+ * <p/>
  *    protected void onCreate(Bundle savedInstanceState) {
  *         super.onCreate(savedInstanceState);
  *         // ...
  *         checkout.start(new Checkout.Listener() {
  *                  public void onReady(@Nonnull BillingRequests requests) {
  *                  }
- *
+ * <p/>
  *                  public void onReady(@Nonnull BillingRequests requests, @Nonnull String product, boolean billingSupported) {
  *                      if (billingSupported) {
  *                          // billing for product is supported
@@ -63,16 +63,16 @@ import java.util.Map;
  *                      }
  *                  }
  *             });
- *
+ * <p/>
  *         // in case is Activity was recreated (screen rotation) we need to readd purchase listener
  *         checkout.createPurchaseFlow(purchaseListener);
  *     }
- *
+ * <p/>
  *     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
  *         super.onActivityResult(requestCode, resultCode, data);
  *         checkout.onActivityResult(requestCode, resultCode, data);
  *     }
- *
+ * <p/>
  *     protected void onDestroy() {
  *         checkout.stop();
  *         super.onDestroy();
@@ -98,7 +98,7 @@ public class Checkout {
 	 * activity method.
 	 */
 	@Nonnull
-	public static ActivityCheckout forActivity(@Nonnull Activity activity, @Nonnull Billing billing, @Nonnull List<String> products) {
+	public static ActivityCheckout forActivity(@Nonnull Activity activity, @Nonnull Billing billing, @Nonnull Products products) {
 		return new ActivityCheckout(activity, billing, products);
 	}
 
@@ -108,12 +108,12 @@ public class Checkout {
 	}
 
 	@Nonnull
-	public static Checkout forService(@Nonnull Service service, @Nonnull Billing billing, @Nonnull List<String> products) {
+	public static Checkout forService(@Nonnull Service service, @Nonnull Billing billing, @Nonnull Products products) {
 		return new Checkout(service, billing, products);
 	}
 
 	@Nonnull
-	public static Checkout forApplication(@Nonnull Billing billing, @Nonnull List<String> products) {
+	public static Checkout forApplication(@Nonnull Billing billing, @Nonnull Products products) {
 		return new Checkout(null, billing, products);
 	}
 
@@ -161,7 +161,7 @@ public class Checkout {
 	protected final Billing billing;
 
 	@Nonnull
-	private final List<String> products;
+	private final Products products;
 
 	private BillingRequests requests;
 
@@ -171,11 +171,16 @@ public class Checkout {
 	@Nonnull
 	private final Map<String, Boolean> supportedProducts = new HashMap<String, Boolean>();
 
-	Checkout(@Nullable Context context, @Nonnull Billing billing, @Nonnull List<String> products) {
+	Checkout(@Nullable Context context, @Nonnull Billing billing, @Nonnull Products products) {
 		this.billing = billing;
-		Check.isNotEmpty(products);
+		Check.isNotEmpty(products.getIds());
 		this.context = context;
-		this.products = products;
+		this.products = products.copy();
+	}
+
+	@Nonnull
+	Products getProducts() {
+		return products;
 	}
 
 	public void start() {
@@ -189,7 +194,7 @@ public class Checkout {
 		if (listener != null) {
 			listeners.add(listener);
 		}
-		for (final String product : products) {
+		for (final String product : products.getIds()) {
 			requests.isBillingSupported(product, new RequestListener<Object>() {
 				@Override
 				public void onSuccess(@Nonnull Object result) {
@@ -242,6 +247,14 @@ public class Checkout {
 			listeners.onReady(requests);
 			listeners.clear();
 		}
+	}
+
+	@Nonnull
+	public Inventory loadInventory() {
+		Check.isMainThread();
+		final Inventory inventory = new Inventory(this);
+		inventory.load();
+		return inventory;
 	}
 
 	/**
