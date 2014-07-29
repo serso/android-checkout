@@ -38,7 +38,7 @@ import java.util.Comparator;
 import static android.view.animation.AnimationUtils.loadAnimation;
 import static org.solovyev.android.checkout.ProductTypes.IN_APP;
 
-public class SkusListFragment extends Fragment {
+public class SkusFragment extends Fragment {
 
 	@Nonnull
 	private ActivityCheckout checkout;
