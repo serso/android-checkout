@@ -69,7 +69,6 @@
 	</style>
 
 	<style name="SkuPrice" parent="ListItemText">
-		<item name="android:textAppearance">@android:style/TextAppearance.Large</item>
 		<item name="android:textColor">@color/pressed_text</item>
 		<item name="android:textStyle">bold</item>
 	</style>

@@ -60,9 +60,22 @@ class SkusAdapter extends ArrayAdapter<Sku> {
 		}
 
 		public void fill(@Nonnull Sku sku) {
-			title.setText(sku.title);
+			title.setText(getTitle(sku));
 			description.setText(sku.description);
 			price.setText(sku.price);
+		}
+
+		@Nonnull
+		private String getTitle(Sku sku) {
+			final int i = sku.title.lastIndexOf("(");
+			if (i > 0) {
+				if (sku.title.charAt(i - 1) == ' ') {
+					return sku.title.substring(0, i - 1);
+				} else {
+					return sku.title.substring(0, i);
+				}
+			}
+			return sku.title;
 		}
 	}
 
