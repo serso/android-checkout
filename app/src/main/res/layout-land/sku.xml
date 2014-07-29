@@ -41,16 +41,18 @@
 
 		<TextView
 			android:id="@+id/sku_title"
-			style="@style/ListItemText" />
+			style="@style/ListItemText"
+			android:paddingRight="0dp"/>
 
 		<TextView
 			android:id="@+id/sku_description"
-			style="@style/ListItemSubText" />
-
-		<TextView
-			android:id="@+id/sku_price"
-			android:layout_width="wrap_content"
-			style="@style/SkuPrice" />
+			style="@style/ListItemSubText"
+			android:paddingRight="0dp"/>
 	</LinearLayout>
+
+	<TextView
+		android:id="@+id/sku_price"
+		android:layout_width="wrap_content"
+		style="@style/SkuPrice" />
 
 </LinearLayout>
