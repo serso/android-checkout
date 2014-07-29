@@ -60,6 +60,11 @@ class SkusAdapter extends ArrayAdapter<Sku> {
 		}
 
 		public void fill(@Nonnull Sku sku) {
+			if(sku.id.equals("cake")) {
+				icon.setImageResource(R.drawable.ic_agenda_birthday_color);
+			} else {
+				icon.setImageResource(0);
+			}
 			title.setText(getTitle(sku));
 			description.setText(sku.description);
 			price.setText(sku.price);
