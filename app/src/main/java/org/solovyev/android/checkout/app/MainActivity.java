@@ -26,6 +26,8 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.view.View;
 import android.widget.TextView;
 import com.squareup.otto.Subscribe;
@@ -54,7 +56,13 @@ public class MainActivity extends FragmentActivity {
 		purchasesButton.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-
+				final FragmentManager fm = getSupportFragmentManager();
+				final Fragment prev = fm.findFragmentByTag("purchases");
+				final FragmentTransaction ft = fm.beginTransaction();
+				if (prev != null) {
+					ft.remove(prev);
+				}
+				new SkuPurchasesFragment().show(ft, "purchases");
 			}
 		});
 		final View infoButton = findViewById(R.id.info_button);

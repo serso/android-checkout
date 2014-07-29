@@ -1,4 +1,6 @@
-<?xml version="1.0" encoding="utf-8"?><!--
+<?xml version="1.0" encoding="utf-8"?>
+
+<!--
   ~ Copyright 2014 serso aka se.solovyev
   ~
   ~ Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,12 +22,26 @@
   ~ Site:  http://se.solovyev.org
   -->
 
-<resources>
-	<string name="app_name">Android Checkout Library</string>
-	<string name="skus_empty">There are no items for purchase</string>
-	<string name="billing_not_supported">In-App billing is not supported.\n\nProbable reasons:\n1. Google Play is not installed or is not updated\n2. The app is running in emulator\n3. Bug in the library</string>
-	<string name="thank_you_for_purchase">Thank you for purchase!</string>
-	<string name="items_bought">Items bought: %1$s</string>
-	<string name="purchases_empty">There are no purchased items</string>
-	<string name="purchased_items">Purchased items</string>
-</resources>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	android:orientation="horizontal"
+	android:layout_width="match_parent"
+	android:layout_height="match_parent">
+
+	<ImageView
+		android:id="@+id/sku_purchases_icon"
+		android:layout_gravity="center_vertical|left"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content" />
+
+	<TextView
+		android:layout_width="0dp"
+		android:layout_weight="1"
+		android:layout_height="wrap_content"
+		android:id="@+id/sku_purchases_title"
+		style="@style/ListItemText" />
+
+	<TextView
+		android:layout_width="wrap_content"
+		android:id="@+id/sku_purchases_count"
+		style="@style/ListItemText" />
+</LinearLayout>
