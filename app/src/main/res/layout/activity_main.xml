@@ -37,15 +37,45 @@
 		android:layout_height="0dp"
 		android:layout_weight="1" />
 
-	<FrameLayout
+	<LinearLayout
 		android:layout_width="match_parent"
 		android:layout_height="wrap_content"
-		style="@style/Tile">
+		android:orientation="horizontal">
 
-		<TextView
-			android:id="@+id/purchases_counter"
-			style="@style/ListItemText"
+		<LinearLayout
+			android:id="@+id/purchases_list_button"
+			android:layout_width="0dp"
+			android:layout_weight="1"
+			android:layout_height="wrap_content"
+			android:orientation="horizontal"
+			android:clickable="true"
+			style="@style/Tile">
+
+			<TextView
+				android:id="@+id/purchases_counter"
+				style="@style/ListItemText"
+				android:layout_width="0dp"
+				android:layout_weight="1"
+				android:layout_height="match_parent" />
+
+			<ImageView
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:src="@drawable/ic_action_view_as_list_selector" />
+		</LinearLayout>
+
+		<FrameLayout
+			android:id="@+id/info_button"
 			android:layout_width="wrap_content"
-			android:layout_height="match_parent" />
-	</FrameLayout>
+			android:layout_height="wrap_content"
+			android:clickable="true"
+			style="@style/Tile">
+
+			<ImageView
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:src="@drawable/ic_action_warning_selector" />
+		</FrameLayout>
+
+	</LinearLayout>
 </LinearLayout>

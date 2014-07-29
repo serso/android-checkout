@@ -26,6 +26,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
+import android.view.View;
 import android.widget.TextView;
 import com.squareup.otto.Subscribe;
 import org.solovyev.android.checkout.*;
@@ -46,9 +47,17 @@ public class MainActivity extends FragmentActivity {
 		setContentView(R.layout.activity_main);
 		CheckoutApplication.get().getBus().register(this);
 		if (savedInstanceState == null) {
-			addFragment(new SkusListFragment(), R.id.fragment_skus_list, false);
+			addFragment(new SkusFragment(), R.id.fragment_skus_list, false);
 		}
 		purchasesCounter = (TextView) findViewById(R.id.purchases_counter);
+		final View purchasesButton = findViewById(R.id.purchases_list_button);
+		purchasesButton.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+
+			}
+		});
+		final View infoButton = findViewById(R.id.info_button);
 		purchasesCounter.setText(getString(R.string.items_bought, 0));
 		checkout.start();
 		updateCounter();
