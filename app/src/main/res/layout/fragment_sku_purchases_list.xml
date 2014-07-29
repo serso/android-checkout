@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
+
 <!--
   ~ Copyright 2014 serso aka se.solovyev
   ~
@@ -21,7 +22,31 @@
   ~ Site:  http://se.solovyev.org
   -->
 
-<resources>
-	<item name="sku_view_holder" type="id"/>
-	<item name="sku_purchases_view_holder" type="id"/>
-</resources>
+<FrameLayout
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	android:layout_width="match_parent"
+	android:layout_height="match_parent">
+
+	<ListView
+		style="@style/ListView"
+		android:id="@+id/purchases_listview"
+		android:layout_width="match_parent"
+		android:visibility="invisible"
+		android:layout_height="match_parent" />
+
+	<ProgressBar
+		android:id="@+id/purchases_progressbar"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_gravity="center"
+		android:indeterminate="true"/>
+
+	<TextView
+		android:id="@+id/purchases_emptyview"
+		style="@style/ListItemText"
+		android:layout_gravity="center"
+		android:gravity="center"
+		android:text="@string/purchases_empty"
+		android:visibility="gone" />
+
+</FrameLayout>

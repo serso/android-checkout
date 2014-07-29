@@ -207,6 +207,21 @@ public final class Inventory {
 		}
 
 		@Nonnull
+		public List<SkuPurchases> getSkuPurchases() {
+			final List<SkuPurchases> result = new ArrayList<SkuPurchases>();
+			for (Sku sku : skus) {
+				final List<Purchase> list = new ArrayList<Purchase>();
+				for (Purchase purchase : purchases) {
+					if (purchase.sku.equals(sku.id)) {
+						list.add(purchase);
+					}
+				}
+				result.add(new SkuPurchases(sku, list));
+			}
+			return result;
+		}
+
+		@Nonnull
 		public String getId() {
 			return id;
 		}
@@ -223,6 +238,34 @@ public final class Inventory {
 		@Nonnull
 		public List<Sku> getSkus() {
 			return Collections.unmodifiableList(skus);
+		}
+	}
+
+
+	/**
+	 * List of purchases of SKU item
+	 */
+	public static final class SkuPurchases {
+
+		@Nonnull
+		private final Sku sku;
+
+		@Nonnull
+		private final List<Purchase> purchases;
+
+		SkuPurchases(@Nonnull Sku sku, @Nonnull List<Purchase> purchases) {
+			this.sku = sku;
+			this.purchases = purchases;
+		}
+
+		@Nonnull
+		public Sku getSku() {
+			return sku;
+		}
+
+		@Nonnull
+		public List<Purchase> getPurchases() {
+			return purchases;
 		}
 	}
 

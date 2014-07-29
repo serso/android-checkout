@@ -25,12 +25,16 @@ package org.solovyev.android.checkout.app;
 import android.app.Activity;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.v4.app.Fragment;
+import android.support.v4.app.DialogFragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.*;
-import org.solovyev.android.checkout.*;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
+import android.widget.ProgressBar;
+import android.widget.TextView;
+import org.solovyev.android.checkout.ActivityCheckout;
+import org.solovyev.android.checkout.Inventory;
 
 import javax.annotation.Nonnull;
 import java.util.Comparator;
@@ -38,7 +42,7 @@ import java.util.Comparator;
 import static android.view.animation.AnimationUtils.loadAnimation;
 import static org.solovyev.android.checkout.ProductTypes.IN_APP;
 
-public class SkusFragment extends Fragment {
+public class SkuPurchasesFragment extends DialogFragment {
 
 	@Nonnull
 	private ActivityCheckout checkout;
@@ -46,7 +50,7 @@ public class SkusFragment extends Fragment {
 	private boolean listShown;
 
 	@Nonnull
-	private ArrayAdapter<Sku> adapter;
+	private ArrayAdapter<Inventory.SkuPurchases> adapter;
 
 	@Nonnull
 	private ListView listView;
@@ -69,30 +73,28 @@ public class SkusFragment extends Fragment {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-
-		checkout.createPurchaseFlow(new PurchaseListener());
 		inventory = checkout.loadInventory();
 	}
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-		final View view = inflater.inflate(R.layout.fragment_skus_list, container, false);
-		adapter = new SkusAdapter(inflater.getContext());
-		listView = (ListView) view.findViewById(R.id.skus_listview);
+		getDialog().setTitle(R.string.purchased_items);
+		final View view = inflater.inflate(R.layout.fragment_sku_purchases_list, container, false);
+		adapter = new SkuPurchasesAdapter(inflater.getContext());
+		listView = (ListView) view.findViewById(R.id.purchases_listview);
 		listView.setAdapter(adapter);
-		listView.setOnItemClickListener(new OnSkuClickListener());
-		progressBar = (ProgressBar) view.findViewById(R.id.skus_progressbar);
-		emptyView = (TextView) view.findViewById(R.id.skus_emptyview);
+		progressBar = (ProgressBar) view.findViewById(R.id.purchases_progressbar);
+		emptyView = (TextView) view.findViewById(R.id.purchases_emptyview);
 
 		inventory.whenLoaded(new Inventory.Listener() {
 			@Override
 			public void onLoaded(@Nonnull Inventory inventory) {
 				final Inventory.Product product = inventory.getProduct(IN_APP);
 				if (product.isSupported()) {
-					for (Sku sku : product.getSkus()) {
-						adapter.add(sku);
+					for (Inventory.SkuPurchases skuPurchases : product.getSkuPurchases()) {
+						adapter.add(skuPurchases);
 					}
-					adapter.sort(new SkuComparator());
+					adapter.sort(new SkuPurchasesComparator());
 					adapter.notifyDataSetChanged();
 				} else {
 					emptyView.setText(R.string.billing_not_supported);
@@ -102,18 +104,6 @@ public class SkusFragment extends Fragment {
 		});
 
 		return view;
-	}
-
-	private static class PurchaseListener implements RequestListener<Purchase> {
-		@Override
-		public void onSuccess(@Nonnull Purchase purchase) {
-			CheckoutApplication.get().getBus().post(new NewPurchaseEvent(purchase));
-			Toast.makeText(CheckoutApplication.get(), R.string.thank_you_for_purchase, Toast.LENGTH_SHORT).show();
-		}
-
-		@Override
-		public void onError(int response, @Nonnull Exception e) {
-		}
 	}
 
 	public void setListShown(boolean shown, boolean animate) {
@@ -149,23 +139,10 @@ public class SkusFragment extends Fragment {
 		setListShown(shown, false);
 	}
 
-	private class OnSkuClickListener implements AdapterView.OnItemClickListener {
+	private class SkuPurchasesComparator implements Comparator<Inventory.SkuPurchases> {
 		@Override
-		public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-			final Sku sku = adapter.getItem(position);
-			checkout.whenReady(new Checkout.ListenerAdapter() {
-				@Override
-				public void onReady(@Nonnull BillingRequests requests) {
-					requests.purchase(sku, null, checkout.getPurchaseFlow());
-				}
-			});
-		}
-	}
-
-	private class SkuComparator implements Comparator<Sku> {
-		@Override
-		public int compare(@Nonnull Sku l, @Nonnull Sku r) {
-			return l.title.compareTo(r.title);
+		public int compare(@Nonnull Inventory.SkuPurchases l, @Nonnull Inventory.SkuPurchases r) {
+			return l.getSku().title.compareTo(r.getSku().title);
 		}
 	}
 }
