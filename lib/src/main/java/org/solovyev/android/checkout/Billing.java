@@ -23,6 +23,7 @@
 package org.solovyev.android.checkout;
 
 import android.app.Activity;
+import android.app.Application;
 import android.app.Service;
 import android.content.ComponentName;
 import android.content.Context;
@@ -125,7 +126,13 @@ public final class Billing {
 	 */
 	public Billing(@Nonnull Context context, @Nonnull Handler handler, @Nonnull String publicKey, @Nullable Cache cache) {
 		Check.isNotEmpty(publicKey);
-		this.context = context;
+		if (context instanceof Application) {
+			// context.getApplicationContext() might return null for applications as we allow create Billing before
+			// Application#onCreate is called
+			this.context = context;
+		} else {
+			this.context = context.getApplicationContext();
+		}
 		this.mainThread = new MainThread(handler);
 		this.publicKey = publicKey;
 		this.cache = new ConcurrentCache(cache);
