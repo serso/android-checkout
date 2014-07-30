@@ -21,6 +21,8 @@
  */
 
 apply plugin: 'android'
+apply plugin: 'maven'
+apply plugin: 'signing'
 
 android {
     compileSdkVersion 20
@@ -47,4 +49,81 @@ dependencies {
     compile 'com.nineoldandroids:library:2.4.0'
     compile 'ch.acra:acra:4.5.0'
     compile project(':lib')
+}
+
+task androidJavadocs(type: Javadoc) {
+    source = android.sourceSets.main.allJava
+    classpath += project.files(android.plugin.getRuntimeJarList().join(File.pathSeparator))
+    configurations.compile.each { File file -> classpath += project.files(file.path) }
+}
+
+task androidJavadocsJar(type: Jar, dependsOn: androidJavadocs) {
+    classifier = 'javadoc'
+    from androidJavadocs.destinationDir
+}
+
+task androidSourcesJar(type: Jar) {
+    classifier = 'sources'
+    from android.sourceSets.main.allSource
+}
+
+artifacts {
+    archives androidSourcesJar
+    archives androidJavadocsJar
+    archives file: file('build/apk/checkout-release.apk'), name: 'checkout-app', type: 'apk'
+    archives file: file('build/proguard/release/mapping.txt'), name: 'checkout-app', classifier: 'proguard', type: 'txt'
+}
+
+signing {
+    sign configurations.archives
+}
+
+group = "org.solovyev.android"
+archivesBaseName = "checkout-app"
+version = VERSION_NAME
+
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+
+            repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
+                authentication(userName: ossrhUsername, password: ossrhPassword)
+            }
+
+            snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
+                authentication(userName: ossrhUsername, password: ossrhPassword)
+            }
+
+            pom.project {
+                name 'Android Checkout App'
+                packaging 'apk'
+                // optionally artifactId can be defined here
+                description 'Sample App for Android In-App Billing (Version 3)'
+                url 'https://github.com/serso/android-checkout'
+
+                scm {
+                    url 'https://github.com/serso/android-checkout'
+                    connection 'scm:https://serso@github.com/serso/android-checkout.git'
+                    developerConnection 'scm:git://github.com/serso/android-checkout.git'
+                }
+
+                licenses {
+                    license {
+                        name 'The Apache Software License, Version 2.0'
+                        url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                        distribution 'repo'
+                    }
+                }
+
+                developers {
+                    developer {
+                        id 'se.solovyev'
+                        name 'Sergey Solovyev'
+                        email 'se.solovyev@gmail.com'
+                    }
+                }
+            }
+        }
+    }
 }
