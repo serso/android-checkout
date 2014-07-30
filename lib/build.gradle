@@ -44,6 +44,7 @@ dependencies {
 task androidJavadocs(type: Javadoc) {
     source = android.sourceSets.main.allJava
     classpath += project.files(android.plugin.getRuntimeJarList().join(File.pathSeparator))
+    configurations.compile.each { File file -> classpath += project.files(file.path) }
 }
 
 task androidJavadocsJar(type: Jar, dependsOn: androidJavadocs) {
@@ -100,7 +101,7 @@ uploadArchives {
             }
 
             pom.project {
-                name 'Android Checkout'
+                name 'Android Checkout Library'
                 packaging 'aar'
                 // optionally artifactId can be defined here
                 description 'Library for Android In-App Billing (Version 3)'
