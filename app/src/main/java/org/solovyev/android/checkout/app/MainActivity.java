@@ -22,6 +22,8 @@
 
 package org.solovyev.android.checkout.app;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
@@ -30,11 +32,15 @@ import com.squareup.otto.Subscribe;
 import org.solovyev.android.checkout.*;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 public class MainActivity extends BaseActivity {
 
 	@Nonnull
 	private TextView purchasesCounter;
+
+	@Nullable
+	private AlertDialog infoDialog;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -53,8 +59,43 @@ public class MainActivity extends BaseActivity {
 			}
 		});
 		final View infoButton = findViewById(R.id.info_button);
+		infoButton.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				showInfoDialog();
+			}
+		});
 		purchasesCounter.setText(getString(R.string.purchased_items_count, 0));
 		updateCounter();
+	}
+
+	private void showInfoDialog() {
+		final AlertDialog.Builder b = new AlertDialog.Builder(this);
+		b.setMessage(getString(R.string.info));
+		b.setPositiveButton(R.string.join, new DialogInterface.OnClickListener() {
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				CheckoutApplication.get().getBus().post(new JoinCommunityEvent());
+			}
+		});
+
+		infoDialog = b.create();
+		infoDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+			@Override
+			public void onDismiss(DialogInterface dialog) {
+				infoDialog = null;
+			}
+		});
+		infoDialog.show();
+	}
+
+	@Override
+	protected void onDestroy() {
+		if (infoDialog != null) {
+			infoDialog.dismiss();
+			infoDialog = null;
+		}
+		super.onDestroy();
 	}
 
 	private void updateCounter() {
@@ -74,5 +115,10 @@ public class MainActivity extends BaseActivity {
 	@Subscribe
 	public void onNewPurchased(@Nonnull NewPurchaseEvent e) {
 		updateCounter();
+	}
+
+	@Subscribe
+	public void onJoinCommunity(@Nonnull JoinCommunityEvent e) {
+		CheckoutApplication.openUri(this, "https://plus.google.com/communities/115918337136768532130");
 	}
 }

@@ -22,19 +22,8 @@
 
 package org.solovyev.android.checkout.app;
 
-import org.solovyev.android.checkout.Purchase;
-
-import javax.annotation.Nonnull;
-
 /**
- * Fired when item was purchased
+ * Fired when user has requested to join the Alpha Testers community
  */
-public final class NewPurchaseEvent {
-
-	@Nonnull
-	public final Purchase purchase;
-
-	public NewPurchaseEvent(@Nonnull Purchase purchase) {
-		this.purchase = purchase;
-	}
+public final class JoinCommunityEvent {
 }

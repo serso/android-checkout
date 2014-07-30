@@ -22,7 +22,11 @@
 
 package org.solovyev.android.checkout.app;
 
+import android.app.Activity;
 import android.app.Application;
+import android.content.ActivityNotFoundException;
+import android.content.Intent;
+import android.net.Uri;
 import com.squareup.otto.Bus;
 import org.acra.ReportingInteractionMode;
 import org.acra.annotation.ReportsCrashes;
@@ -32,6 +36,7 @@ import org.solovyev.android.checkout.Products;
 
 import javax.annotation.Nonnull;
 
+import static android.content.Intent.ACTION_VIEW;
 import static java.util.Arrays.asList;
 import static org.solovyev.android.checkout.Billing.newInMemoryCache;
 import static org.solovyev.android.checkout.ProductTypes.IN_APP;
@@ -102,5 +107,14 @@ public class CheckoutApplication extends Application {
 	@Nonnull
 	public Bus getBus() {
 		return bus;
+	}
+
+	static boolean openUri(@Nonnull Activity activity, @Nonnull String uri) {
+		try {
+			activity.startActivity(new Intent(ACTION_VIEW, Uri.parse(uri)));
+			return true;
+		} catch (ActivityNotFoundException e) {
+		}
+		return false;
 	}
 }
