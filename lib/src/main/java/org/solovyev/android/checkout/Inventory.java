@@ -121,9 +121,9 @@ public final class Inventory {
 	}
 
 	private void loadPurchases(@Nonnull final BillingRequests requests, @Nonnull final Product product) {
-		requests.getAllPurchases(product.id, new ProductRequestListener<Purchases>(product) {
+		requests.getAllPurchases(product.id, new ProductRequestListener<org.solovyev.android.checkout.Purchases>(product) {
 			@Override
-			public void onSuccess(@Nonnull Purchases purchases) {
+			public void onSuccess(@Nonnull org.solovyev.android.checkout.Purchases purchases) {
 				if (isAlive()) {
 					product.purchases.addAll(purchases.list);
 				}
@@ -207,8 +207,8 @@ public final class Inventory {
 		}
 
 		@Nonnull
-		public List<SkuPurchases> getSkuPurchases() {
-			final List<SkuPurchases> result = new ArrayList<SkuPurchases>();
+		public List<Purchases> getPurchasesBySku() {
+			final List<Purchases> result = new ArrayList<Purchases>();
 			for (Sku sku : skus) {
 				final List<Purchase> list = new ArrayList<Purchase>();
 				for (Purchase purchase : purchases) {
@@ -216,7 +216,7 @@ public final class Inventory {
 						list.add(purchase);
 					}
 				}
-				result.add(new SkuPurchases(sku, list));
+				result.add(new Purchases(sku, list));
 			}
 			return result;
 		}
@@ -245,17 +245,17 @@ public final class Inventory {
 	/**
 	 * List of purchases of SKU item
 	 */
-	public static final class SkuPurchases {
+	public static final class Purchases implements Iterable<Purchase> {
 
 		@Nonnull
 		private final Sku sku;
 
 		@Nonnull
-		private final List<Purchase> purchases;
+		private final List<Purchase> list;
 
-		SkuPurchases(@Nonnull Sku sku, @Nonnull List<Purchase> purchases) {
+		Purchases(@Nonnull Sku sku, @Nonnull List<Purchase> list) {
 			this.sku = sku;
-			this.purchases = purchases;
+			this.list = list;
 		}
 
 		@Nonnull
@@ -264,8 +264,22 @@ public final class Inventory {
 		}
 
 		@Nonnull
-		public List<Purchase> getPurchases() {
-			return purchases;
+		public List<Purchase> asList() {
+			return list;
+		}
+
+		public int size() {
+			return list.size();
+		}
+
+		@Nonnull
+		public Purchase get(int location) {
+			return list.get(location);
+		}
+
+		@Override
+		public Iterator<Purchase> iterator() {
+			return list.iterator();
 		}
 	}
 

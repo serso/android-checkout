@@ -42,7 +42,7 @@ import java.util.Comparator;
 import static android.view.animation.AnimationUtils.loadAnimation;
 import static org.solovyev.android.checkout.ProductTypes.IN_APP;
 
-public class SkuPurchasesFragment extends DialogFragment {
+public class PurchasesFragment extends DialogFragment {
 
 	@Nonnull
 	private ActivityCheckout checkout;
@@ -50,7 +50,7 @@ public class SkuPurchasesFragment extends DialogFragment {
 	private boolean listShown;
 
 	@Nonnull
-	private ArrayAdapter<Inventory.SkuPurchases> adapter;
+	private ArrayAdapter<Inventory.Purchases> adapter;
 
 	@Nonnull
 	private ListView listView;
@@ -79,8 +79,8 @@ public class SkuPurchasesFragment extends DialogFragment {
 	@Override
 	public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
 		getDialog().setTitle(R.string.purchased_items);
-		final View view = inflater.inflate(R.layout.fragment_sku_purchases_list, container, false);
-		adapter = new SkuPurchasesAdapter(inflater.getContext());
+		final View view = inflater.inflate(R.layout.fragment_purchases_list, container, false);
+		adapter = new PurchasesAdapter(inflater.getContext());
 		listView = (ListView) view.findViewById(R.id.purchases_listview);
 		listView.setAdapter(adapter);
 		progressBar = (ProgressBar) view.findViewById(R.id.purchases_progressbar);
@@ -91,10 +91,10 @@ public class SkuPurchasesFragment extends DialogFragment {
 			public void onLoaded(@Nonnull Inventory inventory) {
 				final Inventory.Product product = inventory.getProduct(IN_APP);
 				if (product.isSupported()) {
-					for (Inventory.SkuPurchases skuPurchases : product.getSkuPurchases()) {
-						adapter.add(skuPurchases);
+					for (Inventory.Purchases purchases : product.getPurchasesBySku()) {
+						adapter.add(purchases);
 					}
-					adapter.sort(new SkuPurchasesComparator());
+					adapter.sort(new PurchasesComparator());
 					adapter.notifyDataSetChanged();
 				} else {
 					emptyView.setText(R.string.billing_not_supported);
@@ -139,10 +139,14 @@ public class SkuPurchasesFragment extends DialogFragment {
 		setListShown(shown, false);
 	}
 
-	private class SkuPurchasesComparator implements Comparator<Inventory.SkuPurchases> {
+	private class PurchasesComparator implements Comparator<Inventory.Purchases> {
 		@Override
-		public int compare(@Nonnull Inventory.SkuPurchases l, @Nonnull Inventory.SkuPurchases r) {
-			return l.getSku().title.compareTo(r.getSku().title);
+		public int compare(@Nonnull Inventory.Purchases l, @Nonnull Inventory.Purchases r) {
+			return compare(l.size(), r.size());
+		}
+
+		public int compare(int lhs, int rhs) {
+			return lhs < rhs ? -1 : (lhs == rhs ? 0 : 1);
 		}
 	}
 }
