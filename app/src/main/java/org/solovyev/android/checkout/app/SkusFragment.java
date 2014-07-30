@@ -22,67 +22,40 @@
 
 package org.solovyev.android.checkout.app;
 
-import android.app.Activity;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.*;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.Toast;
 import org.solovyev.android.checkout.*;
 
 import javax.annotation.Nonnull;
 import java.util.Comparator;
 
-import static android.view.animation.AnimationUtils.loadAnimation;
 import static org.solovyev.android.checkout.ProductTypes.IN_APP;
 
-public class SkusFragment extends Fragment {
-
-	@Nonnull
-	private ActivityCheckout checkout;
-
-	private boolean listShown;
+public class SkusFragment extends BaseListFragment {
 
 	@Nonnull
 	private ArrayAdapter<Sku> adapter;
 
-	@Nonnull
-	private ListView listView;
-
-	@Nonnull
-	private ProgressBar progressBar;
-
-	@Nonnull
-	private TextView emptyView;
-
-	@Nonnull
-	private Inventory inventory;
-
-	@Override
-	public void onAttach(Activity activity) {
-		super.onAttach(activity);
-		checkout = ((MainActivity) activity).getCheckout();
-	}
-
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-
 		checkout.createPurchaseFlow(new PurchaseListener());
-		inventory = checkout.loadInventory();
 	}
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-		final View view = inflater.inflate(R.layout.fragment_skus_list, container, false);
+		final View view = super.onCreateView(inflater, container, savedInstanceState);
 		adapter = new SkusAdapter(inflater.getContext());
-		listView = (ListView) view.findViewById(R.id.skus_listview);
 		listView.setAdapter(adapter);
 		listView.setOnItemClickListener(new OnSkuClickListener());
-		progressBar = (ProgressBar) view.findViewById(R.id.skus_progressbar);
-		emptyView = (TextView) view.findViewById(R.id.skus_emptyview);
+		titleView.setText(R.string.items_for_purchase);
+		emptyView.setText(R.string.skus_empty);
 
 		inventory.whenLoaded(new Inventory.Listener() {
 			@Override
@@ -104,6 +77,12 @@ public class SkusFragment extends Fragment {
 		return view;
 	}
 
+	@Override
+	public void onDestroy() {
+		checkout.destroyPurchaseFlow();
+		super.onDestroy();
+	}
+
 	private static class PurchaseListener implements RequestListener<Purchase> {
 		@Override
 		public void onSuccess(@Nonnull Purchase purchase) {
@@ -114,39 +93,6 @@ public class SkusFragment extends Fragment {
 		@Override
 		public void onError(int response, @Nonnull Exception e) {
 		}
-	}
-
-	public void setListShown(boolean shown, boolean animate) {
-		if (listShown == shown) {
-			return;
-		}
-		listShown = shown;
-
-		if (shown) {
-			final View view = listView.getCount() > 0 ? listView : emptyView;
-			if (animate) {
-				progressBar.startAnimation(loadAnimation(getActivity(), android.R.anim.fade_out));
-				view.startAnimation(loadAnimation(getActivity(), android.R.anim.fade_in));
-			}
-			progressBar.setVisibility(View.GONE);
-			view.setVisibility(View.VISIBLE);
-		} else {
-			final View view = listView.getVisibility() == View.VISIBLE ? listView : emptyView;
-			if (animate) {
-				progressBar.startAnimation(loadAnimation(getActivity(), android.R.anim.fade_in));
-				view.startAnimation(loadAnimation(getActivity(), android.R.anim.fade_out));
-			}
-			progressBar.setVisibility(View.VISIBLE);
-			view.setVisibility(View.INVISIBLE);
-		}
-	}
-
-	public void setListShown(boolean shown) {
-		setListShown(shown, true);
-	}
-
-	public void setListShownNoAnimation(boolean shown) {
-		setListShown(shown, false);
 	}
 
 	private class OnSkuClickListener implements AdapterView.OnItemClickListener {

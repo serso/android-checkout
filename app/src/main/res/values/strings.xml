@@ -25,7 +25,8 @@
 	<string name="skus_empty">There are no items for purchase</string>
 	<string name="billing_not_supported">In-App billing is not supported.\n\nProbable reasons:\n1. Google Play is not installed or is not updated\n2. The app is running in emulator\n3. Bug in the library</string>
 	<string name="thank_you_for_purchase">Thank you for purchase!</string>
-	<string name="items_bought">Items bought: %1$s</string>
+	<string name="purchased_items_count">Purchased items: %1$s</string>
 	<string name="purchases_empty">There are no purchased items</string>
 	<string name="purchased_items">Purchased items</string>
+	<string name="items_for_purchase">Items for purchase</string>
 </resources>

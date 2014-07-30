@@ -58,11 +58,7 @@ class PurchasesAdapter extends ArrayAdapter<Inventory.Purchases> {
 
 		public void fill(@Nonnull Inventory.Purchases purchases) {
 			final Sku sku = purchases.getSku();
-			if(sku.id.equals("cake")) {
-				icon.setImageResource(R.drawable.ic_agenda_birthday_color);
-			} else {
-				icon.setImageResource(0);
-			}
+			icon.setImageResource(CheckoutApplication.getSkuIconResId(sku.id));
 			title.setText(getTitle(sku));
 			count.setText(String.valueOf(purchases.size()));
 		}

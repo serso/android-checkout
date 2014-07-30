@@ -67,6 +67,22 @@ public class CheckoutApplication extends Application {
 		instance = this;
 	}
 
+	static int getSkuIconResId(@Nonnull String skuId) {
+		final int iconResId;
+		if (skuId.equals("cake")) {
+			iconResId = R.drawable.ic_agenda_birthday_color;
+		} else if (skuId.equals("beer")) {
+			iconResId = R.drawable.ic_agenda_birthday_color;
+		} else if (skuId.equals("hamburger")) {
+			iconResId = R.drawable.ic_agenda_birthday_color;
+		} else if (skuId.equals("coffee")) {
+			iconResId = R.drawable.ic_agenda_birthday_color;
+		} else {
+			iconResId = 0;
+		}
+		return iconResId;
+	}
+
 	@Override
 	public void onCreate() {
 		super.onCreate();

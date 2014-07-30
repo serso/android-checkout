@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
   ~ Copyright 2014 serso aka se.solovyev
   ~
   ~ Licensed under the Apache License, Version 2.0 (the "License");
@@ -34,21 +33,21 @@
 	<uses-permission android:name="com.android.vending.BILLING" />
 
 	<application
+		android:name=".CheckoutApplication"
 		android:allowBackup="true"
 		android:icon="@drawable/app_icon"
 		android:label="@string/app_name"
-		android:name=".CheckoutApplication"
 		android:theme="@style/AppTheme">
 
-		<activity
-			android:name=".MainActivity"
-			android:windowSoftInputMode="adjustPan">
+		<activity android:name=".MainActivity">
 
 			<intent-filter>
 				<action android:name="android.intent.action.MAIN" />
 				<category android:name="android.intent.category.LAUNCHER" />
 			</intent-filter>
 		</activity>
+
+		<activity android:name=".PurchasesActivity" android:label="@string/purchased_items" android:theme="@style/AppDialogTheme"/>
 	</application>
 
 </manifest>
