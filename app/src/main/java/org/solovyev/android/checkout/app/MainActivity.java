@@ -62,7 +62,7 @@ public class MainActivity extends FragmentActivity {
 				if (prev != null) {
 					ft.remove(prev);
 				}
-				new SkuPurchasesFragment().show(ft, "purchases");
+				new PurchasesFragment().show(ft, "purchases");
 			}
 		});
 		final View infoButton = findViewById(R.id.info_button);

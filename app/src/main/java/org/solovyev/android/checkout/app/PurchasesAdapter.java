@@ -34,7 +34,7 @@ import org.solovyev.android.checkout.Sku;
 
 import javax.annotation.Nonnull;
 
-class SkuPurchasesAdapter extends ArrayAdapter<Inventory.SkuPurchases> {
+class PurchasesAdapter extends ArrayAdapter<Inventory.Purchases> {
 
 	private static final class ViewHolder {
 
@@ -50,21 +50,21 @@ class SkuPurchasesAdapter extends ArrayAdapter<Inventory.SkuPurchases> {
 		@Nonnull
 		private static ViewHolder from(@Nonnull View view) {
 			final ViewHolder vh = new ViewHolder();
-			vh.icon = (ImageView) view.findViewById(R.id.sku_purchases_icon);
-			vh.title = (TextView) view.findViewById(R.id.sku_purchases_title);
-			vh.count = (TextView) view.findViewById(R.id.sku_purchases_count);
+			vh.icon = (ImageView) view.findViewById(R.id.purchases_icon);
+			vh.title = (TextView) view.findViewById(R.id.purchases_title);
+			vh.count = (TextView) view.findViewById(R.id.purchases_count);
 			return vh;
 		}
 
-		public void fill(@Nonnull Inventory.SkuPurchases skuPurchases) {
-			final Sku sku = skuPurchases.getSku();
+		public void fill(@Nonnull Inventory.Purchases purchases) {
+			final Sku sku = purchases.getSku();
 			if(sku.id.equals("cake")) {
 				icon.setImageResource(R.drawable.ic_agenda_birthday_color);
 			} else {
 				icon.setImageResource(0);
 			}
 			title.setText(getTitle(sku));
-			count.setText(String.valueOf(skuPurchases.getPurchases().size()));
+			count.setText(String.valueOf(purchases.size()));
 		}
 
 		@Nonnull
@@ -81,7 +81,7 @@ class SkuPurchasesAdapter extends ArrayAdapter<Inventory.SkuPurchases> {
 		}
 	}
 
-	public SkuPurchasesAdapter(@Nonnull Context context) {
+	public PurchasesAdapter(@Nonnull Context context) {
 		super(context, 0);
 	}
 
@@ -91,7 +91,7 @@ class SkuPurchasesAdapter extends ArrayAdapter<Inventory.SkuPurchases> {
 		final ViewHolder vh;
 		if (convertView == null) {
 			final LayoutInflater inflater = LayoutInflater.from(getContext());
-			view = inflater.inflate(R.layout.sku_purchases, parent, false);
+			view = inflater.inflate(R.layout.purchases, parent, false);
 			vh = ViewHolder.from(view);
 			view.setTag(R.id.sku_purchases_view_holder, vh);
 		} else {

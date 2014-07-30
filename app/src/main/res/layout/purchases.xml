@@ -28,7 +28,7 @@
 	android:layout_height="match_parent">
 
 	<ImageView
-		android:id="@+id/sku_purchases_icon"
+		android:id="@+id/purchases_icon"
 		android:layout_gravity="center_vertical|left"
 		android:layout_width="wrap_content"
 		android:layout_height="wrap_content" />
@@ -37,11 +37,11 @@
 		android:layout_width="0dp"
 		android:layout_weight="1"
 		android:layout_height="wrap_content"
-		android:id="@+id/sku_purchases_title"
+		android:id="@+id/purchases_title"
 		style="@style/ListItemText" />
 
 	<TextView
 		android:layout_width="wrap_content"
-		android:id="@+id/sku_purchases_count"
+		android:id="@+id/purchases_count"
 		style="@style/ListItemText" />
 </LinearLayout>
