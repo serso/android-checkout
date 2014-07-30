@@ -1,7 +1,7 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 
 buildscript {
-    VERSION_CODE = 3
+    VERSION_CODE = 4
     VERSION_NAME = '0.4'
 
     repositories {
