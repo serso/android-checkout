@@ -1,9 +1,0 @@
-# view AndroidManifest.xml #generated:32
--keep class org.solovyev.android.checkout.app.CheckoutApplication { <init>(...); }
-
-# view AndroidManifest.xml #generated:34
--keep class org.solovyev.android.checkout.app.MainActivity { <init>(...); }
-
-# view res/layout/activity_main.xml #generated:30
--keep class org.solovyev.android.checkout.app.SkusListFragment { <init>(...); }
-
