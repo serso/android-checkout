@@ -29,4 +29,6 @@
 	<string name="purchases_empty">There are no purchased items</string>
 	<string name="purchased_items">Purchased items</string>
 	<string name="items_for_purchase">Items for purchase</string>
+	<string name="info">Join the Alpha Testers community on Google+ to make test purchases. Don\'t forget to support the project with real money!</string>
+	<string name="join">Join</string>
 </resources>
