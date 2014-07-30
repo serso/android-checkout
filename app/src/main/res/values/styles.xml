@@ -16,11 +16,24 @@
 		<item name="android:textColorTertiary">@color/text</item>
 	</style>
 
+	<style name="BaseDialogTheme" parent="android:Theme.Holo.Light.Dialog.NoActionBar">
+		<item name="android:background">@null</item>
+		<item name="android:windowBackground">@android:color/transparent</item>
+		<item name="android:listViewStyle">@style/ListView</item>
+		<item name="android:textColor">@color/text</item>
+		<item name="android:textColorPrimary">@color/text</item>
+		<item name="android:textColorSecondary">@color/text</item>
+		<item name="android:textColorTertiary">@color/text</item>
+	</style>
+
 	<style name="PreferencesTheme" parent="AppTheme">
 		<item name="android:listSelector">@drawable/clickable_selector</item>
 	</style>
 
 	<style name="AppTheme" parent="BaseTheme">
+	</style>
+
+	<style name="AppDialogTheme" parent="BaseDialogTheme">
 	</style>
 
 	<style name="Tile">
@@ -66,6 +79,11 @@
 		<item name="android:maxLines">1</item>
 		<item name="android:minLines">1</item>
 		<item name="android:ellipsize">end</item>
+	</style>
+
+	<style name="Title" parent="ListItemText">
+		<item name="android:textAppearance">@android:style/TextAppearance.Large</item>
+		<item name="android:textStyle">bold</item>
 	</style>
 
 	<style name="SkuPrice" parent="ListItemText">

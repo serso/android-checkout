@@ -24,10 +24,6 @@ package org.solovyev.android.checkout.app;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentActivity;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentTransaction;
 import android.view.View;
 import android.widget.TextView;
 import com.squareup.otto.Subscribe;
@@ -35,10 +31,7 @@ import org.solovyev.android.checkout.*;
 
 import javax.annotation.Nonnull;
 
-public class MainActivity extends FragmentActivity {
-
-	@Nonnull
-	private final ActivityCheckout checkout = Checkout.forActivity(this, CheckoutApplication.get().getCheckout());
+public class MainActivity extends BaseActivity {
 
 	@Nonnull
 	private TextView purchasesCounter;
@@ -49,64 +42,33 @@ public class MainActivity extends FragmentActivity {
 		setContentView(R.layout.activity_main);
 		CheckoutApplication.get().getBus().register(this);
 		if (savedInstanceState == null) {
-			addFragment(new SkusFragment(), R.id.fragment_skus_list, false);
+			addFragment(new SkusFragment(), R.id.fragment_skus, false);
 		}
 		purchasesCounter = (TextView) findViewById(R.id.purchases_counter);
 		final View purchasesButton = findViewById(R.id.purchases_list_button);
 		purchasesButton.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				final FragmentManager fm = getSupportFragmentManager();
-				final Fragment prev = fm.findFragmentByTag("purchases");
-				final FragmentTransaction ft = fm.beginTransaction();
-				if (prev != null) {
-					ft.remove(prev);
-				}
-				new PurchasesFragment().show(ft, "purchases");
+				startActivity(new Intent(MainActivity.this, PurchasesActivity.class));
 			}
 		});
 		final View infoButton = findViewById(R.id.info_button);
-		purchasesCounter.setText(getString(R.string.items_bought, 0));
-		checkout.start();
+		purchasesCounter.setText(getString(R.string.purchased_items_count, 0));
 		updateCounter();
 	}
 
 	private void updateCounter() {
-		checkout.whenReady(new Checkout.ListenerAdapter() {
+		getCheckout().whenReady(new Checkout.ListenerAdapter() {
 			@Override
 			public void onReady(@Nonnull BillingRequests requests) {
 				requests.getAllPurchases(ProductTypes.IN_APP, new RequestListenerAdapter<Purchases>() {
 					@Override
 					public void onSuccess(@Nonnull Purchases purchases) {
-						purchasesCounter.setText(getString(R.string.items_bought, purchases.list.size()));
+						purchasesCounter.setText(getString(R.string.purchased_items_count, purchases.list.size()));
 					}
 				});
 			}
 		});
-	}
-
-	private void addFragment(@Nonnull Fragment fragment, int viewId, boolean retain) {
-		fragment.setRetainInstance(retain);
-		getSupportFragmentManager().beginTransaction()
-				.add(viewId, fragment)
-				.commit();
-	}
-
-	@Override
-	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-		super.onActivityResult(requestCode, resultCode, data);
-		checkout.onActivityResult(requestCode, resultCode, data);
-	}
-
-	@Override
-	protected void onDestroy() {
-		checkout.stop();
-		super.onDestroy();
-	}
-
-	@Nonnull
-	public ActivityCheckout getCheckout() {
-		return checkout;
 	}
 
 	@Subscribe
