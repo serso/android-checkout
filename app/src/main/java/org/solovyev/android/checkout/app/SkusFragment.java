@@ -96,9 +96,7 @@ public class SkusFragment extends BaseListFragment {
 			consume(skuUi.token, new RequestListenerAdapter<Object>() {
 				@Override
 				public void onSuccess(@Nonnull Object result) {
-					// we have to reload inventory here as we don't know if purchase will be done
 					inventory.load();
-					purchase(skuUi.sku);
 				}
 			});
 		}
