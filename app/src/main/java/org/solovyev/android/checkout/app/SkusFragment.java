@@ -57,22 +57,7 @@ public class SkusFragment extends BaseListFragment {
 		titleView.setText(R.string.items_for_purchase);
 		emptyView.setText(R.string.skus_empty);
 
-		inventory.whenLoaded(new Inventory.Listener() {
-			@Override
-			public void onLoaded(@Nonnull Inventory inventory) {
-				final Inventory.Product product = inventory.getProduct(IN_APP);
-				if (product.isSupported()) {
-					for (Sku sku : product.getSkus()) {
-						adapter.add(sku);
-					}
-					adapter.sort(new SkuComparator());
-					adapter.notifyDataSetChanged();
-				} else {
-					emptyView.setText(R.string.billing_not_supported);
-				}
-				setListShown(true);
-			}
-		});
+		inventory.whenLoaded(new InventoryLoadedListener());
 
 		return view;
 	}
@@ -83,9 +68,11 @@ public class SkusFragment extends BaseListFragment {
 		super.onDestroy();
 	}
 
-	private static class PurchaseListener implements RequestListener<Purchase> {
+	private class PurchaseListener implements RequestListener<Purchase> {
 		@Override
 		public void onSuccess(@Nonnull Purchase purchase) {
+			// let's update purchase information in local inventory
+			inventory.load().whenLoaded(new InventoryLoadedListener());
 			CheckoutApplication.get().getEventBus().post(new NewPurchaseEvent(purchase));
 			Toast.makeText(CheckoutApplication.get(), R.string.thank_you_for_purchase, Toast.LENGTH_SHORT).show();
 		}
@@ -99,19 +86,73 @@ public class SkusFragment extends BaseListFragment {
 		@Override
 		public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 			final Sku sku = adapter.getItem(position);
-			checkout.whenReady(new Checkout.ListenerAdapter() {
+			inventory.whenLoaded(new Inventory.Listener() {
 				@Override
-				public void onReady(@Nonnull BillingRequests requests) {
-					requests.purchase(sku, null, checkout.getPurchaseFlow());
+				public void onLoaded(@Nonnull Inventory.Products products) {
+					purchase(products, sku);
 				}
 			});
 		}
+	}
+
+	private void purchase(@Nonnull Inventory.Products products, @Nonnull final Sku sku) {
+		final Inventory.Product product = products.get(IN_APP);
+		final Purchase purchase = product.getPurchaseInState(sku.id, Purchase.State.PURCHASED);
+		if (purchase == null) {
+			purchase(sku);
+		} else {
+			consume(purchase.token, new RequestListenerAdapter<Object>() {
+				@Override
+				public void onSuccess(@Nonnull Object result) {
+					// we have to reload inventory here as we don't know if purchase will be done
+					inventory.load();
+					purchase(sku);
+				}
+			});
+		}
+	}
+
+	private void consume(@Nonnull final String token, @Nonnull final RequestListenerAdapter<Object> onConsumed) {
+		checkout.whenReady(new Checkout.ListenerAdapter() {
+			@Override
+			public void onReady(@Nonnull BillingRequests requests) {
+				requests.consume(token, onConsumed);
+			}
+		});
+	}
+
+	private void purchase(@Nonnull final Sku sku) {
+		checkout.whenReady(new Checkout.ListenerAdapter() {
+			@Override
+			public void onReady(@Nonnull BillingRequests requests) {
+				requests.purchase(sku, null, checkout.getPurchaseFlow());
+			}
+		});
 	}
 
 	private class SkuComparator implements Comparator<Sku> {
 		@Override
 		public int compare(@Nonnull Sku l, @Nonnull Sku r) {
 			return l.title.compareTo(r.title);
+		}
+	}
+
+	private class InventoryLoadedListener implements Inventory.Listener {
+		@Override
+		public void onLoaded(@Nonnull Inventory.Products products) {
+			final Inventory.Product product = products.get(IN_APP);
+			adapter.setNotifyOnChange(false);
+			adapter.clear();
+			if (product.isSupported()) {
+				for (Sku sku : product.getSkus()) {
+					adapter.add(sku);
+				}
+				adapter.sort(new SkuComparator());
+			} else {
+				emptyView.setText(R.string.billing_not_supported);
+			}
+			adapter.notifyDataSetChanged();
+			setListShown(true);
 		}
 	}
 }

@@ -289,10 +289,11 @@ public class Checkout {
 
 		@Override
 		public void onReady(@Nonnull BillingRequests requests) {
-			for (Listener listener : list) {
+			final List<Listener> localList = new ArrayList<Listener>(list);
+			list.clear();
+			for (Listener listener : localList) {
 				listener.onReady(requests);
 			}
-			list.clear();
 		}
 
 		@Override

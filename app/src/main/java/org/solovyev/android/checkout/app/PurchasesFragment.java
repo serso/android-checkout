@@ -49,8 +49,8 @@ public class PurchasesFragment extends BaseListFragment {
 
 		inventory.whenLoaded(new Inventory.Listener() {
 			@Override
-			public void onLoaded(@Nonnull Inventory inventory) {
-				final Inventory.Product product = inventory.getProduct(IN_APP);
+			public void onLoaded(@Nonnull Inventory.Products products) {
+				final Inventory.Product product = products.get(IN_APP);
 				if (product.isSupported()) {
 					for (Inventory.Purchases purchases : product.getPurchasesBySku()) {
 						adapter.add(purchases);

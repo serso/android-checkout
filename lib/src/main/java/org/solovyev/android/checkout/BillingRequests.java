@@ -117,7 +117,7 @@ public interface BillingRequests {
 	 * @param listener request listener, called asynchronously
 	 * @return request id
 	 */
-	int consumePurchase(@Nonnull String token, @Nonnull RequestListener<Object> listener);
+	int consume(@Nonnull String token, @Nonnull RequestListener<Object> listener);
 
 	void cancelAll();
 }
