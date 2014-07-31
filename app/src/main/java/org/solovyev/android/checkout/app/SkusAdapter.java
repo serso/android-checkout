@@ -63,23 +63,11 @@ class SkusAdapter extends ArrayAdapter<Sku> {
 			final String skuId = sku.id;
 			final int iconResId = CheckoutApplication.getSkuIconResId(skuId);
 			icon.setImageResource(iconResId);
-			title.setText(getTitle(sku));
+			title.setText(CheckoutApplication.getTitle(sku));
 			description.setText(sku.description);
 			price.setText(sku.price);
 		}
 
-		@Nonnull
-		private String getTitle(Sku sku) {
-			final int i = sku.title.lastIndexOf("(");
-			if (i > 0) {
-				if (sku.title.charAt(i - 1) == ' ') {
-					return sku.title.substring(0, i - 1);
-				} else {
-					return sku.title.substring(0, i);
-				}
-			}
-			return sku.title;
-		}
 	}
 
 	public SkusAdapter(@Nonnull Context context) {
@@ -94,10 +82,10 @@ class SkusAdapter extends ArrayAdapter<Sku> {
 			final LayoutInflater inflater = LayoutInflater.from(getContext());
 			view = inflater.inflate(R.layout.sku, parent, false);
 			vh = ViewHolder.from(view);
-			view.setTag(R.id.sku_view_holder, vh);
+			view.setTag(vh);
 		} else {
 			view = convertView;
-			vh = (ViewHolder) view.getTag(R.id.sku_view_holder);
+			vh = (ViewHolder) view.getTag();
 		}
 		vh.fill(getItem(position));
 		return view;

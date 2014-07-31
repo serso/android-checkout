@@ -27,7 +27,6 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.view.Window;
-import com.squareup.otto.Bus;
 import org.solovyev.android.checkout.ActivityCheckout;
 import org.solovyev.android.checkout.Checkout;
 
@@ -36,15 +35,11 @@ import javax.annotation.Nonnull;
 public class BaseActivity extends FragmentActivity {
 
 	@Nonnull
-	protected final Bus eventBus = CheckoutApplication.get().getEventBus();
-
-	@Nonnull
 	protected final ActivityCheckout checkout = Checkout.forActivity(this, CheckoutApplication.get().getCheckout());
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		eventBus.register(this);
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		checkout.start();
 	}
@@ -57,7 +52,6 @@ public class BaseActivity extends FragmentActivity {
 
 	@Override
 	protected void onDestroy() {
-		eventBus.unregister(this);
 		checkout.stop();
 		super.onDestroy();
 	}

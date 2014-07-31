@@ -29,6 +29,7 @@
 
 	<ImageView
 		android:id="@+id/sku_icon"
+		android:contentDescription="@string/cd_sku_icon"
 		android:layout_gravity="center_vertical|left"
 		android:layout_width="wrap_content"
 		android:layout_height="wrap_content" />

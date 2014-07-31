@@ -24,20 +24,12 @@ package org.solovyev.android.checkout.app;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.TextView;
-import com.squareup.otto.Subscribe;
-import org.solovyev.android.checkout.*;
 
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 public class MainActivity extends BaseActivity {
-
-	@Nonnull
-	private TextView purchasesCounter;
 
 	@Nullable
 	private AlertDialog infoDialog;
@@ -49,14 +41,6 @@ public class MainActivity extends BaseActivity {
 		if (savedInstanceState == null) {
 			addFragment(new SkusFragment(), R.id.fragment_skus, false);
 		}
-		purchasesCounter = (TextView) findViewById(R.id.purchases_counter);
-		final View purchasesButton = findViewById(R.id.purchases_list_button);
-		purchasesButton.setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				startActivity(new Intent(MainActivity.this, PurchasesActivity.class));
-			}
-		});
 		final View infoButton = findViewById(R.id.info_button);
 		infoButton.setOnClickListener(new View.OnClickListener() {
 			@Override
@@ -64,17 +48,15 @@ public class MainActivity extends BaseActivity {
 				showInfoDialog();
 			}
 		});
-		purchasesCounter.setText(getString(R.string.purchased_items_count, 0));
-		updateCounter();
 	}
 
 	private void showInfoDialog() {
 		final AlertDialog.Builder b = new AlertDialog.Builder(this);
-		b.setMessage(getString(R.string.info));
+		b.setMessage(getString(R.string.msg_info));
 		b.setPositiveButton(R.string.join, new DialogInterface.OnClickListener() {
 			@Override
 			public void onClick(DialogInterface dialog, int which) {
-				CheckoutApplication.get().getEventBus().post(new JoinCommunityEvent());
+				CheckoutApplication.openUri(MainActivity.this, "https://plus.google.com/communities/115918337136768532130");
 			}
 		});
 
@@ -95,29 +77,5 @@ public class MainActivity extends BaseActivity {
 			infoDialog = null;
 		}
 		super.onDestroy();
-	}
-
-	private void updateCounter() {
-		checkout.whenReady(new Checkout.ListenerAdapter() {
-			@Override
-			public void onReady(@Nonnull BillingRequests requests) {
-				requests.getAllPurchases(ProductTypes.IN_APP, new RequestListenerAdapter<Purchases>() {
-					@Override
-					public void onSuccess(@Nonnull Purchases purchases) {
-						purchasesCounter.setText(getString(R.string.purchased_items_count, purchases.list.size()));
-					}
-				});
-			}
-		});
-	}
-
-	@Subscribe
-	public void onNewPurchased(@Nonnull NewPurchaseEvent e) {
-		updateCounter();
-	}
-
-	@Subscribe
-	public void onJoinCommunity(@Nonnull JoinCommunityEvent e) {
-		CheckoutApplication.openUri(this, "https://plus.google.com/communities/115918337136768532130");
 	}
 }
