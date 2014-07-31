@@ -86,7 +86,7 @@ public class SkusFragment extends BaseListFragment {
 	private static class PurchaseListener implements RequestListener<Purchase> {
 		@Override
 		public void onSuccess(@Nonnull Purchase purchase) {
-			CheckoutApplication.get().getBus().post(new NewPurchaseEvent(purchase));
+			CheckoutApplication.get().getEventBus().post(new NewPurchaseEvent(purchase));
 			Toast.makeText(CheckoutApplication.get(), R.string.thank_you_for_purchase, Toast.LENGTH_SHORT).show();
 		}
 

@@ -30,7 +30,6 @@ public class PurchasesActivity extends BaseActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_purchases);
-		CheckoutApplication.get().getBus().register(this);
 		if (savedInstanceState == null) {
 			addFragment(new PurchasesFragment(), R.id.fragment_purchases, false);
 		}
