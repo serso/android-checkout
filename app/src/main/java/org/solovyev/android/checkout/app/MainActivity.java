@@ -46,7 +46,6 @@ public class MainActivity extends BaseActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
-		CheckoutApplication.get().getBus().register(this);
 		if (savedInstanceState == null) {
 			addFragment(new SkusFragment(), R.id.fragment_skus, false);
 		}
@@ -75,7 +74,7 @@ public class MainActivity extends BaseActivity {
 		b.setPositiveButton(R.string.join, new DialogInterface.OnClickListener() {
 			@Override
 			public void onClick(DialogInterface dialog, int which) {
-				CheckoutApplication.get().getBus().post(new JoinCommunityEvent());
+				CheckoutApplication.get().getEventBus().post(new JoinCommunityEvent());
 			}
 		});
 
@@ -99,7 +98,7 @@ public class MainActivity extends BaseActivity {
 	}
 
 	private void updateCounter() {
-		getCheckout().whenReady(new Checkout.ListenerAdapter() {
+		checkout.whenReady(new Checkout.ListenerAdapter() {
 			@Override
 			public void onReady(@Nonnull BillingRequests requests) {
 				requests.getAllPurchases(ProductTypes.IN_APP, new RequestListenerAdapter<Purchases>() {
