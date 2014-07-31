@@ -23,17 +23,17 @@
 package org.solovyev.android.checkout.app;
 
 import android.content.Context;
+import android.graphics.Paint;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
-import org.solovyev.android.checkout.Sku;
 
 import javax.annotation.Nonnull;
 
-class SkusAdapter extends ArrayAdapter<Sku> {
+class SkusAdapter extends ArrayAdapter<SkuUi> {
 
 	private static final class ViewHolder {
 
@@ -59,13 +59,26 @@ class SkusAdapter extends ArrayAdapter<Sku> {
 			return vh;
 		}
 
-		public void fill(@Nonnull Sku sku) {
-			final String skuId = sku.id;
-			final int iconResId = CheckoutApplication.getSkuIconResId(skuId);
+		public void fill(@Nonnull SkuUi skuUi) {
+			final int iconResId = CheckoutApplication.getSkuIconResId(skuUi.sku.id);
 			icon.setImageResource(iconResId);
-			title.setText(CheckoutApplication.getTitle(sku));
-			description.setText(sku.description);
-			price.setText(sku.price);
+			title.setText(CheckoutApplication.getTitle(skuUi.sku));
+			description.setText(skuUi.sku.description);
+			price.setText(skuUi.sku.price);
+
+			lineThrough(title, skuUi.isPurchased());
+			lineThrough(description, skuUi.isPurchased());
+			lineThrough(price, skuUi.isPurchased());
+		}
+
+		private void lineThrough(TextView view, boolean lineThrough) {
+			final int flags;
+			if (lineThrough) {
+				flags = view.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG;
+			} else {
+				flags = view.getPaintFlags() & ~Paint.STRIKE_THRU_TEXT_FLAG;
+			}
+			view.setPaintFlags(flags);
 		}
 
 	}
