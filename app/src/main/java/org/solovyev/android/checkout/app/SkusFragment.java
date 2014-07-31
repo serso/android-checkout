@@ -40,7 +40,7 @@ import static org.solovyev.android.checkout.ProductTypes.IN_APP;
 public class SkusFragment extends BaseListFragment {
 
 	@Nonnull
-	private ArrayAdapter<Sku> adapter;
+	private ArrayAdapter<SkuUi> adapter;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -84,28 +84,21 @@ public class SkusFragment extends BaseListFragment {
 	private class OnSkuClickListener implements AdapterView.OnItemClickListener {
 		@Override
 		public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-			final Sku sku = adapter.getItem(position);
-			inventory.whenLoaded(new Inventory.Listener() {
-				@Override
-				public void onLoaded(@Nonnull Inventory.Products products) {
-					purchase(products, sku);
-				}
-			});
+			final SkuUi sku = adapter.getItem(position);
+			purchase(sku);
 		}
 	}
 
-	private void purchase(@Nonnull Inventory.Products products, @Nonnull final Sku sku) {
-		final Inventory.Product product = products.get(IN_APP);
-		final Purchase purchase = product.getPurchaseInState(sku.id, Purchase.State.PURCHASED);
-		if (purchase == null) {
-			purchase(sku);
+	private void purchase(@Nonnull final SkuUi skuUi) {
+		if (!skuUi.isPurchased()) {
+			purchase(skuUi.sku);
 		} else {
-			consume(purchase.token, new RequestListenerAdapter<Object>() {
+			consume(skuUi.token, new RequestListenerAdapter<Object>() {
 				@Override
 				public void onSuccess(@Nonnull Object result) {
 					// we have to reload inventory here as we don't know if purchase will be done
 					inventory.load();
-					purchase(sku);
+					purchase(skuUi.sku);
 				}
 			});
 		}
@@ -129,10 +122,10 @@ public class SkusFragment extends BaseListFragment {
 		});
 	}
 
-	private class SkuComparator implements Comparator<Sku> {
+	private class SkuComparator implements Comparator<SkuUi> {
 		@Override
-		public int compare(@Nonnull Sku l, @Nonnull Sku r) {
-			return l.title.compareTo(r.title);
+		public int compare(@Nonnull SkuUi l, @Nonnull SkuUi r) {
+			return l.sku.title.compareTo(r.sku.title);
 		}
 	}
 
@@ -144,7 +137,8 @@ public class SkusFragment extends BaseListFragment {
 			adapter.clear();
 			if (product.isSupported()) {
 				for (Sku sku : product.getSkus()) {
-					adapter.add(sku);
+					final Purchase purchase = product.getPurchaseInState(sku, Purchase.State.PURCHASED);
+					adapter.add(SkuUi.create(sku, purchase != null ? purchase.token : null));
 				}
 				adapter.sort(new SkuComparator());
 			} else {

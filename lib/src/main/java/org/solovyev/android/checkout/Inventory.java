@@ -251,6 +251,11 @@ public final class Inventory {
 			return org.solovyev.android.checkout.Purchases.getPurchaseInState(purchases, sku, state);
 		}
 
+		@Nullable
+		public Purchase getPurchaseInState(@Nonnull Sku sku, @Nonnull Purchase.State state) {
+			return getPurchaseInState(sku.id, state);
+		}
+
 		@Nonnull
 		public String getId() {
 			return id;
