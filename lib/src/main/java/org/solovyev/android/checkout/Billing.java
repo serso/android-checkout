@@ -326,7 +326,7 @@ public final class Billing {
 		}
 	}
 
-	public static void warning(@Nonnull String message) {
+	static void warning(@Nonnull String message) {
 		if (DEBUG) {
 			Log.w(TAG, message);
 		}

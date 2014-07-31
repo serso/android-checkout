@@ -68,16 +68,12 @@ public class SkusFragment extends BaseListFragment {
 		super.onDestroy();
 	}
 
-	private class PurchaseListener implements RequestListener<Purchase> {
+	private class PurchaseListener extends BaseRequestListener<Purchase> {
 		@Override
 		public void onSuccess(@Nonnull Purchase purchase) {
 			// let's update purchase information in local inventory
 			inventory.load().whenLoaded(new InventoryLoadedListener());
 			Toast.makeText(CheckoutApplication.get(), R.string.msg_thank_you_for_purchase, Toast.LENGTH_SHORT).show();
-		}
-
-		@Override
-		public void onError(int response, @Nonnull Exception e) {
 		}
 	}
 
@@ -93,7 +89,7 @@ public class SkusFragment extends BaseListFragment {
 		if (!skuUi.isPurchased()) {
 			purchase(skuUi.sku);
 		} else {
-			consume(skuUi.token, new RequestListenerAdapter<Object>() {
+			consume(skuUi.token, new BaseRequestListener<Object>() {
 				@Override
 				public void onSuccess(@Nonnull Object result) {
 					inventory.load();
@@ -102,7 +98,7 @@ public class SkusFragment extends BaseListFragment {
 		}
 	}
 
-	private void consume(@Nonnull final String token, @Nonnull final RequestListenerAdapter<Object> onConsumed) {
+	private void consume(@Nonnull final String token, @Nonnull final RequestListener<Object> onConsumed) {
 		checkout.whenReady(new Checkout.ListenerAdapter() {
 			@Override
 			public void onReady(@Nonnull BillingRequests requests) {
@@ -144,6 +140,14 @@ public class SkusFragment extends BaseListFragment {
 			}
 			adapter.notifyDataSetChanged();
 			setListShown(true);
+		}
+	}
+
+	private abstract class BaseRequestListener<R> implements RequestListener<R> {
+
+		@Override
+		public void onError(int response, @Nonnull Exception e) {
+			// todo serso: add alert dialog or console
 		}
 	}
 }
