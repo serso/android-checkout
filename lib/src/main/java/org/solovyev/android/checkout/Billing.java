@@ -632,7 +632,7 @@ public final class Billing {
 		}
 
 		@Override
-		public int consumePurchase(@Nonnull String token, @Nonnull RequestListener<Object> listener) {
+		public int consume(@Nonnull String token, @Nonnull RequestListener<Object> listener) {
 			Check.isNotEmpty(token);
 			return runWhenConnected(new ConsumePurchaseRequest(token), wrapListener(listener), tag);
 		}

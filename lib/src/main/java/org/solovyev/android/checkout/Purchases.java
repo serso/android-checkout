@@ -109,7 +109,12 @@ public final class Purchases {
 
 	@Nullable
 	public Purchase getPurchaseInState(@Nonnull String sku, @Nonnull Purchase.State state) {
-		for (Purchase purchase : list) {
+		return getPurchaseInState(list, sku, state);
+	}
+
+	@Nullable
+	static Purchase getPurchaseInState(@Nonnull List<Purchase> purchases, @Nonnull String sku, @Nonnull Purchase.State state) {
+		for (Purchase purchase : purchases) {
 			if (purchase.sku.equals(sku)) {
 				if (purchase.state == state) {
 					return purchase;
