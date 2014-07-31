@@ -1,5 +1,4 @@
 <resources>
     <dimen name="activity_horizontal_margin">5dp</dimen>
     <dimen name="activity_vertical_margin">5dp</dimen>
-    <dimen name="suggestions_offset">0dp</dimen>
 </resources>

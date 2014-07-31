@@ -73,8 +73,7 @@ public class SkusFragment extends BaseListFragment {
 		public void onSuccess(@Nonnull Purchase purchase) {
 			// let's update purchase information in local inventory
 			inventory.load().whenLoaded(new InventoryLoadedListener());
-			CheckoutApplication.get().getEventBus().post(new NewPurchaseEvent(purchase));
-			Toast.makeText(CheckoutApplication.get(), R.string.thank_you_for_purchase, Toast.LENGTH_SHORT).show();
+			Toast.makeText(CheckoutApplication.get(), R.string.msg_thank_you_for_purchase, Toast.LENGTH_SHORT).show();
 		}
 
 		@Override

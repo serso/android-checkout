@@ -28,12 +28,12 @@ import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.net.Uri;
 import android.util.Log;
-import com.squareup.otto.Bus;
 import org.acra.ReportingInteractionMode;
 import org.acra.annotation.ReportsCrashes;
 import org.solovyev.android.checkout.Billing;
 import org.solovyev.android.checkout.Checkout;
 import org.solovyev.android.checkout.Products;
+import org.solovyev.android.checkout.Sku;
 
 import javax.annotation.Nonnull;
 
@@ -64,9 +64,6 @@ public class CheckoutApplication extends Application {
 	private final Checkout checkout = Checkout.forApplication(billing, products);
 
 	@Nonnull
-	private final Bus eventBus = new Bus();
-
-	@Nonnull
 	private static CheckoutApplication instance;
 
 	public CheckoutApplication() {
@@ -89,6 +86,19 @@ public class CheckoutApplication extends Application {
 		return iconResId;
 	}
 
+	@Nonnull
+	static String getTitle(@Nonnull Sku sku) {
+		final int i = sku.title.lastIndexOf("(");
+		if (i > 0) {
+			if (sku.title.charAt(i - 1) == ' ') {
+				return sku.title.substring(0, i - 1);
+			} else {
+				return sku.title.substring(0, i);
+			}
+		}
+		return sku.title;
+	}
+
 	@Override
 	public void onCreate() {
 		super.onCreate();
@@ -103,11 +113,6 @@ public class CheckoutApplication extends Application {
 	@Nonnull
 	public Checkout getCheckout() {
 		return checkout;
-	}
-
-	@Nonnull
-	public Bus getEventBus() {
-		return eventBus;
 	}
 
 	static boolean openUri(@Nonnull Activity activity, @Nonnull String uri) {
