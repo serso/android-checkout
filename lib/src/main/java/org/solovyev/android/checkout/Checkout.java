@@ -216,12 +216,16 @@ public class Checkout {
 		}
 
 		if (isReady()) {
-			Check.isNotNull(requests, "Checkout is stopped");
+			checkIsRunning();
 			listener.onReady(requests);
 		} else {
 			// still waiting
 			listeners.add(listener);
 		}
+	}
+
+	private void checkIsRunning() {
+		Check.isNotNull(requests, "Checkout is stopped");
 	}
 
 	private boolean isReady() {
@@ -252,6 +256,7 @@ public class Checkout {
 	@Nonnull
 	public Inventory loadInventory() {
 		Check.isMainThread();
+		checkIsRunning();
 		final Inventory inventory = new Inventory(this);
 		inventory.load();
 		return inventory;

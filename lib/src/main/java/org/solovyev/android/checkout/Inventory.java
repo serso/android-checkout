@@ -53,7 +53,7 @@ public final class Inventory {
 	private final Listeners listeners = new Listeners();
 
 	@Nonnull
-	private final AtomicInteger toBeFinished = new AtomicInteger();
+	private final AtomicInteger toBeFinished = new AtomicInteger(-1);
 
 	@Nonnull
 	private final AtomicLong loadingId = new AtomicLong();
@@ -120,7 +120,7 @@ public final class Inventory {
 		}
 	}
 
-	private boolean isLoaded() {
+	boolean isLoaded() {
 		return toBeFinished.get() == 0;
 	}
 
