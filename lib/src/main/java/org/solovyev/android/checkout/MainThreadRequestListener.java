@@ -32,7 +32,7 @@ import javax.annotation.Nullable;
 final class MainThreadRequestListener<R> extends RequestListenerWrapper<R> {
 
 	@Nonnull
-	private final MainThread mainThread;
+	private final CancellableExecutor mainThread;
 
 	@Nullable
 	private Runnable successRunnable;
@@ -40,7 +40,7 @@ final class MainThreadRequestListener<R> extends RequestListenerWrapper<R> {
 	@Nullable
 	private Runnable errorRunnable;
 
-	MainThreadRequestListener(@Nonnull MainThread mainThread, @Nonnull RequestListener<R> listener) {
+	MainThreadRequestListener(@Nonnull CancellableExecutor mainThread, @Nonnull RequestListener<R> listener) {
 		super(listener);
 		this.mainThread = mainThread;
 	}
