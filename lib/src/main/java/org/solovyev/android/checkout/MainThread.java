@@ -30,7 +30,7 @@ import javax.annotation.Nonnull;
 /**
  * Utility class which executes runnables on the main application thread
  */
-final class MainThread {
+final class MainThread implements CancellableExecutor {
 
 	@Nonnull
 	private final Handler mainHandler;
@@ -51,6 +51,7 @@ final class MainThread {
 	 *
 	 * @param runnable runnable to be executed on the main application thread
 	 */
+	@Override
 	public void execute(@Nonnull Runnable runnable) {
 		if (MainThread.isMainThread()) {
 			runnable.run();
@@ -59,11 +60,8 @@ final class MainThread {
 		}
 	}
 
-	<R> RequestListener<R> onMainThread(@Nonnull final RequestListener<R> listener) {
-		return new MainThreadRequestListener<R>(this, listener);
-	}
-
-	void cancel(@Nonnull Runnable runnable) {
+	@Override
+	public void cancel(@Nonnull Runnable runnable) {
 		this.mainHandler.removeCallbacks(runnable);
 	}
 }

@@ -79,13 +79,13 @@ public final class Billing {
 	private final Object lock = new Object();
 
 	@Nonnull
-	private final MainThread mainThread;
+	private CancellableExecutor mainThread;
 
 	@Nonnull
 	private final ConcurrentCache cache;
 
 	@Nonnull
-	private final Executor background = Executors.newSingleThreadExecutor();
+	private Executor background = Executors.newSingleThreadExecutor();
 
 	@Nonnull
 	private final PendingRequests pendingRequests = new PendingRequests();
@@ -128,7 +128,7 @@ public final class Billing {
 		this.cache = new ConcurrentCache(cache);
 	}
 
-	private void setService(@Nullable IInAppBillingService service, boolean connecting) {
+	void setService(@Nullable IInAppBillingService service, boolean connecting) {
 		Check.isMainThread();
 		synchronized (lock) {
 			final State newState;
@@ -146,8 +146,16 @@ public final class Billing {
 		}
 	}
 
-	public void setConnector(@Nonnull ServiceConnector connector) {
+	void setConnector(@Nonnull ServiceConnector connector) {
 		this.connector = connector;
+	}
+
+	void setBackground(@Nonnull Executor background) {
+		this.background = background;
+	}
+
+	void setMainThread(@Nonnull CancellableExecutor mainThread) {
+		this.mainThread = mainThread;
 	}
 
 	private void setState(@Nonnull State newState) {
@@ -370,6 +378,10 @@ public final class Billing {
 		}
 	}
 
+	<R> RequestListener<R> onMainThread(@Nonnull final RequestListener<R> listener) {
+		return new MainThreadRequestListener<R>(mainThread, listener);
+	}
+
 	/**
 	 * Service connection state
 	 */
@@ -588,7 +600,7 @@ public final class Billing {
 
 		@Nonnull
 		private <R> RequestListener<R> wrapListener(@Nonnull RequestListener<R> listener) {
-			return onMainThread ? mainThread.onMainThread(listener) : listener;
+			return onMainThread ? onMainThread(listener) : listener;
 		}
 
 		@Override
