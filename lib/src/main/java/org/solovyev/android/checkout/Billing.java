@@ -94,18 +94,7 @@ public final class Billing {
 	private final BillingRequests requests = newRequestsBuilder().withTag(null).onBackgroundThread().create();
 
 	@Nonnull
-	private final ServiceConnection connection = new ServiceConnection() {
-		@Override
-		public void onServiceDisconnected(ComponentName name) {
-			setService(null, false);
-		}
-
-		@Override
-		public void onServiceConnected(ComponentName name,
-									   IBinder service) {
-			setService(IInAppBillingService.Stub.asInterface(service), true);
-		}
-	};
+	private ServiceConnector connector = new DefaultServiceConnector();
 
 	/**
 	 * Same as {@link #Billing(android.content.Context, android.os.Handler, String, Cache)} with new handler
@@ -157,6 +146,10 @@ public final class Billing {
 		}
 	}
 
+	public void setConnector(@Nonnull ServiceConnector connector) {
+		this.connector = connector;
+	}
+
 	private void setState(@Nonnull State newState) {
 		synchronized (lock) {
 			if (state != newState) {
@@ -199,7 +192,7 @@ public final class Billing {
 
 	private void connectOnMainThread() {
 		Check.isMainThread();
-		final boolean connecting = context.bindService(new Intent("com.android.vending.billing.InAppBillingService.BIND"), connection, Context.BIND_AUTO_CREATE);
+		final boolean connecting = connector.connect();
 		if (!connecting) {
 			setState(State.FAILED);
 		}
@@ -209,7 +202,7 @@ public final class Billing {
 		Check.isMainThread();
 		synchronized (lock) {
 			if (service != null) {
-				context.unbindService(connection);
+				connector.disconnect();
 				setState(State.DISCONNECTING);
 			}
 		}
@@ -874,5 +867,37 @@ public final class Billing {
 				}
 			}
 		}
+	}
+
+	private final class DefaultServiceConnector implements ServiceConnector {
+
+		@Nonnull
+		private final ServiceConnection connection = new ServiceConnection() {
+			@Override
+			public void onServiceDisconnected(ComponentName name) {
+				setService(null, false);
+			}
+
+			@Override
+			public void onServiceConnected(ComponentName name,
+										   IBinder service) {
+				setService(IInAppBillingService.Stub.asInterface(service), true);
+			}
+		};
+
+		@Override
+		public boolean connect() {
+			return context.bindService(new Intent("com.android.vending.billing.InAppBillingService.BIND"), connection, Context.BIND_AUTO_CREATE);
+		}
+
+		@Override
+		public void disconnect() {
+			context.unbindService(connection);
+		}
+	}
+
+	static interface ServiceConnector {
+		boolean connect();
+		void disconnect();
 	}
 }
