@@ -97,13 +97,13 @@ public final class Billing {
 	private final ServiceConnection connection = new ServiceConnection() {
 		@Override
 		public void onServiceDisconnected(ComponentName name) {
-			setService(null);
+			setService(null, false);
 		}
 
 		@Override
 		public void onServiceConnected(ComponentName name,
 									   IBinder service) {
-			setService(IInAppBillingService.Stub.asInterface(service));
+			setService(IInAppBillingService.Stub.asInterface(service), true);
 		}
 	};
 
@@ -139,11 +139,21 @@ public final class Billing {
 		this.cache = new ConcurrentCache(cache);
 	}
 
-	private void setService(@Nullable IInAppBillingService service) {
+	private void setService(@Nullable IInAppBillingService service, boolean connecting) {
 		Check.isMainThread();
 		synchronized (lock) {
+			final State newState;
+			if (connecting) {
+				if (service == null) {
+					newState = State.FAILED;
+				} else {
+					newState = State.CONNECTED;
+				}
+			} else {
+				newState = State.DISCONNECTED;
+			}
 			this.service = service;
-			setState(this.service == null ? State.DISCONNECTED : State.CONNECTED);
+			setState(newState);
 		}
 	}
 
