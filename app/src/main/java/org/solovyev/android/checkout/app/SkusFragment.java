@@ -93,6 +93,7 @@ public class SkusFragment extends BaseListFragment {
 				@Override
 				public void onSuccess(@Nonnull Object result) {
 					inventory.load().whenLoaded(new InventoryLoadedListener());
+					Toast.makeText(getActivity(), R.string.msg_item_consumed, Toast.LENGTH_SHORT).show();
 				}
 			});
 		}
