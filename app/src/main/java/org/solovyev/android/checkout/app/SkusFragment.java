@@ -71,9 +71,24 @@ public class SkusFragment extends BaseListFragment {
 	private class PurchaseListener extends BaseRequestListener<Purchase> {
 		@Override
 		public void onSuccess(@Nonnull Purchase purchase) {
+			onPurchased();
+
+		}
+
+		private void onPurchased() {
 			// let's update purchase information in local inventory
 			inventory.load().whenLoaded(new InventoryLoadedListener());
 			Toast.makeText(getActivity(), R.string.msg_thank_you_for_purchase, Toast.LENGTH_SHORT).show();
+		}
+
+		@Override
+		public void onError(int response, @Nonnull Exception e) {
+			// it is possible that our data is not synchronized with data on Google Play => need to handle some errors
+			if (response == ResponseCodes.ITEM_ALREADY_OWNED) {
+				onPurchased();
+			} else {
+				super.onError(response, e);
+			}
 		}
 	}
 
@@ -89,13 +104,7 @@ public class SkusFragment extends BaseListFragment {
 		if (!skuUi.isPurchased()) {
 			purchase(skuUi.sku);
 		} else {
-			consume(skuUi.token, new BaseRequestListener<Object>() {
-				@Override
-				public void onSuccess(@Nonnull Object result) {
-					inventory.load().whenLoaded(new InventoryLoadedListener());
-					Toast.makeText(getActivity(), R.string.msg_item_consumed, Toast.LENGTH_SHORT).show();
-				}
-			});
+			consume(skuUi.token, new ConsumeListener());
 		}
 	}
 
@@ -149,6 +158,28 @@ public class SkusFragment extends BaseListFragment {
 		@Override
 		public void onError(int response, @Nonnull Exception e) {
 			// todo serso: add alert dialog or console
+		}
+	}
+
+	private class ConsumeListener extends BaseRequestListener<Object> {
+		@Override
+		public void onSuccess(@Nonnull Object result) {
+			onConsumed();
+		}
+
+		private void onConsumed() {
+			inventory.load().whenLoaded(new InventoryLoadedListener());
+			Toast.makeText(getActivity(), R.string.msg_item_consumed, Toast.LENGTH_SHORT).show();
+		}
+
+		@Override
+		public void onError(int response, @Nonnull Exception e) {
+			// it is possible that our data is not synchronized with data on Google Play => need to handle some errors
+			if (response == ResponseCodes.ITEM_NOT_OWNED) {
+				onConsumed();
+			} else {
+				super.onError(response, e);
+			}
 		}
 	}
 }
