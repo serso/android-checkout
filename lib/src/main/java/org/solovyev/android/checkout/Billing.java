@@ -44,6 +44,9 @@ import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
+import static org.solovyev.android.checkout.ResponseCodes.ITEM_ALREADY_OWNED;
+import static org.solovyev.android.checkout.ResponseCodes.ITEM_NOT_OWNED;
+
 public final class Billing {
 
 	private static final int API_VERSION = 3;
@@ -782,6 +785,26 @@ public final class Billing {
 					break;
 			}
 			super.onSuccess(result);
+		}
+
+		@Override
+		public void onError(int response, @Nonnull Exception e) {
+			final RequestType type = request.getType();
+			// sometimes it is possible that cached data is not synchronized with data on Google Play => we can
+			// clear caches if such situation occurred
+			switch (type) {
+				case PURCHASE:
+					if (response == ITEM_ALREADY_OWNED) {
+						cache.removeAll(RequestType.GET_PURCHASES.getCacheKeyType());
+					}
+					break;
+				case CONSUME_PURCHASE:
+					if (response == ITEM_NOT_OWNED) {
+						cache.removeAll(RequestType.GET_PURCHASES.getCacheKeyType());
+					}
+					break;
+			}
+			super.onError(response, e);
 		}
 	}
 
