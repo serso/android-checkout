@@ -60,9 +60,9 @@ class SkusAdapter extends ArrayAdapter<SkuUi> {
 		}
 
 		public void fill(@Nonnull SkuUi skuUi) {
-			final int iconResId = CheckoutApplication.getSkuIconResId(skuUi.sku.id);
+			final int iconResId = SkuUi.getIconResId(skuUi.sku.id);
 			icon.setImageResource(iconResId);
-			title.setText(CheckoutApplication.getTitle(skuUi.sku));
+			title.setText(SkuUi.getTitle(skuUi.sku));
 			description.setText(skuUi.sku.description);
 			price.setText(skuUi.sku.price);
 
