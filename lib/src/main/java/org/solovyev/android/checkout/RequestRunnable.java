@@ -42,7 +42,7 @@ interface RequestRunnable {
 
 	/**
 	 * Cancels request.
-	 * Note: if request is already executing
+	 * Note: nothing happens if request has already been executed
 	 */
 	void cancel();
 

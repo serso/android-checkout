@@ -165,6 +165,7 @@ final class PendingRequests implements Runnable {
 
 	/**
 	 * Method removes instance of <var>runnable</var> from the waiting list
+	 *
 	 * @param runnable runnable to be removed from the waiting list
 	 */
 	private void remove(@Nonnull RequestRunnable runnable) {
