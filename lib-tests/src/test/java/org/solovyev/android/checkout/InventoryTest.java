@@ -25,15 +25,12 @@ package org.solovyev.android.checkout;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.Robolectric;
 
 import javax.annotation.Nonnull;
 
 import static java.util.Arrays.asList;
 import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
 @RunWith(CheckoutTestRunner.class)
 public class InventoryTest {
@@ -43,7 +40,7 @@ public class InventoryTest {
 
 	@Before
 	public void setUp() throws Exception {
-		final Billing billing = new Billing(Robolectric.application, "test", null);
+		final Billing billing = Tests.newBilling();
 		final Products products = Products.create().add(ProductTypes.IN_APP, asList("test_01, test_02"));
 		final Checkout checkout = Checkout.forApplication(billing, products);
 		checkout.start();
