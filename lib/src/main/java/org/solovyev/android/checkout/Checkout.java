@@ -166,6 +166,9 @@ public class Checkout {
 	private BillingRequests requests;
 
 	@Nonnull
+	private State state = State.INITIAL;
+
+	@Nonnull
 	private final Listeners listeners = new Listeners();
 
 	@Nonnull
@@ -189,7 +192,9 @@ public class Checkout {
 
 	public void start(@Nullable final Listener listener) {
 		Check.isMainThread();
+		Check.isFalse(state == State.STARTED, "Already started");
 		Check.isNull(requests, "Already started");
+		state = State.STARTED;
 		requests = createRequests();
 		if (listener != null) {
 			listeners.add(listener);
@@ -216,7 +221,8 @@ public class Checkout {
 		}
 
 		if (isReady()) {
-			checkIsRunning();
+			checkIsNotStopped();
+			Check.isNotNull(requests);
 			listener.onReady(requests);
 		} else {
 			// still waiting
@@ -224,8 +230,8 @@ public class Checkout {
 		}
 	}
 
-	private void checkIsRunning() {
-		Check.isNotNull(requests, "Checkout is stopped");
+	private void checkIsNotStopped() {
+		Check.isFalse(state == State.STOPPED, "Checkout is stopped");
 	}
 
 	private boolean isReady() {
@@ -256,7 +262,7 @@ public class Checkout {
 	@Nonnull
 	public Inventory loadInventory() {
 		Check.isMainThread();
-		checkIsRunning();
+		checkIsNotStopped();
 		final Inventory inventory = new Inventory(this);
 		inventory.load();
 		return inventory;
@@ -270,6 +276,9 @@ public class Checkout {
 		Check.isMainThread();
 		supportedProducts.clear();
 		listeners.clear();
+		if (state != State.INITIAL) {
+			state = State.STOPPED;
+		}
 		if (requests != null) {
 			requests.cancelAll();
 			requests = null;
@@ -311,5 +320,11 @@ public class Checkout {
 		public void clear() {
 			list.clear();
 		}
+	}
+
+	private enum State {
+		INITIAL,
+		STARTED,
+		STOPPED
 	}
 }
