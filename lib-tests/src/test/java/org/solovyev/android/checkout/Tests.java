@@ -26,6 +26,7 @@ import com.android.vending.billing.IInAppBillingService;
 import org.robolectric.Robolectric;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 import static org.mockito.Mockito.mock;
 
@@ -51,15 +52,32 @@ public final class Tests {
 
 	@Nonnull
 	static Billing newBilling() {
-		final Billing billing = new Billing(Robolectric.application, "test", null);
+		final Billing billing = new Billing(Robolectric.application, newConfiguration());
 		final IInAppBillingService service = mock(IInAppBillingService.class);
 		setService(billing, service);
 		return billing;
 	}
 
 	@Nonnull
+	private static Billing.Configuration newConfiguration() {
+		return new Billing.Configuration() {
+			@Nonnull
+			@Override
+			public String getPublicKey() {
+				return "test";
+			}
+
+			@Nullable
+			@Override
+			public Cache getCache() {
+				return Billing.newCache();
+			}
+		};
+	}
+
+	@Nonnull
 	static Billing newSynchronousBilling() {
-		final Billing billing = new Billing(Robolectric.application, "test", null);
+		final Billing billing = new Billing(Robolectric.application, newConfiguration());
 		final IInAppBillingService service = mock(IInAppBillingService.class);
 		final CancellableExecutor sameThreadExecutor = sameThreadExecutor();
 		billing.setBackground(sameThreadExecutor);
