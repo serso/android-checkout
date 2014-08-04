@@ -28,7 +28,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
-import org.robolectric.Robolectric;
 
 import javax.annotation.Nonnull;
 
@@ -42,10 +41,7 @@ public class BillingTest {
 
 	@Before
 	public void setUp() throws Exception {
-		billing = new Billing(Robolectric.application, "test", null);
-		final CancellableExecutor sameThreadExecutor = sameThreadExecutor();
-		billing.setBackground(sameThreadExecutor);
-		billing.setMainThread(sameThreadExecutor);
+		billing = Tests.newSynchronousBilling();
 	}
 
 	@Test
@@ -96,19 +92,5 @@ public class BillingTest {
 		billing.getRequests().isBillingSupported("p", l);
 		verify(l, times(0)).onError(anyInt(), any(BillingException.class));
 		verify(l, times(1)).onSuccess(any());
-	}
-
-	@Nonnull
-	private CancellableExecutor sameThreadExecutor() {
-		return new CancellableExecutor() {
-			@Override
-			public void execute(@Nonnull Runnable runnable) {
-				runnable.run();
-			}
-
-			@Override
-			public void cancel(@Nonnull Runnable runnable) {
-			}
-		};
 	}
 }
