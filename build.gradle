@@ -1,8 +1,8 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 
 buildscript {
-    VERSION_CODE = 8
-    VERSION_NAME = '0.4.4'
+    VERSION_CODE = 9
+    VERSION_NAME = '0.4.5'
 
     repositories {
         mavenCentral()
