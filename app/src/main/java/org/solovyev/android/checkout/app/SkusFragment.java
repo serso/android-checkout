@@ -92,7 +92,7 @@ public class SkusFragment extends BaseListFragment {
 			consume(skuUi.token, new BaseRequestListener<Object>() {
 				@Override
 				public void onSuccess(@Nonnull Object result) {
-					inventory.load();
+					inventory.load().whenLoaded(new InventoryLoadedListener());
 				}
 			});
 		}

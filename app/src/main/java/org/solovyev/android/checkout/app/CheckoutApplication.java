@@ -27,25 +27,25 @@ import android.app.Application;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.net.Uri;
-import android.util.Log;
+import android.util.*;
 import org.acra.ReportingInteractionMode;
 import org.acra.annotation.ReportsCrashes;
-import org.solovyev.android.checkout.Billing;
-import org.solovyev.android.checkout.Checkout;
-import org.solovyev.android.checkout.Products;
-import org.solovyev.android.checkout.Sku;
+import org.solovyev.android.checkout.*;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 import static android.content.Intent.ACTION_VIEW;
 import static java.util.Arrays.asList;
-import static org.solovyev.android.checkout.Billing.newInMemoryCache;
 import static org.solovyev.android.checkout.ProductTypes.IN_APP;
 
 @ReportsCrashes(formKey = "",
-		mailTo = "se.solovyev@gmail.com",
+		mailTo = CheckoutApplication.MAIL,
 		mode = ReportingInteractionMode.SILENT)
 public class CheckoutApplication extends Application {
+
+	@Nonnull
+	static final String MAIL = "se.solovyev@gmail.com";
 
 	@Nonnull
 	private static final Products products = Products.create().add(IN_APP, asList("coffee", "beer", "cake", "hamburger"));
@@ -54,7 +54,40 @@ public class CheckoutApplication extends Application {
 	 * For better performance billing class should be used as singleton
 	 */
 	@Nonnull
-	private final Billing billing = new Billing(this, "test", newInMemoryCache());
+	private final Billing billing = new Billing(this, new Billing.Configuration() {
+		@Nonnull
+		@Override
+		public String getPublicKey() {
+			final String s = "PixnMSYGLjg7Ah0xDwYILlVZUy0sIiBoMi4jLDcoXTcNLiQjKgtlIC48NiRcHxwKHEcYEyZrPyMWXFRpV10VES9ENz" +
+					"g1Hj06HTV1MCAHJlpgEDcmOxFDEkA8OiQRKjEQDxhRWVVEMBYmNl1AJghcKUAYVT15KSQgBQABMgwqKSlqF1gZBA4fAw5rMyxKI" +
+					"w9LJFc7AhxZGjoPATgRUiUjKSsOWyRKDi4nIA9lKgAGOhMLDF06CwoKGFR6Wj0hGwReS10NXzQTIREhKlkuMz4XDTwUQjRCJUA+" +
+					"VjQVPUIoPicOLQJCLxs8RjZnJxY1OQNLKgQCPj83AyBEFSAJEk5UClYjGxVLNBU3FS4DCztENQMuOk5rFVclKz88AAApPgADGFx" +
+					"EEV5eQAF7QBhdQEE+Bzc5MygCAwlEFzclKRB7FB0uFgwPKgAvLCk2OyFiKxkgIy8BBQYjFy4/E1ktJikrEVlKJVYIHh16NDwtDC" +
+					"U0Vg8JNzoQBwQWOwk1GzZ4FT8fWicwITcRJi8=";
+			return x(new String(Base64.decode(s, 0)), MAIL);
+		}
+
+		@Nullable
+		@Override
+		public Cache getCache() {
+			return Billing.newCache();
+		}
+	});
+
+	@Nonnull
+	static String x(@Nonnull String message, @Nonnull String key) {
+		final char[] m = message.toCharArray();
+		final char[] k = key.toCharArray();
+
+		final int ml = m.length;
+		final int kl = k.length;
+		final char[] result = new char[ml];
+
+		for (int i = 0; i < ml; i++) {
+			result[i] = (char) (m[i] ^ k[i % kl]);
+		}
+		return new String(result);
+	}
 
 	/**
 	 * Application wide {@link org.solovyev.android.checkout.Checkout} instance (can be used anywhere in the app).

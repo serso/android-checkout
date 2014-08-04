@@ -42,6 +42,7 @@ final class ConsumePurchaseRequest extends Request<Object> {
 	void start(@Nonnull IInAppBillingService service, int apiVersion, @Nonnull String packageName) throws RemoteException, RequestException {
 		final int response = service.consumePurchase(apiVersion, packageName, token);
 		if (!handleError(response)) {
+			Billing.waitGooglePlay();
 			onSuccess(new Object());
 		}
 	}

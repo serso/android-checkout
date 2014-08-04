@@ -97,10 +97,10 @@ public final class Billing {
 	private ServiceConnector connector = new DefaultServiceConnector();
 
 	/**
-	 * Same as {@link #Billing(android.content.Context, android.os.Handler, String, Cache)} with new handler
+	 * Same as {@link #Billing(android.content.Context, android.os.Handler, Configuration)} with new handler
 	 */
-	public Billing(@Nonnull Context context, @Nonnull String publicKey, @Nullable Cache cache) {
-		this(context, new Handler(), publicKey, cache);
+	public Billing(@Nonnull Context context, @Nonnull Configuration configuration) {
+		this(context, new Handler(), configuration);
 		Check.isMainThread();
 	}
 
@@ -108,14 +108,10 @@ public final class Billing {
 	 * Creates an instance. After creation, it will be ready to use. This constructor does not
 	 * block and is safe to call from a UI thread.
 	 *
-	 * @param context   application or activity context. Needed to bind to the in-app billing service.
-	 * @param publicKey application's public key, encoded in base64.
-	 *                  This is used for verification of purchase signatures. You can find app's base64-encoded
-	 *                  public key in application's page on Google Play Developer Console. Note that this
-	 *                  is NOT "developer public key".
+	 * @param context       application or activity context. Needed to bind to the in-app billing service.
+	 * @param configuration billing configuration
 	 */
-	public Billing(@Nonnull Context context, @Nonnull Handler handler, @Nonnull String publicKey, @Nullable Cache cache) {
-		Check.isNotEmpty(publicKey);
+	public Billing(@Nonnull Context context, @Nonnull Handler handler, @Nonnull Configuration configuration) {
 		if (context instanceof Application) {
 			// context.getApplicationContext() might return null for applications as we allow create Billing before
 			// Application#onCreate is called
@@ -124,8 +120,22 @@ public final class Billing {
 			this.context = context.getApplicationContext();
 		}
 		this.mainThread = new MainThread(handler);
-		this.publicKey = publicKey;
-		this.cache = new ConcurrentCache(cache);
+		this.publicKey = configuration.getPublicKey();
+		Check.isNotEmpty(this.publicKey);
+		this.cache = new ConcurrentCache(configuration.getCache());
+	}
+
+	/**
+	 * Sometimes Google Play is not that fast in updating information on device. Let's wait it a little bit as if we
+	 * don't wait we might cache expired information (though, it will be updated soon as RequestType#GET_PURCHASES
+	 * cache entry expires quite often)
+	 */
+	static void waitGooglePlay() {
+		try {
+			Thread.sleep(100L);
+		} catch (InterruptedException e) {
+			error(e);
+		}
 	}
 
 	void setService(@Nullable IInAppBillingService service, boolean connecting) {
@@ -344,7 +354,7 @@ public final class Billing {
 	}
 
 	@Nonnull
-	public static Cache newInMemoryCache() {
+	public static Cache newCache() {
 		return new MapCache();
 	}
 
@@ -911,5 +921,19 @@ public final class Billing {
 	static interface ServiceConnector {
 		boolean connect();
 		void disconnect();
+	}
+
+	public static interface Configuration {
+		/**
+		 * @return application's public key, encoded in base64.
+		 * This is used for verification of purchase signatures. You can find app's base64-encoded
+		 * public key in application's page on Google Play Developer Console. Note that this
+		 * is NOT "developer public key".
+		 */
+		@Nonnull
+		String getPublicKey();
+
+		@Nullable
+		Cache getCache();
 	}
 }
