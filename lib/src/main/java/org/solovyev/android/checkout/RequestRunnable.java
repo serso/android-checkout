@@ -53,6 +53,7 @@ interface RequestRunnable {
 	Request getRequest();
 
 	/**
+	 * Note that implementation of this method should always check if the request was cancelled.
 	 * @return true if request was successfully executed, false if request was not executed (and should be rerun)
 	 */
 	boolean run();
