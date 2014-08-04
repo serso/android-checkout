@@ -103,35 +103,6 @@ public class CheckoutApplication extends Application {
 		instance = this;
 	}
 
-	static int getSkuIconResId(@Nonnull String skuId) {
-		final int iconResId;
-		if (skuId.equals("cake")) {
-			iconResId = R.drawable.ic_agenda_birthday_color;
-		} else if (skuId.equals("beer")) {
-			iconResId = R.drawable.ic_agenda_birthday_color;
-		} else if (skuId.equals("hamburger")) {
-			iconResId = R.drawable.ic_agenda_birthday_color;
-		} else if (skuId.equals("coffee")) {
-			iconResId = R.drawable.ic_agenda_birthday_color;
-		} else {
-			iconResId = 0;
-		}
-		return iconResId;
-	}
-
-	@Nonnull
-	static String getTitle(@Nonnull Sku sku) {
-		final int i = sku.title.lastIndexOf("(");
-		if (i > 0) {
-			if (sku.title.charAt(i - 1) == ' ') {
-				return sku.title.substring(0, i - 1);
-			} else {
-				return sku.title.substring(0, i);
-			}
-		}
-		return sku.title;
-	}
-
 	@Override
 	public void onCreate() {
 		super.onCreate();
