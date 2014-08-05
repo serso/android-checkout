@@ -21,14 +21,16 @@ integrating it, like:
 
 There are several ways how to get this library:
 1. Download sources from github and either copy them to your project or import them as a project dependency
-2. For Maven users:```xml
+2. For Maven users:
+```xml
 <dependency>
     <groupId>org.solovyev.android</groupId>
     <artifactId>checkout</artifactId>
     <version>x.x.x</version>
 </dependency>
 ```
-3. For Gradle users:```groovy
+3. For Gradle users:
+```groovy
 compile 'org.solovyev.android:checkout:x.x.x'
 ```
 4. Download artifacts from the [repository](https://oss.sonatype.org/content/repositories/releases/org/solovyev/android/checkout/)
