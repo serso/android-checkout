@@ -15,6 +15,11 @@ integrating it, like:
 [Querying for Items Available for Purchase](http://developer.android.com/google/play/billing/billing_integrate.html#QueryDetails)
 * Security, see [Security And Design](http://developer.android.com/google/play/billing/billing_best_practices.html)
 
+### Who else uses it?
+
+Say it right! ([Google Play](https://play.google.com/store/apps/details?id=org.solovyev.android.dictionary.forvo))
+Calculator++ ([Google Play](https://play.google.com/store/apps/details?id=org.solovyev.android.calculator), [sources](https://github.com/serso/android-calculatorpp))
+
 ## Getting started
 
 ### Installation
@@ -139,6 +144,15 @@ public class MyActivity extends Activity {
 ## Advanced usage
 
 ### Samples
+
+Checkout sample app on [Google Play](https://play.google.com/store/apps/details?id=org.solovyev.android.checkout.app).
+Sources are available [here](https://github.com/serso/android-checkout/tree/master/app).
+
+### Building from sources
+
+**Checkout** is built by Gradle. The project structure and build procedure are standard for Android libraries. Please
+refer to [Gradle User Guide](http://tools.android.com/tech-docs/new-build-system/user-guide) for more information about building.
+Android Studio/IDEA project configuration files are also checked into the repository.
 
 ### Proguard
 
