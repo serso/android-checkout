@@ -19,7 +19,7 @@ integrating it, like:
 
 ### Installation
 
-There are several ways how to get this library:
+There are several ways how you can get the library:
 - Download sources from github and either copy them to your project or import them as a project dependency
 - For Maven users:
 ```xml
