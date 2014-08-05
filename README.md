@@ -5,7 +5,7 @@
 **Checkout** is a library for [Android In-App Billing (v3)](http://developer.android.com/google/play/billing/api.html).
 The main goal is to reduce work which should be done by developers who want to integrate in-app purchases in
 their products. The project is inspired by [Volley](https://android.googlesource.com/platform/frameworks/volley/) library and
-is designed to be easy to use and flexible.
+is designed to be easy to use, fast and flexible.
 
 ### Why do I need it?
 
@@ -37,7 +37,7 @@ compile 'org.solovyev.android:checkout:x.x.x'
 
 **Checkout** requires `com.android.vending.BILLING` permission in runtime. 
 If you use **Checkout** as a library project then nothing should be done - permission will be merged automatically during
-manifest merging. In any other cases, you need to include it into your application's manifest:
+the manifest merging step. In any other cases you need to include it into your application's manifest:
 ```xml
 <uses-permission android:name="com.android.vending.BILLING" />
 ```
@@ -47,7 +47,7 @@ manifest merging. In any other cases, you need to include it into your applicati
 **Checkout** contains 3 classes which likely to be used in any app: [Billing](https://github.com/serso/android-checkout/blob/master/lib/src/main/java/org/solovyev/android/checkout/Billing.java),
 [Checkout](https://github.com/serso/android-checkout/blob/master/lib/src/main/java/org/solovyev/android/checkout/Checkout.java)
 and [Inventory](https://github.com/serso/android-checkout/blob/master/lib/src/main/java/org/solovyev/android/checkout/Inventory.java).
-
+The code for the project with one in-app product might look like this:
 ```java
 public class MyApplication extends Application {
     /**
@@ -88,17 +88,53 @@ public class MyApplication extends Application {
         billing.connect();
     }
 
-    @Nonnull
     public static MyApplication get() {
         return instance;
     }
-
+    
     @Nonnull
     public Checkout getCheckout() {
         return checkout;
     }
+
+    //...
 }
 ```
+
+```java
+public class MyActivity extends Activity {
+    @Nonnull
+    private final ActivityCheckout checkout = Checkout.forActivity(this, MyApplication.get().getCheckout());
+
+    @Nonnull
+    private Inventory inventory;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        checkout.start();
+        // you only need this if this activity starts purchase process
+        checkout.createPurchaseFlow(new PurchaseListener());
+        // you only need this if this activity needs information about purchases/SKUs
+        inventory = checkout.loadInventory();
+        inventory.whenLoaded(new InventoryLoadedListener())
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        checkout.onActivityResult(requestCode, resultCode, data);
+    }
+
+    @Override
+    protected void onDestroy() {
+        checkout.stop();
+        super.onDestroy();
+    }
+
+    //...
+}
+``` 
 
 ## Advanced usage
 
