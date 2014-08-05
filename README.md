@@ -74,9 +74,9 @@ public class MyApplication extends Application {
     private final Checkout checkout = Checkout.forApplication(billing, Products.create().add(IN_APP, asList("product")));
 
     @Nonnull
-    private static CheckoutApplication instance;
+    private static MyApplication instance;
 
-    public CheckoutApplication() {
+    public MyApplication() {
         instance = this;
     }
 
@@ -87,7 +87,7 @@ public class MyApplication extends Application {
     }
 
     @Nonnull
-    public static CheckoutApplication get() {
+    public static MyApplication get() {
         return instance;
     }
 
