@@ -95,8 +95,8 @@ public class MyApplication extends Application {
     public Checkout getCheckout() {
         return checkout;
     }
-}```
-
+}
+```
 
 ## Advanced usage
 
