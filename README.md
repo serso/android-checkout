@@ -17,8 +17,8 @@ integrating it, like:
 
 ### Who else uses it?
 
-Say it right! ([Google Play](https://play.google.com/store/apps/details?id=org.solovyev.android.dictionary.forvo))
-Calculator++ ([Google Play](https://play.google.com/store/apps/details?id=org.solovyev.android.calculator), [sources](https://github.com/serso/android-calculatorpp))
+* Say it right! ([Google Play](https://play.google.com/store/apps/details?id=org.solovyev.android.dictionary.forvo))
+* Calculator++ ([Google Play](https://play.google.com/store/apps/details?id=org.solovyev.android.calculator), [sources](https://github.com/serso/android-calculatorpp))
 
 ## Getting started
 
@@ -152,7 +152,8 @@ Sources are available [here](https://github.com/serso/android-checkout/tree/mast
 
 **Checkout** is built by Gradle. The project structure and build procedure are standard for Android libraries. Please
 refer to [Gradle User Guide](http://tools.android.com/tech-docs/new-build-system/user-guide) for more information about building.
-Android Studio/IDEA project configuration files are also checked into the repository.
+
+Android Studio/IDEA project configuration files are also checked into the repository. Use "File->Open..." to open the project.
 
 ### Proguard
 
