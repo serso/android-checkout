@@ -43,6 +43,7 @@ import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
+import static java.lang.System.currentTimeMillis;
 import static org.solovyev.android.checkout.ResponseCodes.ITEM_ALREADY_OWNED;
 import static org.solovyev.android.checkout.ResponseCodes.ITEM_NOT_OWNED;
 
@@ -771,7 +772,7 @@ public final class Billing {
 			final String key = request.getCacheKey();
 			final RequestType type = request.getType();
 			if (key != null) {
-				final long now = System.currentTimeMillis();
+				final long now = currentTimeMillis();
 				final Cache.Entry entry = new Cache.Entry(result, now + type.expiresIn);
 				cache.putIfNotExist(type.getCacheKey(key), entry);
 			}

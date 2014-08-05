@@ -29,7 +29,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
-final class MapCache implements Cache {
+class MapCache implements Cache {
 
 	@Nonnull
 	private final Map<Key, Entry> map = new HashMap<Key, Entry>();
