@@ -33,6 +33,7 @@ import javax.annotation.Nonnull;
 
 import static org.mockito.Mockito.*;
 
+@SuppressWarnings("unchecked")
 @RunWith(CheckoutTestRunner.class)
 public class BillingTest {
 

@@ -27,6 +27,8 @@ import javax.annotation.Nullable;
 import javax.annotation.concurrent.GuardedBy;
 import javax.annotation.concurrent.ThreadSafe;
 
+import static java.lang.System.currentTimeMillis;
+
 @ThreadSafe
 final class ConcurrentCache implements Cache {
 
@@ -55,7 +57,7 @@ final class ConcurrentCache implements Cache {
 					Billing.debug(TAG, "Key=" + key + " is not in the cache");
 					return null;
 				}
-				final long now = System.currentTimeMillis();
+				final long now = currentTimeMillis();
 				if (now >= entry.expiresAt) {
 					Billing.debug(TAG, "Key=" + key + " is in the cache but was expired at " + entry.expiresAt + ", now is " + now);
 					cache.remove(key);
