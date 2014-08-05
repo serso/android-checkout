@@ -20,27 +20,27 @@ integrating it, like:
 ### Installation
 
 There are several ways how to get this library:
-1. Download sources from github and either copy them to your project or import them as a project dependency
-2. For Maven users:
-```xml
-<dependency>
-    <groupId>org.solovyev.android</groupId>
-    <artifactId>checkout</artifactId>
-    <version>x.x.x</version>
-</dependency>
-```
-3. For Gradle users:
-```groovy
-compile 'org.solovyev.android:checkout:x.x.x'
-```
-4. Download artifacts from the [repository](https://oss.sonatype.org/content/repositories/releases/org/solovyev/android/checkout/)
+- Download sources from github and either copy them to your project or import them as a project dependency
+- For Maven users:
+   ```xml
+   <dependency>
+       <groupId>org.solovyev.android</groupId>
+       <artifactId>checkout</artifactId>
+       <version>x.x.x</version>
+   </dependency>
+   ```
+- For Gradle users:
+   ```groovy
+   compile 'org.solovyev.android:checkout:x.x.x'
+   ```
+- Download artifacts from the [repository](https://oss.sonatype.org/content/repositories/releases/org/solovyev/android/checkout/)
 
 Checkout requires `com.android.vending.BILLING` permission in runtime. 
 If you use Checkout as a library project then nothing should be done - permission will be merged automatically during
- manifest merging. In any other cases, you need to include it into your application's manifest:
- ```xml
- <uses-permission android:name="com.android.vending.BILLING" />
- ```
+manifest merging. In any other cases, you need to include it into your application's manifest:
+```xml
+<uses-permission android:name="com.android.vending.BILLING" />
+```
 
 ### Usage
 
