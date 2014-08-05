@@ -22,21 +22,21 @@ integrating it, like:
 There are several ways how to get this library:
 - Download sources from github and either copy them to your project or import them as a project dependency
 - For Maven users:
-   ```xml
-   <dependency>
-       <groupId>org.solovyev.android</groupId>
-       <artifactId>checkout</artifactId>
-       <version>x.x.x</version>
-   </dependency>
-   ```
+```xml
+<dependency>
+    <groupId>org.solovyev.android</groupId>
+    <artifactId>checkout</artifactId>
+    <version>x.x.x</version>
+</dependency>
+```
 - For Gradle users:
-   ```groovy
-   compile 'org.solovyev.android:checkout:x.x.x'
-   ```
+```groovy
+compile 'org.solovyev.android:checkout:x.x.x'
+```
 - Download artifacts from the [repository](https://oss.sonatype.org/content/repositories/releases/org/solovyev/android/checkout/)
 
-Checkout requires `com.android.vending.BILLING` permission in runtime. 
-If you use Checkout as a library project then nothing should be done - permission will be merged automatically during
+**Checkout** requires `com.android.vending.BILLING` permission in runtime. 
+If you use **Checkout** as a library project then nothing should be done - permission will be merged automatically during
 manifest merging. In any other cases, you need to include it into your application's manifest:
 ```xml
 <uses-permission android:name="com.android.vending.BILLING" />
@@ -44,7 +44,7 @@ manifest merging. In any other cases, you need to include it into your applicati
 
 ### Usage
 
-Checkout contains 3 classes which likely to be used in any app: [Billing](https://github.com/serso/android-checkout/blob/master/lib/src/main/java/org/solovyev/android/checkout/Billing.java),
+**Checkout** contains 3 classes which likely to be used in any app: [Billing](https://github.com/serso/android-checkout/blob/master/lib/src/main/java/org/solovyev/android/checkout/Billing.java),
 [Checkout](https://github.com/serso/android-checkout/blob/master/lib/src/main/java/org/solovyev/android/checkout/Checkout.java)
 and [Inventory](https://github.com/serso/android-checkout/blob/master/lib/src/main/java/org/solovyev/android/checkout/Inventory.java).
 
