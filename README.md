@@ -2,6 +2,7 @@
 
 ## Description
 
+<img src="https://github.com/serso/android-checkout/blob/master/app/misc/res/logo256x256.png" align="right" />
 **Checkout** is a library for [Android In-App Billing (v3)](http://developer.android.com/google/play/billing/api.html).
 The main goal is to reduce work which should be done by developers who want to integrate in-app purchases in
 their products. The project is inspired by [Volley](https://android.googlesource.com/platform/frameworks/volley/) library and
