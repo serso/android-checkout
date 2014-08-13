@@ -47,13 +47,13 @@ public class SkuUi {
 	static int getIconResId(@Nonnull String skuId) {
 		final int iconResId;
 		if (skuId.equals("cake")) {
-			iconResId = R.drawable.ic_agenda_birthday_color;
+			iconResId = R.drawable.ic_cake;
 		} else if (skuId.equals("beer")) {
-			iconResId = R.drawable.ic_agenda_birthday_color;
+			iconResId = R.drawable.ic_beer;
 		} else if (skuId.equals("hamburger")) {
-			iconResId = R.drawable.ic_agenda_birthday_color;
+			iconResId = R.drawable.ic_hamburger;
 		} else if (skuId.equals("coffee")) {
-			iconResId = R.drawable.ic_agenda_birthday_color;
+			iconResId = R.drawable.ic_coffee;
 		} else {
 			iconResId = 0;
 		}
