@@ -54,7 +54,7 @@ public final class Billing {
 	@Nonnull
 	private static final String TAG = Billing.class.getSimpleName();
 
-	private static final boolean DEBUG = true;
+	public static boolean DEBUG = false;
 
 	@Nonnull
 	private static final EmptyListener EMPTY_LISTENER = new EmptyListener();
@@ -327,13 +327,24 @@ public final class Billing {
 	}
 
 	static void error(@Nonnull Exception e) {
-		if (DEBUG) {
-			Log.e(TAG, e.getMessage(), e);
-		}
+		error(e.getMessage(), e);
 	}
 
 	static void error(@Nonnull String message, @Nonnull Exception e) {
-		if (DEBUG) {
+		if (e instanceof BillingException) {
+			final BillingException be = (BillingException) e;
+			switch (be.getResponse()) {
+				case ResponseCodes.OK:
+				case ResponseCodes.USER_CANCELED:
+				case ResponseCodes.ACCOUNT_ERROR:
+					if (DEBUG) {
+						Log.e(TAG, message, e);
+					}
+					break;
+				default:
+					Log.e(TAG, message, e);
+			}
+		} else {
 			Log.e(TAG, message, e);
 		}
 	}
