@@ -155,6 +155,25 @@ refer to [Gradle User Guide](http://tools.android.com/tech-docs/new-build-system
 
 Android Studio/IDEA project configuration files are also checked into the repository. Use "File->Open..." to open the project.
 
+### Classes overview
+
+**Checkout** contains 3 mani classes: [Billing](https://github.com/serso/android-checkout/blob/master/lib/src/main/java/org/solovyev/android/checkout/Billing.java),
+[Checkout](https://github.com/serso/android-checkout/blob/master/lib/src/main/java/org/solovyev/android/checkout/Checkout.java)
+and [Inventory](https://github.com/serso/android-checkout/blob/master/lib/src/main/java/org/solovyev/android/checkout/Inventory.java).
+
+**Billing** class is the main controller which:
+* connects to the [Billing service](https://github.com/serso/android-checkout/blob/master/lib/src/main/java/com/android/vending/billing/IInAppBillingService.aidl)
+* executes all incoming requests (and caches responses)
+* provides access to [BillingRequests](https://github.com/serso/android-checkout/blob/master/lib/src/main/java/org/solovyev/android/checkout/BillingRequests.java)
+It should be used as a singleton in order to avoid several connections to the Billing service.
+Though this class might be used directly usually it's better to use [Checkout](https://github.com/serso/android-checkout/blob/master/lib/src/main/java/org/solovyev/android/checkout/Checkout.java) for executing requests.
+
+**Checkout** provides access to [Billing](https://github.com/serso/android-checkout/blob/master/lib/src/main/java/org/solovyev/android/checkout/Billing.java) for set of products.
+It checks if billing is supported and executes requests if it is ready. [ActivityCheckout](https://github.com/serso/android-checkout/blob/master/lib/src/main/java/org/solovyev/android/checkout/ActivityCheckout.java)
+is a subclass which also provides access [PurchaseFlow](https://github.com/serso/android-checkout/blob/master/lib/src/main/java/org/solovyev/android/checkout/PurchaseFlow.java).
+
+**Inventory** contains static information abouts products, purchases and SKUs. It should be reloaded every time the purchase state is changed in order to be actual.
+
 ### Proguard
 
 You need to include the contents of [proguard rules](https://github.com/serso/android-checkout/blob/master/lib/proguard-rules.txt)
