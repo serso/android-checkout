@@ -36,7 +36,7 @@ There are several ways how you can get the library:
 ```
 - For Gradle users:
 ```groovy
-compile 'org.solovyev.android:checkout:x.x.x'
+compile 'org.solovyev.android:checkout:x.x.x@aar'
 ```
 - Download artifacts from the [repository](https://oss.sonatype.org/content/repositories/releases/org/solovyev/android/checkout/)
 
