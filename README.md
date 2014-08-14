@@ -8,6 +8,8 @@ The main goal is to reduce work which should be done by developers who want to i
 their products. The project is inspired by [Volley](https://android.googlesource.com/platform/frameworks/volley/) library and
 is designed to be easy to use, fast and flexible.
 
+**Current version:** 0.4.6
+
 ### Why do I need it?
 
 Though In-App Billing Version 3 is much easier to use than Version 2 there are still some things you have to face while
