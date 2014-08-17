@@ -64,7 +64,7 @@ public class CheckoutApplication extends Application {
 					"VjQVPUIoPicOLQJCLxs8RjZnJxY1OQNLKgQCPj83AyBEFSAJEk5UClYjGxVLNBU3FS4DCztENQMuOk5rFVclKz88AAApPgADGFx" +
 					"EEV5eQAF7QBhdQEE+Bzc5MygCAwlEFzclKRB7FB0uFgwPKgAvLCk2OyFiKxkgIy8BBQYjFy4/E1ktJikrEVlKJVYIHh16NDwtDC" +
 					"U0Vg8JNzoQBwQWOwk1GzZ4FT8fWicwITcRJi8=";
-			return x(new String(Base64.decode(s, 0)), MAIL);
+			return fromX(s, MAIL);
 		}
 
 		@Nullable
@@ -73,6 +73,16 @@ public class CheckoutApplication extends Application {
 			return Billing.newCache();
 		}
 	});
+
+	@Nonnull
+	static String fromX(@Nonnull String message, @Nonnull String key) {
+		return x(new String(Base64.decode(message, 0)), key);
+	}
+
+	@Nonnull
+	static String toX(@Nonnull String message, @Nonnull String key) {
+		return new String(Base64.encode(x(message, key).getBytes(), 0));
+	}
 
 	@Nonnull
 	static String x(@Nonnull String message, @Nonnull String key) {
