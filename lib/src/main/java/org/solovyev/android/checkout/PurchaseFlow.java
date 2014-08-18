@@ -72,7 +72,11 @@ public final class PurchaseFlow implements CancellableRequestListener<PendingInt
 	void onActivityResult(int requestCode, int resultCode, Intent intent) {
 		try {
 			Check.equals(this.requestCode, requestCode);
-			Check.isNotNull(intent);
+			if (intent == null) {
+				// sometimes intent is null (it's not obvious when it happens but it happens from time to time)
+				handleError(ResponseCodes.NULL_INTENT);
+				return;
+			}
 			final int responseCode = intent.getIntExtra("RESPONSE_CODE", 0);
 			if (resultCode == Activity.RESULT_OK && responseCode == ResponseCodes.OK) {
 				final String data = intent.getStringExtra("INAPP_PURCHASE_DATA");

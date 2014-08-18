@@ -81,8 +81,12 @@ public final class ResponseCodes {
 	 */
 	public static final int EXCEPTION = 10001;
 	/**
-	 * Purchase ha a wrong signature
+	 * Purchase has a wrong signature
 	 */
 	public static final int WRONG_SIGNATURE = 10002;
+	/**
+	 * Intent passed to {@link ActivityCheckout#onActivityResult(int, int, android.content.Intent)} is null
+	 */
+	public static final int NULL_INTENT = 10003;
 
 }
