@@ -66,7 +66,7 @@ public final class Purchase {
 		final String orderId = json.optString("orderId");
 		final String packageName = json.optString("packageName");
 		final long purchaseTime = json.getLong("purchaseTime");
-		final int purchaseState = json.getInt("purchaseState");
+		final int purchaseState = json.optInt("purchaseState", 0);
 		final String payload = json.optString("developerPayload");
 		final String token = json.optString("token", json.optString("purchaseToken"));
 		return new Purchase(sku, orderId, packageName, purchaseTime, purchaseState, payload, token, signature == null ? "" : signature);
