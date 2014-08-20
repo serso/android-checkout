@@ -99,6 +99,14 @@ public final class Billing {
 	@Nonnull
 	private ServiceConnector connector = new DefaultServiceConnector();
 
+	@Nonnull
+	private final SignatureVerifier signatureVerifier = new SignatureVerifier() {
+		@Override
+		public boolean verify(@Nonnull String publicKey, @Nonnull String data, @Nonnull String signature) {
+			return Security.verifyPurchase(publicKey, data, signature);
+		}
+	};
+
 	/**
 	 * Same as {@link #Billing(android.content.Context, android.os.Handler, Configuration)} with new handler
 	 */
@@ -389,7 +397,7 @@ public final class Billing {
 				}
 			};
 		}
-		return new PurchaseFlow(activity, publicKey, requestCode, listener);
+		return new PurchaseFlow(activity, publicKey, requestCode, listener, signatureVerifier);
 	}
 
 	/**
