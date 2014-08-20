@@ -32,6 +32,9 @@ import javax.annotation.Nullable;
 import javax.annotation.concurrent.GuardedBy;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static org.solovyev.android.checkout.ResponseCodes.EXCEPTION;
+import static org.solovyev.android.checkout.ResponseCodes.OK;
+
 /**
  * Asynchronous operation which is done with connected billing service
  */
@@ -132,11 +135,11 @@ abstract class Request<R> {
 	public void onError(@Nonnull Exception e) {
 		Check.isFalse(e instanceof BillingException, "Use onError(int) instead");
 		Billing.error("Exception in " + this + " request: ", e);
-		onError(ResponseCodes.EXCEPTION, e);
+		onError(EXCEPTION, e);
 	}
 
 	private void onError(int response, @Nonnull Exception e) {
-		Check.notEquals(ResponseCodes.OK, response);
+		Check.notEquals(OK, response);
 		final RequestListener<R> l = getListener();
 		if (l != null) {
 			l.onError(response, e);
@@ -149,7 +152,7 @@ abstract class Request<R> {
 	}
 
 	protected final boolean handleError(int response) {
-		if (response != ResponseCodes.OK) {
+		if (response != OK) {
 			onError(response);
 			return true;
 		}
