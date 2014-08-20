@@ -22,35 +22,38 @@
 
 package org.solovyev.android.checkout;
 
-import android.os.RemoteException;
-import com.android.vending.billing.IInAppBillingService;
+import org.junit.Test;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 
-import static org.solovyev.android.checkout.RequestType.BILLING_SUPPORTED;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 
-final class BillingSupportedRequest extends Request<Object> {
+public class BillingSupportedRequestTest extends RequestTestBase {
+
+	@Test
+	public void testShouldHaveDifferentCacheKeys() throws Exception {
+		final BillingSupportedRequest r1 = newRequest("test1");
+		final BillingSupportedRequest r2 = newRequest("test2");
+
+		assertNotEquals(r1.getCacheKey(), r2.getCacheKey());
+	}
+
+	@Test
+	public void testShouldHaveSameCacheKeys() throws Exception {
+		final BillingSupportedRequest r1 = newRequest();
+		final BillingSupportedRequest r2 = newRequest();
+
+		assertEquals(r1.getCacheKey(), r2.getCacheKey());
+	}
+
+	@Override
+	protected BillingSupportedRequest newRequest() {
+		return newRequest("test");
+	}
 
 	@Nonnull
-	private final String product;
-
-	BillingSupportedRequest(@Nonnull String product) {
-		super(BILLING_SUPPORTED);
-		this.product = product;
-	}
-
-	@Override
-	public void start(@Nonnull IInAppBillingService service, int apiVersion, @Nonnull String packageName) throws RemoteException {
-		final int response = service.isBillingSupported(apiVersion, packageName, product);
-		if (!handleError(response)) {
-			onSuccess(new Object());
-		}
-	}
-
-	@Nullable
-	@Override
-	protected String getCacheKey() {
-		return product;
+	private BillingSupportedRequest newRequest(@Nonnull String product) {
+		return new BillingSupportedRequest(product);
 	}
 }
