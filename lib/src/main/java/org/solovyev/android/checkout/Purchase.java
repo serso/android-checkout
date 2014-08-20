@@ -62,7 +62,7 @@ public final class Purchase {
 	@Nonnull
 	static Purchase fromData(@Nonnull String data, @Nullable String signature) throws JSONException {
 		final JSONObject json = new JSONObject(data);
-		final String sku = json.optString("productId");
+		final String sku = json.getString("productId");
 		final String orderId = json.optString("orderId");
 		final String packageName = json.optString("packageName");
 		final long purchaseTime = json.getLong("purchaseTime");

@@ -31,10 +31,19 @@ import org.json.JSONException;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+import static android.app.Activity.RESULT_OK;
+import static org.solovyev.android.checkout.ResponseCodes.NULL_INTENT;
+import static org.solovyev.android.checkout.ResponseCodes.OK;
+import static org.solovyev.android.checkout.ResponseCodes.WRONG_SIGNATURE;
+
 /**
  * Class which handles different events during the purchase process
  */
 public final class PurchaseFlow implements CancellableRequestListener<PendingIntent> {
+
+	static final String EXTRA_RESPONSE = "RESPONSE_CODE";
+	static final String EXTRA_PURCHASE_DATA = "INAPP_PURCHASE_DATA";
+	static final String EXTRA_PURCHASE_SIGNATURE = "INAPP_DATA_SIGNATURE";
 
 	@Nonnull
 	private final Activity activity;
@@ -47,11 +56,15 @@ public final class PurchaseFlow implements CancellableRequestListener<PendingInt
 	@Nullable
 	private RequestListener<Purchase> listener;
 
-	PurchaseFlow(@Nonnull Activity activity, @Nonnull String publicKey, int requestCode, @Nonnull RequestListener<Purchase> listener) {
+	@Nonnull
+	private final SignatureVerifier verifier;
+
+	PurchaseFlow(@Nonnull Activity activity, @Nonnull String publicKey, int requestCode, @Nonnull RequestListener<Purchase> listener, @Nonnull SignatureVerifier verifier) {
 		this.activity = activity;
 		this.publicKey = publicKey;
 		this.requestCode = requestCode;
 		this.listener = listener;
+		this.verifier = verifier;
 	}
 
 	@Override
@@ -74,22 +87,22 @@ public final class PurchaseFlow implements CancellableRequestListener<PendingInt
 			Check.equals(this.requestCode, requestCode);
 			if (intent == null) {
 				// sometimes intent is null (it's not obvious when it happens but it happens from time to time)
-				handleError(ResponseCodes.NULL_INTENT);
+				handleError(NULL_INTENT);
 				return;
 			}
-			final int responseCode = intent.getIntExtra("RESPONSE_CODE", 0);
-			if (resultCode == Activity.RESULT_OK && responseCode == ResponseCodes.OK) {
-				final String data = intent.getStringExtra("INAPP_PURCHASE_DATA");
-				final String signature = intent.getStringExtra("INAPP_DATA_SIGNATURE");
+			final int responseCode = intent.getIntExtra(EXTRA_RESPONSE, OK);
+			if (resultCode == RESULT_OK && responseCode == OK) {
+				final String data = intent.getStringExtra(EXTRA_PURCHASE_DATA);
+				final String signature = intent.getStringExtra(EXTRA_PURCHASE_SIGNATURE);
 				Check.isNotNull(data);
 				Check.isNotNull(signature);
 
-				if (Security.verifyPurchase(publicKey, data, signature)) {
+				if (verifier.verify(publicKey, data, signature)) {
 					if (listener != null) {
 						listener.onSuccess(Purchase.fromData(data, signature));
 					}
 				} else {
-					handleError(ResponseCodes.WRONG_SIGNATURE);
+					handleError(WRONG_SIGNATURE);
 				}
 			} else {
 				handleError(responseCode);
