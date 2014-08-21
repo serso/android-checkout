@@ -26,7 +26,6 @@ import org.junit.Test;
 
 import javax.annotation.Nonnull;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 
 public class BillingSupportedRequestTest extends RequestTestBase {
@@ -37,14 +36,6 @@ public class BillingSupportedRequestTest extends RequestTestBase {
 		final BillingSupportedRequest r2 = newRequest("test2");
 
 		assertNotEquals(r1.getCacheKey(), r2.getCacheKey());
-	}
-
-	@Test
-	public void testShouldHaveSameCacheKeys() throws Exception {
-		final BillingSupportedRequest r1 = newRequest();
-		final BillingSupportedRequest r2 = newRequest();
-
-		assertEquals(r1.getCacheKey(), r2.getCacheKey());
 	}
 
 	@Override

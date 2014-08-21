@@ -22,22 +22,31 @@
 
 package org.solovyev.android.checkout;
 
+import android.app.PendingIntent;
+import android.content.Intent;
 import android.os.Bundle;
 import com.android.vending.billing.IInAppBillingService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
 
+import java.util.ArrayList;
+
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.anyObject;
+import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.*;
 import static org.solovyev.android.checkout.ResponseCodes.BILLING_UNAVAILABLE;
+import static org.solovyev.android.checkout.ResponseCodes.OK;
 
 @RunWith(CheckoutTestRunner.class)
 abstract class RequestTestBase {
 
 	@Test
-	public void testShouldErrorIfErrorResponse() throws Exception {
+	public void testShouldError() throws Exception {
 		final Request request = newRequest();
 		final RequestListener l = mock(RequestListener.class);
 		request.setListener(l);
@@ -56,6 +65,40 @@ abstract class RequestTestBase {
 
 		verify(l).onError(eq(BILLING_UNAVAILABLE), any(Exception.class));
 		verify(l, never()).onSuccess(any());
+	}
+
+
+	@Test
+	public void testShouldSuccess() throws Exception {
+		final Request r = newRequest();
+		final RequestListener l = mock(RequestListener.class);
+		r.setListener(l);
+		final IInAppBillingService service = mock(IInAppBillingService.class);
+
+		when(service.isBillingSupported(anyInt(), anyString(), anyString())).thenReturn(OK);
+		when(service.consumePurchase(anyInt(), anyString(), anyString())).thenReturn(OK);
+		final Bundle purchases = new Bundle();
+		purchases.putStringArrayList("INAPP_PURCHASE_DATA_LIST", new ArrayList<String>());
+		when(service.getPurchases(anyInt(), anyString(), anyString(), anyString())).thenReturn(purchases);
+		final Bundle skuDetails = new Bundle();
+		skuDetails.putStringArrayList("DETAILS_LIST", new ArrayList<String>());
+		when(service.getSkuDetails(anyInt(), anyString(), anyString(), any(Bundle.class))).thenReturn(skuDetails);
+		final Bundle buyIntent = new Bundle();
+		buyIntent.putParcelable("BUY_INTENT", PendingIntent.getActivity(Robolectric.application, 100, new Intent(), 0));
+		when(service.getBuyIntent(anyInt(), anyString(), anyString(), anyString(), anyString())).thenReturn(buyIntent);
+
+		r.start(service, 3, "");
+
+		verify(l).onSuccess(anyObject());
+		verify(l, never()).onError(anyInt(), any(Exception.class));
+	}
+
+	@Test
+	public void testShouldHaveSameCacheKeys() throws Exception {
+		final Request r1 = newRequest();
+		final Request r2 = newRequest();
+
+		assertEquals(r1.getCacheKey(), r2.getCacheKey());
 	}
 
 	protected abstract Request newRequest();

@@ -22,10 +22,26 @@
 
 package org.solovyev.android.checkout;
 
+import org.junit.Test;
+
+import javax.annotation.Nonnull;
+
+import static org.junit.Assert.assertNull;
+
 public class ConsumePurchaseRequestTest extends RequestTestBase {
 
 	@Override
-	protected Request newRequest() {
-		return new ConsumePurchaseRequest("token");
+	protected ConsumePurchaseRequest newRequest() {
+		return newRequest("token");
+	}
+
+	@Nonnull
+	private ConsumePurchaseRequest newRequest(@Nonnull String token) {
+		return new ConsumePurchaseRequest(token);
+	}
+
+	@Test
+	public void testShouldNotBeCached() throws Exception {
+		assertNull(newRequest().getCacheKey());
 	}
 }
