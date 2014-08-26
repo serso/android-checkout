@@ -52,14 +52,19 @@ public final class Tests {
 
 	@Nonnull
 	static Billing newBilling() {
-		final Billing billing = new Billing(Robolectric.application, newConfiguration());
+		return newBilling(true);
+	}
+
+	@Nonnull
+	static Billing newBilling(boolean cache) {
+		final Billing billing = new Billing(Robolectric.application, newConfiguration(cache));
 		final IInAppBillingService service = mock(IInAppBillingService.class);
 		setService(billing, service);
 		return billing;
 	}
 
 	@Nonnull
-	private static Billing.Configuration newConfiguration() {
+	private static Billing.Configuration newConfiguration(final boolean cache) {
 		return new Billing.Configuration() {
 			@Nonnull
 			@Override
@@ -70,14 +75,14 @@ public final class Tests {
 			@Nullable
 			@Override
 			public Cache getCache() {
-				return Billing.newCache();
+				return cache ? Billing.newCache() : null;
 			}
 		};
 	}
 
 	@Nonnull
 	static Billing newSynchronousBilling() {
-		final Billing billing = new Billing(Robolectric.application, newConfiguration());
+		final Billing billing = new Billing(Robolectric.application, newConfiguration(true));
 		final IInAppBillingService service = mock(IInAppBillingService.class);
 		final CancellableExecutor sameThreadExecutor = sameThreadExecutor();
 		billing.setBackground(sameThreadExecutor);
