@@ -38,6 +38,9 @@ import java.util.List;
 @Immutable
 public final class Purchases {
 
+	static final String BUNDLE_DATA_LIST = "INAPP_PURCHASE_DATA_LIST";
+	static final String BUNDLE_SIGNATURE_LIST = "INAPP_DATA_SIGNATURE";
+	static final String BUNDLE_CONTINUATION_TOKEN = "INAPP_CONTINUATION_TOKEN";
 	/**
 	 * Product type
 	 */
@@ -66,15 +69,15 @@ public final class Purchases {
 
 	@Nonnull
 	static Purchases fromBundle(@Nonnull Bundle bundle, @Nonnull String product) throws JSONException {
-		final List<String> datas = bundle.getStringArrayList("INAPP_PURCHASE_DATA_LIST");
-		final List<String> signatures = bundle.getStringArrayList("INAPP_DATA_SIGNATURE");
-		final String continuationToken = bundle.getString("INAPP_CONTINUATION_TOKEN");
+		final List<String> datas = bundle.getStringArrayList(BUNDLE_DATA_LIST);
+		final List<String> signatures = bundle.getStringArrayList(BUNDLE_SIGNATURE_LIST);
+		final String continuationToken = bundle.getString(BUNDLE_CONTINUATION_TOKEN);
 
 		final List<Purchase> purchases = new ArrayList<Purchase>(datas.size());
 		for (int i = 0; i < datas.size(); i++) {
 			final String data = datas.get(i);
 			final String signature = signatures != null ? signatures.get(i) : null;
-			purchases.add(Purchase.fromData(data, signature));
+			purchases.add(Purchase.fromJson(data, signature));
 		}
 		return new Purchases(product, purchases, continuationToken);
 	}
