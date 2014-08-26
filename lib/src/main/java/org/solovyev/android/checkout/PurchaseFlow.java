@@ -99,7 +99,7 @@ public final class PurchaseFlow implements CancellableRequestListener<PendingInt
 
 				if (verifier.verify(publicKey, data, signature)) {
 					if (listener != null) {
-						listener.onSuccess(Purchase.fromData(data, signature));
+						listener.onSuccess(Purchase.fromJson(data, signature));
 					}
 				} else {
 					handleError(WRONG_SIGNATURE);

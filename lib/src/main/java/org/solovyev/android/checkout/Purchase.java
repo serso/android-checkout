@@ -60,7 +60,7 @@ public final class Purchase {
 	}
 
 	@Nonnull
-	static Purchase fromData(@Nonnull String data, @Nullable String signature) throws JSONException {
+	static Purchase fromJson(@Nonnull String data, @Nullable String signature) throws JSONException {
 		final JSONObject json = new JSONObject(data);
 		final String sku = json.getString("productId");
 		final String orderId = json.optString("orderId");
@@ -80,9 +80,15 @@ public final class Purchase {
 	}
 
 	public static enum State {
-		PURCHASED,
-		CANCELLED,
-		REFUNDED;
+		PURCHASED(0),
+		CANCELLED(1),
+		REFUNDED(2);
+
+		public final int id;
+
+		State(int id) {
+			this.id = id;
+		}
 
 		@Nonnull
 		static State valueOf(int id) {
