@@ -190,7 +190,7 @@ public final class Billing {
 				state = newState;
 				switch (state) {
 					case CONNECTED:
-						background.execute(pendingRequests);
+						executePendingRequests();
 						break;
 					case FAILED:
 						mainThread.execute(new Runnable() {
@@ -205,6 +205,10 @@ public final class Billing {
 		}
 	}
 
+	private void executePendingRequests() {
+		background.execute(pendingRequests);
+	}
+
 	@Nonnull
 	State getState() {
 		synchronized (lock) {
@@ -215,7 +219,7 @@ public final class Billing {
 	public void connect() {
 		synchronized (lock) {
 			if (state == State.CONNECTED) {
-				background.execute(pendingRequests);
+				executePendingRequests();
 				return;
 			}
 			if (state == State.CONNECTING) {

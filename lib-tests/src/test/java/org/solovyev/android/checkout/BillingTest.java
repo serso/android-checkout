@@ -32,6 +32,8 @@ import org.mockito.stubbing.Answer;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -48,9 +50,13 @@ public class BillingTest {
 	@Nonnull
 	private Billing billing;
 
+	@Nonnull
+	private Random random;
+
 	@Before
 	public void setUp() throws Exception {
 		billing = Tests.newSynchronousBilling();
+		random = new Random(currentTimeMillis());
 	}
 
 	@Test
@@ -152,21 +158,38 @@ public class BillingTest {
 
 		final Billing b = Tests.newBilling(false);
 		b.setConnector(new AsyncServiceConnector(b));
-		final Random r = new Random(currentTimeMillis());
 		final CountDownLatch latch = new CountDownLatch(REQUESTS);
 		final RequestListener l = new CountDownListener(latch);
 		for (int i = 0; i < REQUESTS; i++) {
 			if (i % 10 == 0) {
-				if (r.nextBoolean()) {
+				if (random.nextBoolean()) {
 					b.connect();
 				} else {
 					b.disconnect();
 				}
 			}
-			b.runWhenConnected(new SleepingRequest(r.nextInt(SLEEP)), l, null);
+			b.runWhenConnected(new SleepingRequest(random.nextInt(SLEEP)), l, null);
 		}
 		b.connect();
 		assertTrue(latch.await(SLEEP * REQUESTS, TimeUnit.MILLISECONDS));
+	}
+
+	@Test
+	public void testShouldCancelRequests() throws Exception {
+		final int REQUESTS = 10;
+
+		final Billing b = Tests.newBilling(false);
+		final CountDownLatch latch = new CountDownLatch(REQUESTS / 2);
+		final RequestListener l = new CountDownListener(latch);
+		final List<Integer> requestIds = new ArrayList<Integer>();
+		for (int i = 0; i < REQUESTS; i++) {
+			requestIds.add(b.runWhenConnected(new SleepingRequest(100), l, null));
+		}
+		Thread.sleep(100 * (REQUESTS / 2 - 1));
+		for (int i = REQUESTS / 2; i < REQUESTS; i++) {
+			b.cancel(requestIds.get(i));
+		}
+		assertTrue(latch.await(1, TimeUnit.SECONDS));
 	}
 
 	private static class CountDownListener implements RequestListener {
