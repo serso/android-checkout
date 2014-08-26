@@ -22,6 +22,9 @@
 
 package org.solovyev.android.checkout;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import javax.annotation.Nonnull;
 import javax.annotation.concurrent.Immutable;
 
@@ -49,5 +52,15 @@ public final class Sku {
 		this.price = price;
 		this.title = title;
 		this.description = description;
+	}
+
+	@Nonnull
+	static Sku fromJson(@Nonnull String json, @Nonnull String product) throws JSONException {
+		final JSONObject object = new JSONObject(json);
+		final String sku = object.getString("productId");
+		final String price = object.getString("price");
+		final String title = object.getString("title");
+		final String description = object.optString("description");
+		return new Sku(product, sku, price, title, description);
 	}
 }
