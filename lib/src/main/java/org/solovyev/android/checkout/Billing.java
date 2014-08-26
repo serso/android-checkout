@@ -150,16 +150,21 @@ public final class Billing {
 	}
 
 	void setService(@Nullable IInAppBillingService service, boolean connecting) {
-		Check.isMainThread();
 		synchronized (lock) {
 			final State newState;
 			if (connecting) {
+				if (state != State.CONNECTING) {
+					return;
+				}
 				if (service == null) {
 					newState = State.FAILED;
 				} else {
 					newState = State.CONNECTED;
 				}
 			} else {
+				if (state != State.DISCONNECTING) {
+					return;
+				}
 				newState = State.DISCONNECTED;
 			}
 			this.service = service;
@@ -179,7 +184,7 @@ public final class Billing {
 		this.mainThread = mainThread;
 	}
 
-	private void setState(@Nonnull State newState) {
+	void setState(@Nonnull State newState) {
 		synchronized (lock) {
 			if (state != newState) {
 				state = newState;
@@ -197,6 +202,13 @@ public final class Billing {
 						break;
 				}
 			}
+		}
+	}
+
+	@Nonnull
+	State getState() {
+		synchronized (lock) {
+			return state;
 		}
 	}
 
@@ -227,21 +239,31 @@ public final class Billing {
 		}
 	}
 
-	private void disconnect() {
-		Check.isMainThread();
+	public void disconnect() {
 		synchronized (lock) {
-			if (service != null) {
-				connector.disconnect();
-				setState(State.DISCONNECTING);
+			if (state == State.DISCONNECTED || state == State.DISCONNECTING || state == State.INITIAL) {
+				return;
 			}
+			setState(State.DISCONNECTING);
 		}
+		mainThread.execute(new Runnable() {
+			@Override
+			public void run() {
+				disconnectOnMainThread();
+			}
+		});
+	}
+
+	private void disconnectOnMainThread() {
+		Check.isMainThread();
+		connector.disconnect();
 	}
 
 	private int runWhenConnected(@Nonnull Request request, @Nullable Object tag) {
 		return runWhenConnected(request, null, tag);
 	}
 
-	private <R> int runWhenConnected(@Nonnull Request<R> request, @Nullable RequestListener<R> listener, @Nullable Object tag) {
+	<R> int runWhenConnected(@Nonnull Request<R> request, @Nullable RequestListener<R> listener, @Nullable Object tag) {
 		if (listener != null) {
 			if (cache.hasCache()) {
 				listener = new CachingRequestListener<R>(request, listener);
@@ -383,17 +405,11 @@ public final class Billing {
 	@Nonnull
 	PurchaseFlow createPurchaseFlow(@Nonnull Activity activity, int requestCode, @Nonnull RequestListener<Purchase> listener) {
 		if (cache.hasCache()) {
-			final RequestListener<Purchase> originalListener = listener;
-			listener = new RequestListener<Purchase>() {
+			listener = new RequestListenerWrapper<Purchase>(listener) {
 				@Override
 				public void onSuccess(@Nonnull Purchase result) {
 					cache.removeAll(RequestType.GET_PURCHASES.getCacheKeyType());
-					originalListener.onSuccess(result);
-				}
-
-				@Override
-				public void onError(int response, @Nonnull Exception e) {
-					originalListener.onError(response, e);
+					super.onSuccess(result);
 				}
 			};
 		}
@@ -417,7 +433,7 @@ public final class Billing {
 	/**
 	 * Service connection state
 	 */
-	private enum State {
+	enum State {
 		/**
 		 * Service is not connected, no requests can be done, initial state
 		 */
