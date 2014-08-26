@@ -24,7 +24,6 @@ package org.solovyev.android.checkout;
 
 import android.os.Bundle;
 import org.json.JSONException;
-import org.json.JSONObject;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -38,6 +37,9 @@ import java.util.List;
  */
 @Immutable
 public final class Skus {
+
+	@Nonnull
+	static final String BUNDLE_LIST = "DETAILS_LIST";
 
 	/**
 	 * Product type
@@ -55,23 +57,24 @@ public final class Skus {
 
 	@Nonnull
 	static Skus fromBundle(@Nonnull Bundle bundle, @Nonnull String product) throws RequestException {
-		final List<String> list = bundle.getStringArrayList("DETAILS_LIST");
+		final List<String> list = extractList(bundle);
 
 		final List<Sku> skus = new ArrayList<Sku>(list.size());
 		for (String response : list) {
 			try {
-				final JSONObject object = new JSONObject(response);
-				final String sku = object.getString("productId");
-				final String price = object.getString("price");
-				final String title = object.getString("title");
-				final String description = object.getString("description");
-				skus.add(new Sku(product, sku, price, title, description));
+				skus.add(Sku.fromJson(response, product));
 			} catch (JSONException e) {
 				throw new RequestException(e);
 			}
 
 		}
 		return new Skus(product, skus);
+	}
+
+	@Nonnull
+	private static ArrayList<String> extractList(@Nonnull Bundle bundle) {
+		final ArrayList<String> list = bundle.getStringArrayList(BUNDLE_LIST);
+		return list != null ? list : new ArrayList<String>(0);
 	}
 
 	@Nullable
