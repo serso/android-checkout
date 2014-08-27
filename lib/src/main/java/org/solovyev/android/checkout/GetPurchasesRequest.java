@@ -55,6 +55,11 @@ final class GetPurchasesRequest extends Request<Purchases> {
 		return product;
 	}
 
+	@Nullable
+	String getContinuationToken() {
+		return continuationToken;
+	}
+
 	@Override
 	void start(@Nonnull IInAppBillingService service, int apiVersion, @Nonnull String packageName) throws RemoteException {
 		final Bundle bundle = service.getPurchases(apiVersion, packageName, product, continuationToken);

@@ -30,6 +30,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 
+import javax.annotation.Nonnull;
 import java.util.ArrayList;
 
 import static org.junit.Assert.assertEquals;
@@ -51,8 +52,7 @@ abstract class RequestTestBase {
 		final RequestListener l = mock(RequestListener.class);
 		request.setListener(l);
 
-		final Bundle bundle = new Bundle();
-		bundle.putInt("RESPONSE_CODE", BILLING_UNAVAILABLE);
+		final Bundle bundle = newBundle(BILLING_UNAVAILABLE);
 
 		final IInAppBillingService service = mock(IInAppBillingService.class);
 		when(service.isBillingSupported(anyInt(), anyString(), anyString())).thenReturn(BILLING_UNAVAILABLE);
@@ -65,6 +65,13 @@ abstract class RequestTestBase {
 
 		verify(l).onError(eq(BILLING_UNAVAILABLE), any(Exception.class));
 		verify(l, never()).onSuccess(any());
+	}
+
+	@Nonnull
+	protected final Bundle newBundle(int response) {
+		final Bundle bundle = new Bundle();
+		bundle.putInt("RESPONSE_CODE", response);
+		return bundle;
 	}
 
 

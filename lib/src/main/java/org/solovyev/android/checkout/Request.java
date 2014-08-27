@@ -160,7 +160,7 @@ abstract class Request<R> {
 	}
 
 	@Nullable
-	private RequestListener<R> getListener() {
+	RequestListener<R> getListener() {
 		synchronized (this) {
 			return listener;
 		}
