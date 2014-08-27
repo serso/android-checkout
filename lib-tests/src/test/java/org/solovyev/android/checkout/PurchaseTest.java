@@ -69,7 +69,7 @@ public class PurchaseTest {
 		assertNotNull(purchase);
 	}
 
-	private void verifyPurchase(@Nonnull Purchase purchase, long id, Purchase.State state) {
+	static void verifyPurchase(@Nonnull Purchase purchase, long id, Purchase.State state) {
 		assertEquals(String.valueOf(id), purchase.sku);
 		assertEquals("orderId_" + id, purchase.orderId);
 		assertEquals("packageName_" + id, purchase.packageName);
