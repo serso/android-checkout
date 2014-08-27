@@ -22,12 +22,35 @@
 
 package org.solovyev.android.checkout;
 
-import java.util.Arrays;
+import org.junit.Test;
+
+import java.util.Collections;
+import java.util.List;
+
+import static java.util.Arrays.asList;
+import static org.junit.Assert.assertEquals;
 
 public class GetSkuDetailsRequestTest extends RequestTestBase {
 
 	@Override
 	protected Request newRequest() {
-		return new GetSkuDetailsRequest("test", Arrays.asList("sku"));
+		return new GetSkuDetailsRequest("test", asList("sku"));
+	}
+
+	@Test
+	public void testShouldHaveSameCacheKey() throws Exception {
+		final List<String> skus = asList("1", "2", "3");
+		final GetSkuDetailsRequest r1 = new GetSkuDetailsRequest("test", skus);
+		Collections.reverse(skus);
+		final GetSkuDetailsRequest r2 = new GetSkuDetailsRequest("test", skus);
+
+		assertEquals(r1.getCacheKey(), r2.getCacheKey());
+	}
+
+	@Test
+	public void testShouldContainAllSkusInCacheKey() throws Exception {
+		final GetSkuDetailsRequest request = new GetSkuDetailsRequest("test", asList("1", "2", "3"));
+
+		assertEquals("test_[1,2,3]", request.getCacheKey());
 	}
 }

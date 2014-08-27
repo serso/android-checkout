@@ -29,6 +29,7 @@ import com.android.vending.billing.IInAppBillingService;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 final class GetSkuDetailsRequest extends Request<Skus> {
@@ -37,22 +38,19 @@ final class GetSkuDetailsRequest extends Request<Skus> {
 	private final String product;
 
 	@Nonnull
-	private final List<String> skus;
+	private final ArrayList<String> skus;
 
 	GetSkuDetailsRequest(@Nonnull String product, @Nonnull List<String> skus) {
 		super(RequestType.GET_SKU_DETAILS);
 		this.product = product;
-		this.skus = skus;
+		this.skus = new ArrayList<String>(skus);
+		Collections.sort(this.skus);
 	}
 
 	@Override
 	void start(@Nonnull IInAppBillingService service, int apiVersion, @Nonnull String packageName) throws RemoteException, RequestException {
 		final Bundle skusBundle = new Bundle();
-		if (skus instanceof ArrayList) {
-			skusBundle.putStringArrayList("ITEM_ID_LIST", (ArrayList<String>) skus);
-		} else {
-			skusBundle.putStringArrayList("ITEM_ID_LIST", new ArrayList<String>(skus));
-		}
+		skusBundle.putStringArrayList("ITEM_ID_LIST", skus);
 		final Bundle bundle = service.getSkuDetails(apiVersion, packageName, product, skusBundle);
 		if (!handleError(bundle)) {
 			onSuccess(Skus.fromBundle(bundle, product));
