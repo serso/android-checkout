@@ -69,7 +69,7 @@ public final class Purchases {
 
 	@Nonnull
 	static Purchases fromBundle(@Nonnull Bundle bundle, @Nonnull String product) throws JSONException {
-		final List<String> datas = bundle.getStringArrayList(BUNDLE_DATA_LIST);
+		final List<String> datas = extractDatasList(bundle);
 		final List<String> signatures = bundle.getStringArrayList(BUNDLE_SIGNATURE_LIST);
 		final String continuationToken = bundle.getString(BUNDLE_CONTINUATION_TOKEN);
 
@@ -80,6 +80,12 @@ public final class Purchases {
 			purchases.add(Purchase.fromJson(data, signature));
 		}
 		return new Purchases(product, purchases, continuationToken);
+	}
+
+	@Nonnull
+	private static List<String> extractDatasList(@Nonnull Bundle bundle) {
+		final List<String> list = bundle.getStringArrayList(BUNDLE_DATA_LIST);
+		return list != null ? list : Collections.<String>emptyList();
 	}
 
 	@Nullable

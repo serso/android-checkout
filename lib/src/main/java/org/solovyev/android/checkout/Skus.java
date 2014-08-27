@@ -72,9 +72,9 @@ public final class Skus {
 	}
 
 	@Nonnull
-	private static ArrayList<String> extractList(@Nonnull Bundle bundle) {
-		final ArrayList<String> list = bundle.getStringArrayList(BUNDLE_LIST);
-		return list != null ? list : new ArrayList<String>(0);
+	private static List<String> extractList(@Nonnull Bundle bundle) {
+		final List<String> list = bundle.getStringArrayList(BUNDLE_LIST);
+		return list != null ? list : Collections.<String>emptyList();
 	}
 
 	@Nullable
