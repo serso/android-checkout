@@ -22,9 +22,10 @@
 
 package org.solovyev.android.checkout;
 
-import org.junit.Assert;
 import org.junit.Test;
 
+import static org.junit.Assert.*;
+import static org.junit.Assert.assertNull;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
@@ -55,7 +56,7 @@ public class ConcurrentCacheTest extends CacheTestBase {
 		cache.put(key, expected);
 
 		final Cache.Entry actual = cache.get(key);
-		Assert.assertSame(expected, actual);
+		assertSame(expected, actual);
 	}
 
 	@Test
@@ -68,7 +69,7 @@ public class ConcurrentCacheTest extends CacheTestBase {
 		cache.put(key, entry);
 
 		final Cache.Entry actual = cache.get(key);
-		Assert.assertNull(actual);
+		assertNull(actual);
 	}
 
 	@Test
@@ -82,7 +83,7 @@ public class ConcurrentCacheTest extends CacheTestBase {
 		cache.put(key, entry);
 		cache.putIfNotExist(key, newEntry);
 
-		Assert.assertSame(entry, cache.get(key));
+		assertSame(entry, cache.get(key));
 	}
 
 	@Test
@@ -93,5 +94,59 @@ public class ConcurrentCacheTest extends CacheTestBase {
 		cache.init();
 
 		verify(mockCache, times(1)).init();
+	}
+
+	@Test
+	public void testShouldRemoveValue() throws Exception {
+		final ConcurrentCache cache = new ConcurrentCache(new MapCache());
+		final Cache.Key key = newKey();
+		final Cache.Entry entry = newEntry();
+		cache.put(key, entry);
+		assertSame(entry, cache.get(key));
+
+		cache.remove(key);
+
+		assertNull(cache.get(key));
+	}
+
+	@Test
+	public void testShouldRemoveAllEntriesOfType() throws Exception {
+		final ConcurrentCache cache = new ConcurrentCache(new MapCache());
+		final Cache.Key k1 = newKey();
+		cache.put(k1, newEntry());
+		final Cache.Key k11 = new Cache.Key(k1.type, k1.key + "test");
+		cache.put(k11, newEntry());
+		final Cache.Key k2 =  new Cache.Key(k1.type + 1, "test");
+		cache.put(k2, newEntry());
+		final Cache.Key k3 =  new Cache.Key(k1.type + 2, "test");
+		cache.put(k3, newEntry());
+
+		assertNotNull(cache.get(k1));
+		assertNotNull(cache.get(k11));
+		assertNotNull(cache.get(k2));
+		assertNotNull(cache.get(k3));
+
+		cache.removeAll(k1.type);
+		assertNull(cache.get(k1));
+		assertNull(cache.get(k11));
+		assertNotNull(cache.get(k2));
+		assertNotNull(cache.get(k3));
+	}
+
+	@Test
+	public void testShouldRemoveAllEntries() throws Exception {
+		final ConcurrentCache cache = new ConcurrentCache(new MapCache());
+		final Cache.Key k1 = newKey();
+		cache.put(k1, newEntry());
+		final Cache.Key k2 = newKey();
+		cache.put(k2, newEntry());
+		final  Cache.Key k3 = newKey();
+		cache.put(k3, newEntry());
+
+		cache.clear();
+
+		assertNull(cache.get(k1));
+		assertNull(cache.get(k2));
+		assertNull(cache.get(k3));
 	}
 }
