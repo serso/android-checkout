@@ -38,7 +38,7 @@ abstract class CacheTestBase {
 
 	@Nonnull
 	protected final Cache.Key newKey() {
-		return new Cache.Key(counter.getAndIncrement(), "test");
+		return new Cache.Key(counter.getAndIncrement() % RequestType.values().length, "test");
 	}
 
 	@Nonnull
