@@ -22,10 +22,61 @@
 
 package org.solovyev.android.checkout;
 
+import android.os.Bundle;
+import com.android.vending.billing.IInAppBillingService;
+import org.json.JSONException;
+import org.junit.Test;
+
+import java.util.ArrayList;
+
+import static org.junit.Assert.*;
+import static org.mockito.Matchers.anyInt;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.*;
+import static org.solovyev.android.checkout.ResponseCodes.EXCEPTION;
+import static org.solovyev.android.checkout.ResponseCodes.OK;
+
 public class GetPurchasesRequestTest extends RequestTestBase {
 
 	@Override
-	protected Request newRequest() {
+	protected GetPurchasesRequest newRequest() {
 		return new GetPurchasesRequest("test", null);
+	}
+
+	@Test
+	public void testShouldCreateFromOldRequest() throws Exception {
+		final GetPurchasesRequest oldRequest = new GetPurchasesRequest("test", "first");
+		final GetPurchasesRequest newRequest = new GetPurchasesRequest(oldRequest, "second");
+
+		assertEquals("second", newRequest.getContinuationToken());
+		assertEquals("test", newRequest.getProduct());
+		assertSame(oldRequest.getListener(), newRequest.getListener());
+	}
+
+	@Test
+	public void testShouldHaveDifferentCacheKeys() throws Exception {
+		final GetPurchasesRequest oldRequest = newRequest();
+		final GetPurchasesRequest newRequest1 = new GetPurchasesRequest(oldRequest, "second");
+		final GetPurchasesRequest newRequest2 = new GetPurchasesRequest(oldRequest, "third");
+
+		assertNotEquals(oldRequest.getCacheKey(), newRequest1.getCacheKey());
+		assertNotEquals(newRequest1.getCacheKey(), newRequest2.getCacheKey());
+	}
+
+	@Test
+	public void testShouldErrorIfJsonException() throws Exception {
+		final GetPurchasesRequest request = newRequest();
+		final RequestListener l = mock(RequestListener.class);
+		request.setListener(l);
+		final IInAppBillingService service = mock(IInAppBillingService.class);
+		final Bundle bundle = newBundle(OK);
+		final ArrayList<String> datas = new ArrayList<String>();
+		datas.add("test");
+		bundle.putStringArrayList(Purchases.BUNDLE_DATA_LIST, datas);
+		when(service.getPurchases(anyInt(), anyString(), anyString(), anyString())).thenReturn(bundle);
+
+		request.start(service, 3, "test");
+
+		verify(l, times(1)).onError(eq(EXCEPTION), any(JSONException.class));
 	}
 }
