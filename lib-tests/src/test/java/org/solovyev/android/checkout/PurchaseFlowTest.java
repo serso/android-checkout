@@ -124,7 +124,7 @@ public class PurchaseFlowTest {
 	@Test
 	public void testShouldFinishSuccessfully() throws Exception {
 		when(verifier.verify(anyString(), anyString(), anyString())).thenReturn(true);
-		flow.onActivityResult(1, RESULT_OK, newIntent(OK, "{productId:'test', purchaseTime:1000}", "signature"));
+		flow.onActivityResult(1, RESULT_OK, newOkIntent());
 
 		verify(listener, never()).onError(anyInt(), any(Exception.class));
 		verify(listener).onSuccess(any(Purchase.class));
@@ -134,14 +134,19 @@ public class PurchaseFlowTest {
 	public void testShouldNotCallListenerIfCancelled() throws Exception {
 		when(verifier.verify(anyString(), anyString(), anyString())).thenReturn(true);
 		flow.cancel();
-		flow.onActivityResult(1, RESULT_OK, newIntent(OK, "{productId:'test', purchaseTime:1000}", "signature"));
+		flow.onActivityResult(1, RESULT_OK, newOkIntent());
 		flow.onActivityResult(1, RESULT_OK, newIntent(ACCOUNT_ERROR, "{productId:'test', purchaseTime:1000}", "signature"));
 		verify(listener, never()).onError(anyInt(), any(Exception.class));
 		verify(listener, never()).onSuccess(any(Purchase.class));
 	}
 
 	@Nonnull
-	private Intent newIntent(int responseCode, @Nullable String data, @Nullable String signature) {
+	static Intent newOkIntent() {
+		return newIntent(OK, "{productId:'test', purchaseTime:1000}", "signature");
+	}
+
+	@Nonnull
+	static Intent newIntent(int responseCode, @Nullable String data, @Nullable String signature) {
 		final Intent intent = new Intent();
 		intent.putExtra(PurchaseFlow.EXTRA_RESPONSE, responseCode);
 		intent.putExtra(PurchaseFlow.EXTRA_PURCHASE_DATA, data);

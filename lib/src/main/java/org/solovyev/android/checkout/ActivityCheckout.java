@@ -55,7 +55,7 @@ import java.util.Set;
  */
 public final class ActivityCheckout extends Checkout {
 
-	private static final int DEFAULT_REQUEST_CODE = 0XCAFE;// mm, coffee
+	static final int DEFAULT_REQUEST_CODE = 0XCAFE;// mm, coffee
 
 	@Nonnull
 	private final SparseArray<PurchaseFlow> purchaseFlows = new SparseArray<PurchaseFlow>();
@@ -111,11 +111,12 @@ public final class ActivityCheckout extends Checkout {
 	public void destroyPurchaseFlow(int requestCode) {
 		final PurchaseFlow flow = purchaseFlows.get(requestCode);
 		if (flow != null) {
+			purchaseFlows.delete(requestCode);
+			oneShotPurchaseFlows.remove(requestCode);
+
 			// instead of cancelling purchase request in `Billing` class (which we can't do as we don't have `requestId`)
 			// let's just cancel it here
 			flow.cancel();
-			purchaseFlows.delete(requestCode);
-			oneShotPurchaseFlows.remove(requestCode);
 		}
 	}
 
