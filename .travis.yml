@@ -4,4 +4,4 @@ android:
     - build-tools-20.0.0
     - android-20
 
-script: ./gradlew clean check assembleDebug
+script: ./gradlew clean check assembleDebug -PossrhUsername=username -PossrhPassword=password
