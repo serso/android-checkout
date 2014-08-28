@@ -100,7 +100,7 @@ public final class Billing {
 	private ServiceConnector connector = new DefaultServiceConnector();
 
 	@Nonnull
-	private final SignatureVerifier signatureVerifier = new SignatureVerifier() {
+	private SignatureVerifier signatureVerifier = new SignatureVerifier() {
 		@Override
 		public boolean verify(@Nonnull String publicKey, @Nonnull String data, @Nonnull String signature) {
 			return Security.verifyPurchase(publicKey, data, signature);
@@ -182,6 +182,10 @@ public final class Billing {
 
 	void setMainThread(@Nonnull CancellableExecutor mainThread) {
 		this.mainThread = mainThread;
+	}
+
+	void setSignatureVerifier(@Nonnull SignatureVerifier signatureVerifier) {
+		this.signatureVerifier = signatureVerifier;
 	}
 
 	void setState(@Nonnull State newState) {
