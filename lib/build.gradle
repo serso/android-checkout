@@ -31,8 +31,8 @@ android {
     defaultConfig {
         minSdkVersion 9
         targetSdkVersion 20
-        versionCode VERSION_CODE
-        versionName VERSION_NAME
+        versionCode version_code()
+        versionName version_name()
     }
 }
 
@@ -85,7 +85,7 @@ signing {
 
 group = "org.solovyev.android"
 archivesBaseName = "checkout"
-version = VERSION_NAME
+version = version_name()
 
 uploadArchives {
     repositories {
