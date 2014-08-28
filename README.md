@@ -18,6 +18,8 @@ integrating it, like:
 [Querying for Items Available for Purchase](http://developer.android.com/google/play/billing/billing_integrate.html#QueryDetails)
 * Security, see [Security And Design](http://developer.android.com/google/play/billing/billing_best_practices.html)
 
+**Checkout** has a good test coverage and is build continuously on Travis CI: <img src="https://travis-ci.org/serso/android-checkout.svg"/>
+
 ### Who else uses it?
 
 * Say it right! ([Google Play](https://play.google.com/store/apps/details?id=org.solovyev.android.dictionary.forvo))
