@@ -18,7 +18,8 @@ integrating it, like:
 [Querying for Items Available for Purchase](http://developer.android.com/google/play/billing/billing_integrate.html#QueryDetails)
 * Security, see [Security And Design](http://developer.android.com/google/play/billing/billing_best_practices.html)
 
-**Checkout** has a good test coverage and is build continuously on Travis CI: <img src="https://travis-ci.org/serso/android-checkout.svg"/>
+**Checkout** has a good test coverage and is build continuously on Travis CI: 
+[![Build Status](https://travis-ci.org/serso/android-checkout.svg)](https://travis-ci.org/serso/android-checkout)
 
 ### Who else uses it?
 
