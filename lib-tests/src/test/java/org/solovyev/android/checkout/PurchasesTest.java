@@ -23,7 +23,10 @@
 package org.solovyev.android.checkout;
 
 import android.os.Bundle;
+import edu.emory.mathcs.backport.java.util.Collections;
+import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
@@ -31,6 +34,7 @@ import org.robolectric.RobolectricTestRunner;
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
 
+import static java.util.Arrays.asList;
 import static org.junit.Assert.*;
 import static org.solovyev.android.checkout.PurchaseTest.verifyPurchase;
 
@@ -134,5 +138,66 @@ public class PurchasesTest {
 		final Purchase purchase3 = purchases.getPurchaseInState("3", Purchase.State.PURCHASED);
 		assertNotNull(purchase3);
 		assertEquals("3", purchase3.sku);
+	}
+
+	@Test
+	public void testShouldIncludeSignaturesInJson() throws Exception {
+		final Purchases purchases = new Purchases("test", asList(newPurchase(0), newPurchase(1), newPurchase(2)), null);
+
+		final JSONObject json = purchases.toJsonObject(true);
+		final JSONArray jsonArray = json.getJSONArray("list");
+
+		assertEquals("signature0", jsonArray.getJSONObject(0).getString("signature"));
+		assertEquals("signature1", jsonArray.getJSONObject(1).getString("signature"));
+		assertEquals("signature2", jsonArray.getJSONObject(2).getString("signature"));
+	}
+
+	@Nonnull
+	private Purchase newPurchase(long id) throws JSONException {
+		return Purchase.fromJson(PurchaseTest.newJson(id, Purchase.State.PURCHASED), "signature" + id);
+	}
+
+	@Test
+	public void testShouldNotIncludeSignaturesInJson() throws Exception {
+		final Purchases purchases = new Purchases("test", asList(newPurchase(0), newPurchase(1), newPurchase(2)), null);
+
+		final JSONObject json = purchases.toJsonObject(false);
+		final JSONArray jsonArray = json.getJSONArray("list");
+
+		assertFalse(jsonArray.getJSONObject(0).has("signature"));
+		assertFalse(jsonArray.getJSONObject(1).has("signature"));
+		assertFalse(jsonArray.getJSONObject(2).has("signature"));
+	}
+
+	@Test
+	public void testShouldJson() throws Exception {
+		final Purchases purchases = new Purchases("test", asList(newPurchase(0), newPurchase(1), newPurchase(2)), null);
+
+		final JSONObject json = purchases.toJsonObject(false);
+		final JSONArray jsonArray = json.getJSONArray("list");
+
+		assertEquals("test", json.getString("product"));
+		for (int i = 0; i < jsonArray.length(); i++) {
+			final JSONObject o = jsonArray.getJSONObject(i);
+			verifyPurchase(Purchase.fromJson(o.toString(), null), i, Purchase.State.PURCHASED);
+		}
+		assertEquals("{" +
+						"\"product\":\"test\"," +
+						"\"list\":" +
+						"[" +
+						"{\"developerPayload\":\"developerPayload_0\",\"packageName\":\"packageName_0\",\"token\":\"purchaseToken_0\",\"purchaseState\":0,\"orderId\":\"orderId_0\",\"purchaseTime\":0,\"productId\":\"0\"}," +
+						"{\"developerPayload\":\"developerPayload_1\",\"packageName\":\"packageName_1\",\"token\":\"purchaseToken_1\",\"purchaseState\":0,\"orderId\":\"orderId_1\",\"purchaseTime\":1,\"productId\":\"1\"}," +
+						"{\"developerPayload\":\"developerPayload_2\",\"packageName\":\"packageName_2\",\"token\":\"purchaseToken_2\",\"purchaseState\":0,\"orderId\":\"orderId_2\",\"purchaseTime\":2,\"productId\":\"2\"}" +
+						"]" +
+						"}",
+				json.toString());
+	}
+
+	@Test
+	public void testShouldJsonEmptyList() throws Exception {
+		final Purchases purchases = new Purchases("test", Collections.emptyList(), null);
+		final JSONObject json = purchases.toJsonObject(true);
+		final JSONArray jsonArray = json.getJSONArray("list");
+		assertEquals(0, jsonArray.length());
 	}
 }

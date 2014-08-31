@@ -27,12 +27,11 @@ import org.json.JSONObject;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
+import org.skyscreamer.jsonassert.JSONAssert;
 
 import javax.annotation.Nonnull;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 @RunWith(RobolectricTestRunner.class)
 public class PurchaseTest {
@@ -41,6 +40,49 @@ public class PurchaseTest {
 	public void testShouldBeCreatedFromJson() throws Exception {
 		final Purchase purchase = Purchase.fromJson(newJson(2, Purchase.State.REFUNDED), "signature");
 		verifyPurchase(purchase, 2, Purchase.State.REFUNDED);
+	}
+
+	@Test
+	public void testToJsonShouldReturnCorrectJson() throws Exception {
+		final Purchase purchase = Purchase.fromJson(newJson(2, Purchase.State.REFUNDED), "signature");
+		final String json = purchase.toJson();
+		final Purchase actual = Purchase.fromJson(json, "signature");
+
+		verifyPurchase(actual, 2, Purchase.State.REFUNDED);
+	}
+
+	@Test
+	public void testToJsonShouldReturnCorrectJsonForPartiallyEmptyPurchase() throws Exception {
+		final JSONObject expected = newJsonObject(3, Purchase.State.CANCELLED);
+		expected.remove("orderId");
+		expected.remove("packageName");
+		expected.remove("purchaseState");
+		expected.remove("developerPayload");
+		expected.remove("purchaseToken");
+		final Purchase purchase = Purchase.fromJson(expected.toString(), "signature");
+
+		final JSONObject actual = new JSONObject(purchase.toJson());
+		assertTrue(actual.has("purchaseState"));
+		actual.remove("purchaseState");
+
+		JSONAssert.assertEquals(expected, actual, false);
+	}
+
+	@Test
+	public void testJsonShouldNotContainSignature() throws Exception {
+		final Purchase purchase = Purchase.fromJson(newJson(2, Purchase.State.REFUNDED), "signature");
+		final String json = purchase.toJson();
+		final JSONObject jsonObject = new JSONObject(json);
+		assertFalse(jsonObject.has("signature"));
+	}
+
+	@Test
+	public void testJsonShouldContainSignature() throws Exception {
+		final Purchase purchase = Purchase.fromJson(newJson(2, Purchase.State.REFUNDED), "signature");
+		final String json = purchase.toJson(true);
+		final JSONObject jsonObject = new JSONObject(json);
+		assertTrue(jsonObject.has("signature"));
+		assertEquals("signature", jsonObject.getString("signature"));
 	}
 
 	@Test
@@ -87,7 +129,7 @@ public class PurchaseTest {
 	@Nonnull
 	static JSONObject newJsonObject(long id, Purchase.State state) throws JSONException {
 		final JSONObject json = new JSONObject();
-		json.put("productId", id);
+		json.put("productId", String.valueOf(id));
 		json.put("orderId", "orderId_" + id);
 		json.put("packageName", "packageName_" + id);
 		json.put("purchaseTime", id);
