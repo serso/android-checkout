@@ -23,7 +23,9 @@
 package org.solovyev.android.checkout;
 
 import android.os.Bundle;
+import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -82,6 +84,42 @@ public final class Purchases {
 		return new Purchases(product, purchases, continuationToken);
 	}
 
+	/**
+	 * Same as {@link #toJson(boolean)}  with {@code withSignatures=false}
+	 * @return JSON representation of this object
+	 */
+	@Nonnull
+	public String toJson() {
+		return toJson(false);
+	}
+
+	/**
+	 * @param withSignatures if true then {@link Purchase} will include signature field
+	 * @return JSON representation of this object
+	 */
+	@Nonnull
+	public String toJson(boolean withSignatures) {
+		return toJsonObject(withSignatures).toString();
+	}
+
+	@Nonnull
+	JSONObject toJsonObject(boolean withSignatures) {
+		final JSONObject json = new JSONObject();
+		try {
+			json.put("product", product);
+			final JSONArray array = new JSONArray();
+			for (int i = 0; i < list.size(); i++) {
+				final Purchase purchase = list.get(i);
+				array.put(i, purchase.toJsonObject(withSignatures));
+			}
+			json.put("list", array);
+		} catch (JSONException e) {
+			// should never happen
+			throw new AssertionError(e);
+		}
+		return json;
+	}
+
 	@Nonnull
 	private static List<String> extractDatasList(@Nonnull Bundle bundle) {
 		final List<String> list = bundle.getStringArrayList(BUNDLE_DATA_LIST);
@@ -100,6 +138,7 @@ public final class Purchases {
 
 	/**
 	 * <b>Note</b>: this method doesn't check state of the purchase
+	 *
 	 * @param sku SKU of purchase to be found
 	 * @return true if purchase with specified <var>sku</var> exists
 	 */
@@ -108,7 +147,7 @@ public final class Purchases {
 	}
 
 	/**
-	 * @param sku SKU of purchase to be found
+	 * @param sku   SKU of purchase to be found
 	 * @param state state of the purchase to be found
 	 * @return true if purchase with specified <var>sku</var> and <var>state</var> exists
 	 */

@@ -33,6 +33,7 @@ dependencies {
     testCompile 'junit:junit:4.+'
     testCompile 'org.robolectric:robolectric:2.3'
     testCompile "org.mockito:mockito-all:1.9.5"
+    testCompile "org.skyscreamer:jsonassert:1.2.3"
 }
 
 tasks.withType(Test) {

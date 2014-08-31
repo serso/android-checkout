@@ -22,6 +22,7 @@
 
 package org.solovyev.android.checkout;
 
+import android.text.TextUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -70,6 +71,53 @@ public final class Purchase {
 		final String payload = json.optString("developerPayload");
 		final String token = json.optString("token", json.optString("purchaseToken"));
 		return new Purchase(sku, orderId, packageName, purchaseTime, purchaseState, payload, token, signature == null ? "" : signature);
+	}
+
+	/**
+	 * Same as {@link #toJson(boolean)} with {@code withSignature=false}
+	 * @return JSON representation of this object
+	 */
+	@Nonnull
+	public String toJson() {
+		return toJson(false);
+	}
+
+	/**
+	 * It might be useful to get a JSON of {@link Purchase} with signature information (Android provides signature
+	 * separately). In that case use {@code withSignature=true}.
+	 * @param withSignature if true then {@link #signature} will be included in the result
+	 * @return JSON representation of this object
+	 */
+	@Nonnull
+	public String toJson(boolean withSignature) {
+		return toJsonObject(withSignature).toString();
+	}
+
+	@Nonnull
+	JSONObject toJsonObject(boolean withSignature) {
+		final JSONObject json = new JSONObject();
+		try {
+			json.put("productId", sku);
+			tryPut(json, "orderId", orderId);
+			tryPut(json, "packageName", packageName);
+			json.put("purchaseTime", time);
+			json.put("purchaseState", state.id);
+			tryPut(json, "developerPayload", payload);
+			tryPut(json, "token", token);
+			if (withSignature) {
+				tryPut(json, "signature", signature);
+			}
+		} catch (JSONException e) {
+			// JSON exception should never happen in runtime
+			throw new AssertionError(e);
+		}
+		return json;
+	}
+
+	private static void tryPut(JSONObject json, @Nonnull String key, @Nonnull String name) throws JSONException {
+		if (!TextUtils.isEmpty(name)) {
+			json.put(key, name);
+		}
 	}
 
 	@Override
