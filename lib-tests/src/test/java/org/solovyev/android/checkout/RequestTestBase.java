@@ -68,12 +68,11 @@ abstract class RequestTestBase {
 	}
 
 	@Nonnull
-	protected final Bundle newBundle(int response) {
+	protected static Bundle newBundle(int response) {
 		final Bundle bundle = new Bundle();
 		bundle.putInt("RESPONSE_CODE", response);
 		return bundle;
 	}
-
 
 	@Test
 	public void testShouldSuccess() throws Exception {

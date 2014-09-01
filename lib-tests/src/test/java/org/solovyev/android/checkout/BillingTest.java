@@ -1,29 +1,12 @@
-/*
- * Copyright 2014 serso aka se.solovyev
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *    http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
- * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Contact details
- *
- * Email: se.solovyev@gmail.com
- * Site:  http://se.solovyev.org
- */
 
 package org.solovyev.android.checkout;
 
+import android.os.Bundle;
 import android.os.RemoteException;
 import com.android.vending.billing.IInAppBillingService;
+import org.hamcrest.BaseMatcher;
+import org.hamcrest.Description;
+import org.json.JSONException;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -39,9 +22,13 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import static java.lang.System.currentTimeMillis;
+import static java.util.Arrays.asList;
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.*;
+import static org.solovyev.android.checkout.RequestTestBase.newBundle;
+import static org.solovyev.android.checkout.ResponseCodes.OK;
 
 @SuppressWarnings("unchecked")
 @RunWith(CheckoutTestRunner.class)
@@ -93,7 +80,7 @@ public class BillingTest {
 	public void testShouldExecuteRequestIfConnected() throws Exception {
 		final Billing.ServiceConnector connector = mock(Billing.ServiceConnector.class);
 		final IInAppBillingService service = mock(IInAppBillingService.class);
-		when(service.isBillingSupported(anyInt(), anyString(), anyString())).thenReturn(ResponseCodes.OK);
+		when(service.isBillingSupported(anyInt(), anyString(), anyString())).thenReturn(OK);
 		when(connector.connect()).then(new Answer<Object>() {
 			@Override
 			public Object answer(InvocationOnMock invocation) throws Throwable {
@@ -189,19 +176,141 @@ public class BillingTest {
 		for (int i = REQUESTS / 2; i < REQUESTS; i++) {
 			b.cancel(requestIds.get(i));
 		}
-		assertTrue(latch.await(1, TimeUnit.SECONDS));
+		assertTrue(latch.await(1, SECONDS));
 	}
 
-	private static class CountDownListener implements RequestListener {
+	@Test
+	public void testIsPurchasedShouldCollectAllThePurchases() throws Exception {
+		checkIsPurchased("0", true);
+		checkIsPurchased("1", true);
+		checkIsPurchased("2", true);
+		checkIsPurchased("3", true);
+		checkIsPurchased("4", true);
+		checkIsPurchased("-1", false);
+		checkIsPurchased("5", false);
+	}
+
+	@Test
+	public void testShouldReturnAllPurchases() throws Exception {
+		final Billing billing = prepareMultiPurchasesBilling();
+
+		final CountDownLatch latch = new CountDownLatch(1);
+		final CountDownListener l = new CountDownListener(latch);
+		billing.getRequests().getAllPurchases(ProductTypes.IN_APP, l);
+
+		assertTrue(latch.await(1, SECONDS));
+		verify(l.listener).onSuccess(argThat(new BaseMatcher<Purchases>() {
+			@Override
+			public boolean matches(Object item) {
+				if (!(item instanceof Purchases)) {
+					return false;
+				}
+				final Purchases purchases = (Purchases) item;
+				for (Integer id : asList(0, 1, 2, 3, 4)) {
+					if (!purchases.hasPurchaseInState(String.valueOf(id), Purchase.State.PURCHASED)) {
+						return false;
+					}
+				}
+				return true;
+			}
+
+			@Override
+			public void describeTo(Description description) {
+			}
+		}));
+	}
+
+	@Test
+	public void testShouldCancelIsPurchasedListener() throws Exception {
+		final Billing billing = Tests.newBilling(true);
+
+		final CountDownLatch requestWaiter = new CountDownLatch(1);
+		final CountDownLatch cancelWaiter = new CountDownLatch(1);
+
+		final IInAppBillingService service = mock(IInAppBillingService.class);
+		when(service.getPurchases(anyInt(), anyString(), anyString(), isNull(String.class))).thenAnswer(new Answer<Object>() {
+			@Override
+			public Object answer(InvocationOnMock invocation) throws Throwable {
+				requestWaiter.countDown();
+				return newPurchasesBundle(0, true);
+			}
+		});
+		when(service.getPurchases(anyInt(), anyString(), anyString(), eq("1"))).thenAnswer(new Answer<Bundle>() {
+			@Override
+			public Bundle answer(InvocationOnMock invocation) throws Throwable {
+				cancelWaiter.await(1, SECONDS);
+				return newPurchasesBundle(1, false);
+			}
+		});
+		Tests.setService(billing, service);
+
+		final RequestListener l = mock(RequestListener.class);
+		final BillingRequests requests = billing.getRequests();
+		requests.isPurchased(ProductTypes.IN_APP, "1", l);
+
+		requestWaiter.await(1, SECONDS);
+		requests.cancelAll();
+		cancelWaiter.countDown();
+
+		verify(l, never()).onSuccess(anyObject());
+		verify(l, never()).onError(anyInt(), any(Exception.class));
+	}
+
+	private void checkIsPurchased(@Nonnull String id, boolean purchased) throws RemoteException, JSONException, InterruptedException {
+		final Billing billing = prepareMultiPurchasesBilling();
+
+		final CountDownLatch latch = new CountDownLatch(1);
+		final CountDownListener l = new CountDownListener(latch);
+
+		billing.getRequests().isPurchased(ProductTypes.IN_APP, id, l);
+
+		assertTrue(latch.await(1, SECONDS));
+		verify(l.listener).onSuccess(eq(purchased));
+		verify(l.listener, never()).onSuccess(eq(!purchased));
+	}
+
+	@Nonnull
+	private Billing prepareMultiPurchasesBilling() throws RemoteException, JSONException {
+		final Billing billing = Tests.newBilling(true);
+		prepareMultiPurchasesService(billing);
+		return billing;
+	}
+
+	private void prepareMultiPurchasesService(@Nonnull Billing billing) throws RemoteException, JSONException {
+		final IInAppBillingService service = mock(IInAppBillingService.class);
+		when(service.getPurchases(anyInt(), anyString(), anyString(), isNull(String.class))).thenReturn(newPurchasesBundle(0, true));
+		when(service.getPurchases(anyInt(), anyString(), anyString(), eq("1"))).thenReturn(newPurchasesBundle(1, true));
+		when(service.getPurchases(anyInt(), anyString(), anyString(), eq("2"))).thenReturn(newPurchasesBundle(2, true));
+		when(service.getPurchases(anyInt(), anyString(), anyString(), eq("3"))).thenReturn(newPurchasesBundle(3, true));
+		when(service.getPurchases(anyInt(), anyString(), anyString(), eq("4"))).thenReturn(newPurchasesBundle(4, false));
+		Tests.setService(billing, service);
+	}
+
+	@Nonnull
+	private Bundle newPurchasesBundle(long id, boolean withContinuationToken) throws JSONException {
+		final Bundle bundle = newBundle(OK);
+		final ArrayList<String> list = new ArrayList<String>();
+		list.add(PurchaseTest.newJson(id, Purchase.State.PURCHASED));
+		bundle.putStringArrayList(Purchases.BUNDLE_DATA_LIST, list);
+		if (withContinuationToken) {
+			bundle.putString(Purchases.BUNDLE_CONTINUATION_TOKEN, String.valueOf(id + 1));
+		}
+		return bundle;
+	}
+
+	private static class CountDownListener<R> implements RequestListener<R> {
 
 		private final CountDownLatch latch;
+		private final RequestListener<R> listener;
 
 		public CountDownListener(CountDownLatch latch) {
 			this.latch = latch;
+			this.listener = mock(RequestListener.class);
 		}
 
 		@Override
-		public void onSuccess(@Nonnull Object result) {
+		public void onSuccess(@Nonnull R result) {
+			listener.onSuccess(result);
 			onEnd();
 		}
 
@@ -211,6 +320,7 @@ public class BillingTest {
 
 		@Override
 		public void onError(int response, @Nonnull Exception e) {
+			listener.onError(response, e);
 			onEnd();
 		}
 	}
