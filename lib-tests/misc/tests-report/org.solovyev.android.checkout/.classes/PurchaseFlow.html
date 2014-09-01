@@ -1,0 +1,230 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: PurchaseFlow</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">org.solovyev.android.checkout</a> ]
+</div>
+
+<h1>Coverage Summary for Class: PurchaseFlow (org.solovyev.android.checkout)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">PurchaseFlow</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/ 1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    85.7%
+  </span>
+  <span class="absValue">
+    (6/ 7)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    78.8%
+  </span>
+  <span class="absValue">
+    (41/ 52)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp; * Copyright 2014 serso aka se.solovyev
+<i>3</i>&nbsp; *
+<i>4</i>&nbsp; * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+<i>5</i>&nbsp; * you may not use this file except in compliance with the License.
+<i>6</i>&nbsp; * You may obtain a copy of the License at
+<i>7</i>&nbsp; *
+<i>8</i>&nbsp; *    http://www.apache.org/licenses/LICENSE-2.0
+<i>9</i>&nbsp; *
+<i>10</i>&nbsp; * Unless required by applicable law or agreed to in writing, software
+<i>11</i>&nbsp; * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+<i>12</i>&nbsp; * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+<i>13</i>&nbsp; * See the License for the specific language governing permissions and
+<i>14</i>&nbsp; * limitations under the License.
+<i>15</i>&nbsp; *
+<i>16</i>&nbsp; * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+<i>17</i>&nbsp; * Contact details
+<i>18</i>&nbsp; *
+<i>19</i>&nbsp; * Email: se.solovyev@gmail.com
+<i>20</i>&nbsp; * Site:  http://se.solovyev.org
+<i>21</i>&nbsp; */
+<i>22</i>&nbsp;
+<i>23</i>&nbsp;package org.solovyev.android.checkout;
+<i>24</i>&nbsp;
+<i>25</i>&nbsp;import android.app.Activity;
+<i>26</i>&nbsp;import android.app.PendingIntent;
+<i>27</i>&nbsp;import android.content.Intent;
+<i>28</i>&nbsp;import android.content.IntentSender;
+<i>29</i>&nbsp;import org.json.JSONException;
+<i>30</i>&nbsp;
+<i>31</i>&nbsp;import javax.annotation.Nonnull;
+<i>32</i>&nbsp;import javax.annotation.Nullable;
+<i>33</i>&nbsp;
+<i>34</i>&nbsp;import static android.app.Activity.RESULT_OK;
+<i>35</i>&nbsp;import static org.solovyev.android.checkout.ResponseCodes.NULL_INTENT;
+<i>36</i>&nbsp;import static org.solovyev.android.checkout.ResponseCodes.OK;
+<i>37</i>&nbsp;import static org.solovyev.android.checkout.ResponseCodes.WRONG_SIGNATURE;
+<i>38</i>&nbsp;
+<i>39</i>&nbsp;/**
+<i>40</i>&nbsp; * Class which handles different events during the purchase process
+<i>41</i>&nbsp; */
+<i>42</i>&nbsp;public final class PurchaseFlow implements CancellableRequestListener&lt;PendingIntent&gt; {
+<i>43</i>&nbsp;
+<i>44</i>&nbsp;	static final String EXTRA_RESPONSE = &quot;RESPONSE_CODE&quot;;
+<i>45</i>&nbsp;	static final String EXTRA_PURCHASE_DATA = &quot;INAPP_PURCHASE_DATA&quot;;
+<i>46</i>&nbsp;	static final String EXTRA_PURCHASE_SIGNATURE = &quot;INAPP_DATA_SIGNATURE&quot;;
+<i>47</i>&nbsp;
+<i>48</i>&nbsp;	@Nonnull
+<i>49</i>&nbsp;	private final Activity activity;
+<i>50</i>&nbsp;
+<i>51</i>&nbsp;	@Nonnull
+<i>52</i>&nbsp;	private final String publicKey;
+<i>53</i>&nbsp;
+<i>54</i>&nbsp;	private final int requestCode;
+<i>55</i>&nbsp;
+<i>56</i>&nbsp;	@Nullable
+<i>57</i>&nbsp;	private RequestListener&lt;Purchase&gt; listener;
+<i>58</i>&nbsp;
+<i>59</i>&nbsp;	@Nonnull
+<i>60</i>&nbsp;	private final SignatureVerifier verifier;
+<i>61</i>&nbsp;
+<b class="fc"><i>62</i>&nbsp;	PurchaseFlow(@Nonnull Activity activity, @Nonnull String publicKey, int requestCode, @Nonnull RequestListener&lt;Purchase&gt; listener, @Nonnull SignatureVerifier verifier) {</b>
+<b class="fc"><i>63</i>&nbsp;		this.activity = activity;</b>
+<b class="fc"><i>64</i>&nbsp;		this.publicKey = publicKey;</b>
+<b class="fc"><i>65</i>&nbsp;		this.requestCode = requestCode;</b>
+<b class="fc"><i>66</i>&nbsp;		this.listener = listener;</b>
+<b class="fc"><i>67</i>&nbsp;		this.verifier = verifier;</b>
+<b class="fc"><i>68</i>&nbsp;	}</b>
+<i>69</i>&nbsp;
+<i>70</i>&nbsp;	@Override
+<i>71</i>&nbsp;	public void onSuccess(@Nonnull PendingIntent purchaseIntent) {
+<b class="nc"><i>72</i>&nbsp;		if (listener == null) {</b>
+<i>73</i>&nbsp;			// request was cancelled =&gt; stop here
+<b class="nc"><i>74</i>&nbsp;			return;</b>
+<i>75</i>&nbsp;		}
+<i>76</i>&nbsp;		try {
+<b class="nc"><i>77</i>&nbsp;			activity.startIntentSenderForResult(purchaseIntent.getIntentSender(), requestCode, new Intent(), 0, 0, 0);</b>
+<b class="nc"><i>78</i>&nbsp;		} catch (RuntimeException e) {</b>
+<b class="nc"><i>79</i>&nbsp;			handleError(e);</b>
+<b class="nc"><i>80</i>&nbsp;		} catch (IntentSender.SendIntentException e) {</b>
+<b class="nc"><i>81</i>&nbsp;			handleError(e);</b>
+<b class="nc"><i>82</i>&nbsp;		}</b>
+<b class="nc"><i>83</i>&nbsp;	}</b>
+<i>84</i>&nbsp;
+<i>85</i>&nbsp;	void onActivityResult(int requestCode, int resultCode, Intent intent) {
+<i>86</i>&nbsp;		try {
+<b class="fc"><i>87</i>&nbsp;			Check.equals(this.requestCode, requestCode);</b>
+<b class="fc"><i>88</i>&nbsp;			if (intent == null) {</b>
+<i>89</i>&nbsp;				// sometimes intent is null (it&#39;s not obvious when it happens but it happens from time to time)
+<b class="fc"><i>90</i>&nbsp;				handleError(NULL_INTENT);</b>
+<b class="fc"><i>91</i>&nbsp;				return;</b>
+<i>92</i>&nbsp;			}
+<b class="fc"><i>93</i>&nbsp;			final int responseCode = intent.getIntExtra(EXTRA_RESPONSE, OK);</b>
+<b class="fc"><i>94</i>&nbsp;			if (resultCode == RESULT_OK &amp;&amp; responseCode == OK) {</b>
+<b class="fc"><i>95</i>&nbsp;				final String data = intent.getStringExtra(EXTRA_PURCHASE_DATA);</b>
+<b class="fc"><i>96</i>&nbsp;				final String signature = intent.getStringExtra(EXTRA_PURCHASE_SIGNATURE);</b>
+<b class="fc"><i>97</i>&nbsp;				Check.isNotNull(data);</b>
+<b class="fc"><i>98</i>&nbsp;				Check.isNotNull(signature);</b>
+<i>99</i>&nbsp;
+<b class="fc"><i>100</i>&nbsp;				if (verifier.verify(publicKey, data, signature)) {</b>
+<b class="fc"><i>101</i>&nbsp;					if (listener != null) {</b>
+<b class="fc"><i>102</i>&nbsp;						listener.onSuccess(Purchase.fromJson(data, signature));</b>
+<i>103</i>&nbsp;					}
+<i>104</i>&nbsp;				} else {
+<b class="fc"><i>105</i>&nbsp;					handleError(WRONG_SIGNATURE);</b>
+<i>106</i>&nbsp;				}
+<b class="fc"><i>107</i>&nbsp;			} else {</b>
+<b class="fc"><i>108</i>&nbsp;				handleError(responseCode);</b>
+<i>109</i>&nbsp;			}
+<b class="fc"><i>110</i>&nbsp;		} catch (RuntimeException e) {</b>
+<b class="fc"><i>111</i>&nbsp;			handleError(e);</b>
+<b class="nc"><i>112</i>&nbsp;		} catch (JSONException e) {</b>
+<b class="nc"><i>113</i>&nbsp;			handleError(e);</b>
+<b class="fc"><i>114</i>&nbsp;		}</b>
+<b class="fc"><i>115</i>&nbsp;	}</b>
+<i>116</i>&nbsp;
+<i>117</i>&nbsp;	private void handleError(int response) {
+<b class="fc"><i>118</i>&nbsp;		Billing.error(&quot;Error response: &quot; + response + &quot; in &quot; + PurchaseRequest.class.getSimpleName() + &quot; request&quot;);</b>
+<b class="fc"><i>119</i>&nbsp;		if (listener != null) {</b>
+<b class="fc"><i>120</i>&nbsp;			listener.onError(response, new BillingException(response));</b>
+<i>121</i>&nbsp;		}
+<b class="fc"><i>122</i>&nbsp;	}</b>
+<i>123</i>&nbsp;
+<i>124</i>&nbsp;	private void handleError(@Nonnull Exception e) {
+<b class="fc"><i>125</i>&nbsp;		Billing.error(&quot;Exception in &quot; + PurchaseRequest.class.getSimpleName() + &quot; request: &quot;, e);</b>
+<b class="fc"><i>126</i>&nbsp;		onError(ResponseCodes.EXCEPTION, e);</b>
+<b class="fc"><i>127</i>&nbsp;	}</b>
+<i>128</i>&nbsp;
+<i>129</i>&nbsp;	@Override
+<i>130</i>&nbsp;	public void onError(int response, @Nonnull Exception e) {
+<b class="fc"><i>131</i>&nbsp;		if (listener != null) {</b>
+<b class="fc"><i>132</i>&nbsp;			listener.onError(response, e);</b>
+<i>133</i>&nbsp;		}
+<b class="fc"><i>134</i>&nbsp;	}</b>
+<i>135</i>&nbsp;
+<i>136</i>&nbsp;	/**
+<i>137</i>&nbsp;	 * Note that cancelling the purchase flow is not the same as cancelling the purchase process as purchase process
+<i>138</i>&nbsp;	 * is not controlled by the app. This method only guarantees that there will be no more calls to {@link RequestListener}
+<i>139</i>&nbsp;	 */
+<i>140</i>&nbsp;	@Override
+<i>141</i>&nbsp;	public void cancel() {
+<b class="fc"><i>142</i>&nbsp;		if (listener != null) {</b>
+<b class="fc"><i>143</i>&nbsp;			Billing.cancel(listener);</b>
+<b class="fc"><i>144</i>&nbsp;			listener = null;</b>
+<i>145</i>&nbsp;		}
+<b class="fc"><i>146</i>&nbsp;	}</b>
+<i>147</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2014-09-01 15:39</div>
+</div>
+</body>
+</html>

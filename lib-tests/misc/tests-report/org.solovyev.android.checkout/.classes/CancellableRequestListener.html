@@ -1,0 +1,85 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: CancellableRequestListener</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">org.solovyev.android.checkout</a> ]
+</div>
+
+<h1>Coverage Summary for Class: CancellableRequestListener (org.solovyev.android.checkout)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+</tr>
+  <tr>
+    <td class="name">CancellableRequestListener$$EnhancerByMockitoWithCGLIB$$b78bd3f8</td>
+  </tr>
+<tr>
+  <td class="name"><strong>total</strong></td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp; * Copyright 2014 serso aka se.solovyev
+<i>3</i>&nbsp; *
+<i>4</i>&nbsp; * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+<i>5</i>&nbsp; * you may not use this file except in compliance with the License.
+<i>6</i>&nbsp; * You may obtain a copy of the License at
+<i>7</i>&nbsp; *
+<i>8</i>&nbsp; *    http://www.apache.org/licenses/LICENSE-2.0
+<i>9</i>&nbsp; *
+<i>10</i>&nbsp; * Unless required by applicable law or agreed to in writing, software
+<i>11</i>&nbsp; * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+<i>12</i>&nbsp; * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+<i>13</i>&nbsp; * See the License for the specific language governing permissions and
+<i>14</i>&nbsp; * limitations under the License.
+<i>15</i>&nbsp; *
+<i>16</i>&nbsp; * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+<i>17</i>&nbsp; * Contact details
+<i>18</i>&nbsp; *
+<i>19</i>&nbsp; * Email: se.solovyev@gmail.com
+<i>20</i>&nbsp; * Site:  http://se.solovyev.org
+<i>21</i>&nbsp; */
+<i>22</i>&nbsp;
+<i>23</i>&nbsp;package org.solovyev.android.checkout;
+<i>24</i>&nbsp;
+<i>25</i>&nbsp;/**
+<i>26</i>&nbsp; * Request listener which can be cancelled
+<i>27</i>&nbsp; * @param &lt;R&gt; type of result
+<i>28</i>&nbsp; */
+<i>29</i>&nbsp;interface CancellableRequestListener&lt;R&gt; extends RequestListener&lt;R&gt; {
+<i>30</i>&nbsp;
+<i>31</i>&nbsp;	/**
+<i>32</i>&nbsp;	 * Should be called to notify the listener that associates request was cancelled
+<i>33</i>&nbsp;	 */
+<i>34</i>&nbsp;	void cancel();
+<i>35</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2014-09-01 15:39</div>
+</div>
+</body>
+</html>

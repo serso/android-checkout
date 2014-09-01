@@ -1,0 +1,161 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: GetSkuDetailsRequest</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">org.solovyev.android.checkout</a> ]
+</div>
+
+<h1>Coverage Summary for Class: GetSkuDetailsRequest (org.solovyev.android.checkout)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">GetSkuDetailsRequest</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/ 1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (3/ 3)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (21/ 21)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp; * Copyright 2014 serso aka se.solovyev
+<i>3</i>&nbsp; *
+<i>4</i>&nbsp; * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+<i>5</i>&nbsp; * you may not use this file except in compliance with the License.
+<i>6</i>&nbsp; * You may obtain a copy of the License at
+<i>7</i>&nbsp; *
+<i>8</i>&nbsp; *    http://www.apache.org/licenses/LICENSE-2.0
+<i>9</i>&nbsp; *
+<i>10</i>&nbsp; * Unless required by applicable law or agreed to in writing, software
+<i>11</i>&nbsp; * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+<i>12</i>&nbsp; * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+<i>13</i>&nbsp; * See the License for the specific language governing permissions and
+<i>14</i>&nbsp; * limitations under the License.
+<i>15</i>&nbsp; *
+<i>16</i>&nbsp; * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+<i>17</i>&nbsp; * Contact details
+<i>18</i>&nbsp; *
+<i>19</i>&nbsp; * Email: se.solovyev@gmail.com
+<i>20</i>&nbsp; * Site:  http://se.solovyev.org
+<i>21</i>&nbsp; */
+<i>22</i>&nbsp;
+<i>23</i>&nbsp;package org.solovyev.android.checkout;
+<i>24</i>&nbsp;
+<i>25</i>&nbsp;import android.os.Bundle;
+<i>26</i>&nbsp;import android.os.RemoteException;
+<i>27</i>&nbsp;import com.android.vending.billing.IInAppBillingService;
+<i>28</i>&nbsp;
+<i>29</i>&nbsp;import javax.annotation.Nonnull;
+<i>30</i>&nbsp;import javax.annotation.Nullable;
+<i>31</i>&nbsp;import java.util.ArrayList;
+<i>32</i>&nbsp;import java.util.Collections;
+<i>33</i>&nbsp;import java.util.List;
+<i>34</i>&nbsp;
+<i>35</i>&nbsp;final class GetSkuDetailsRequest extends Request&lt;Skus&gt; {
+<i>36</i>&nbsp;
+<i>37</i>&nbsp;	@Nonnull
+<i>38</i>&nbsp;	private final String product;
+<i>39</i>&nbsp;
+<i>40</i>&nbsp;	@Nonnull
+<i>41</i>&nbsp;	private final ArrayList&lt;String&gt; skus;
+<i>42</i>&nbsp;
+<i>43</i>&nbsp;	GetSkuDetailsRequest(@Nonnull String product, @Nonnull List&lt;String&gt; skus) {
+<b class="fc"><i>44</i>&nbsp;		super(RequestType.GET_SKU_DETAILS);</b>
+<b class="fc"><i>45</i>&nbsp;		this.product = product;</b>
+<b class="fc"><i>46</i>&nbsp;		this.skus = new ArrayList&lt;String&gt;(skus);</b>
+<b class="fc"><i>47</i>&nbsp;		Collections.sort(this.skus);</b>
+<b class="fc"><i>48</i>&nbsp;	}</b>
+<i>49</i>&nbsp;
+<i>50</i>&nbsp;	@Override
+<i>51</i>&nbsp;	void start(@Nonnull IInAppBillingService service, int apiVersion, @Nonnull String packageName) throws RemoteException, RequestException {
+<b class="fc"><i>52</i>&nbsp;		final Bundle skusBundle = new Bundle();</b>
+<b class="fc"><i>53</i>&nbsp;		skusBundle.putStringArrayList(&quot;ITEM_ID_LIST&quot;, skus);</b>
+<b class="fc"><i>54</i>&nbsp;		final Bundle bundle = service.getSkuDetails(apiVersion, packageName, product, skusBundle);</b>
+<b class="fc"><i>55</i>&nbsp;		if (!handleError(bundle)) {</b>
+<b class="fc"><i>56</i>&nbsp;			onSuccess(Skus.fromBundle(bundle, product));</b>
+<i>57</i>&nbsp;		}
+<b class="fc"><i>58</i>&nbsp;	}</b>
+<i>59</i>&nbsp;
+<i>60</i>&nbsp;	@Nullable
+<i>61</i>&nbsp;	@Override
+<i>62</i>&nbsp;	protected String getCacheKey() {
+<b class="fc"><i>63</i>&nbsp;		if (skus.size() == 1) {</b>
+<b class="fc"><i>64</i>&nbsp;			return product + &quot;_&quot; + skus.get(0);</b>
+<i>65</i>&nbsp;		} else {
+<b class="fc"><i>66</i>&nbsp;			final StringBuilder sb = new StringBuilder(5 * skus.size());</b>
+<b class="fc"><i>67</i>&nbsp;			sb.append(&quot;[&quot;);</b>
+<b class="fc"><i>68</i>&nbsp;			for (int i = 0; i &lt; skus.size(); i++) {</b>
+<b class="fc"><i>69</i>&nbsp;				if (i &gt; 0) {</b>
+<b class="fc"><i>70</i>&nbsp;					sb.append(&quot;,&quot;);</b>
+<i>71</i>&nbsp;				}
+<b class="fc"><i>72</i>&nbsp;				sb.append(skus.get(i));</b>
+<i>73</i>&nbsp;			}
+<b class="fc"><i>74</i>&nbsp;			sb.append(&quot;]&quot;);</b>
+<b class="fc"><i>75</i>&nbsp;			return product + &quot;_&quot; + sb.toString();</b>
+<i>76</i>&nbsp;		}
+<i>77</i>&nbsp;	}
+<i>78</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2014-09-01 15:39</div>
+</div>
+</body>
+</html>
