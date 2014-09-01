@@ -1,0 +1,170 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: BillingRequests</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">org.solovyev.android.checkout</a> ]
+</div>
+
+<h1>Coverage Summary for Class: BillingRequests (org.solovyev.android.checkout)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+</tr>
+<tr>
+  <td class="name">BillingRequests</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp; * Copyright 2014 serso aka se.solovyev
+<i>3</i>&nbsp; *
+<i>4</i>&nbsp; * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+<i>5</i>&nbsp; * you may not use this file except in compliance with the License.
+<i>6</i>&nbsp; * You may obtain a copy of the License at
+<i>7</i>&nbsp; *
+<i>8</i>&nbsp; *    http://www.apache.org/licenses/LICENSE-2.0
+<i>9</i>&nbsp; *
+<i>10</i>&nbsp; * Unless required by applicable law or agreed to in writing, software
+<i>11</i>&nbsp; * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+<i>12</i>&nbsp; * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+<i>13</i>&nbsp; * See the License for the specific language governing permissions and
+<i>14</i>&nbsp; * limitations under the License.
+<i>15</i>&nbsp; *
+<i>16</i>&nbsp; * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+<i>17</i>&nbsp; * Contact details
+<i>18</i>&nbsp; *
+<i>19</i>&nbsp; * Email: se.solovyev@gmail.com
+<i>20</i>&nbsp; * Site:  http://se.solovyev.org
+<i>21</i>&nbsp; */
+<i>22</i>&nbsp;
+<i>23</i>&nbsp;package org.solovyev.android.checkout;
+<i>24</i>&nbsp;
+<i>25</i>&nbsp;import javax.annotation.Nonnull;
+<i>26</i>&nbsp;import javax.annotation.Nullable;
+<i>27</i>&nbsp;import java.util.List;
+<i>28</i>&nbsp;
+<i>29</i>&nbsp;/**
+<i>30</i>&nbsp; * Available billing request methods.
+<i>31</i>&nbsp; * Depending on configuration requests executed via methods might have different tags and results might be delivered
+<i>32</i>&nbsp; * on different threads, see {@link org.solovyev.android.checkout.Billing.RequestsBuilder} for more
+<i>33</i>&nbsp; * information.
+<i>34</i>&nbsp; */
+<i>35</i>&nbsp;public interface BillingRequests {
+<i>36</i>&nbsp;
+<i>37</i>&nbsp;	/**
+<i>38</i>&nbsp;	 * Checks if billing for specified &lt;var&gt;product&lt;/var&gt; is supported
+<i>39</i>&nbsp;	 * @param product type of product, see {@link org.solovyev.android.checkout.ProductTypes}
+<i>40</i>&nbsp;	 * @return request id
+<i>41</i>&nbsp;	 *
+<i>42</i>&nbsp;	 * @see org.solovyev.android.checkout.ProductTypes
+<i>43</i>&nbsp;	 */
+<i>44</i>&nbsp;	int isBillingSupported(@Nonnull String product);
+<i>45</i>&nbsp;
+<i>46</i>&nbsp;	/**
+<i>47</i>&nbsp;	 * Checks if billing for specified &lt;var&gt;product&lt;/var&gt; is supported and returns result through &lt;var&gt;listener&lt;/var&gt;
+<i>48</i>&nbsp;	 * @param product type of product, see {@link org.solovyev.android.checkout.ProductTypes}
+<i>49</i>&nbsp;	 * @param listener request listener, called asynchronously
+<i>50</i>&nbsp;	 * @return request id
+<i>51</i>&nbsp;	 *
+<i>52</i>&nbsp;	 * @see org.solovyev.android.checkout.ProductTypes
+<i>53</i>&nbsp;	 */
+<i>54</i>&nbsp;	int isBillingSupported(@Nonnull String product, @Nonnull RequestListener&lt;Object&gt; listener);
+<i>55</i>&nbsp;
+<i>56</i>&nbsp;	/**
+<i>57</i>&nbsp;	 * Requests list of purchased items of &lt;var&gt;product&lt;/var&gt; type.
+<i>58</i>&nbsp;	 * Note: In case if there are more than 700 items - continuation token is returned and might be used for further
+<i>59</i>&nbsp;	 * requests. See &lt;a href=&quot;http://developer.android.com/google/play/billing/billing_integrate.html#QueryPurchases&quot;&gt;Query Purchases&lt;/a&gt;.
+<i>60</i>&nbsp;	 * for more information.
+<i>61</i>&nbsp;	 * @param product type of product, see {@link org.solovyev.android.checkout.ProductTypes}
+<i>62</i>&nbsp;	 * @param continuationToken token which is used for fetching more purchases
+<i>63</i>&nbsp;	 * @param listener request listener, called asynchronously
+<i>64</i>&nbsp;	 * @return request id
+<i>65</i>&nbsp;	 *
+<i>66</i>&nbsp;	 * @see org.solovyev.android.checkout.ProductTypes
+<i>67</i>&nbsp;	 */
+<i>68</i>&nbsp;	int getPurchases(@Nonnull String product, @Nullable String continuationToken, @Nonnull RequestListener&lt;Purchases&gt; listener);
+<i>69</i>&nbsp;
+<i>70</i>&nbsp;	/**
+<i>71</i>&nbsp;	 * Same as {@link #getPurchases(String, String, RequestListener)} but will load all the purchases.
+<i>72</i>&nbsp;	 */
+<i>73</i>&nbsp;	int getAllPurchases(@Nonnull String product, @Nonnull RequestListener&lt;Purchases&gt; listener);
+<i>74</i>&nbsp;
+<i>75</i>&nbsp;	/**
+<i>76</i>&nbsp;	 * Method checks if item with &lt;var&gt;sku&lt;/var&gt; of &lt;var&gt;product&lt;/var&gt; is purchased (i.e. there exists purchase with SKU=&lt;var&gt;sku&lt;/var&gt; and state={@link org.solovyev.android.checkout.Purchase.State#PURCHASED}).
+<i>77</i>&nbsp;	 * This method checks ALL the purchases, even if there are more than 700 items.
+<i>78</i>&nbsp;	 * @param product type of product, see {@link org.solovyev.android.checkout.ProductTypes}
+<i>79</i>&nbsp;	 * @param sku SKU of item
+<i>80</i>&nbsp;	 * @param listener request listener, called asynchronously
+<i>81</i>&nbsp;	 * @return request id
+<i>82</i>&nbsp;	 */
+<i>83</i>&nbsp;	int isPurchased(@Nonnull String product, @Nonnull String sku, @Nonnull RequestListener&lt;Boolean&gt; listener);
+<i>84</i>&nbsp;
+<i>85</i>&nbsp;	/**
+<i>86</i>&nbsp;	 * Requests list of available SKUs of &lt;var&gt;product&lt;/var&gt; type.
+<i>87</i>&nbsp;	 * See &lt;a href=&quot;http://developer.android.com/google/play/billing/billing_integrate.html#QueryDetails&quot;&gt;Querying for Items Available for Purchase&lt;/a&gt;
+<i>88</i>&nbsp;	 * @param product type of product
+<i>89</i>&nbsp;	 * @param skus list of SKUs to be loaded
+<i>90</i>&nbsp;	 * @param listener request listener, called asynchronously
+<i>91</i>&nbsp;	 * @return request id
+<i>92</i>&nbsp;	 */
+<i>93</i>&nbsp;	int getSkus(@Nonnull String product, @Nonnull List&lt;String&gt; skus, @Nonnull RequestListener&lt;Skus&gt; listener);
+<i>94</i>&nbsp;
+<i>95</i>&nbsp;	/**
+<i>96</i>&nbsp;	 * Purchases an item with &lt;var&gt;sku&lt;/var&gt; of &lt;var&gt;product&lt;/var&gt;. This method only works in conjunction with
+<i>97</i>&nbsp;	 * {@link ActivityCheckout}. See {@link ActivityCheckout} for more information.
+<i>98</i>&nbsp;	 * See &lt;a href=&quot;http://developer.android.com/google/play/billing/billing_integrate.html#Purchase&quot;&gt;Purchase&lt;/a&gt; docs.
+<i>99</i>&nbsp;	 * Note that cancelling of purchase process is not simple as this is a multi-step process. If {@link Request#cancel()}
+<i>100</i>&nbsp;	 * method is called before the request is executed then purchase flow stops. If it is called after - then only listener is
+<i>101</i>&nbsp;	 * cancelled (it won&#39;t receive any calls) but purchase process continues.
+<i>102</i>&nbsp;	 * @param product type of product
+<i>103</i>&nbsp;	 * @param sku SKU of item to be bought
+<i>104</i>&nbsp;	 * @param payload developer&#39;s payload
+<i>105</i>&nbsp;	 * @param purchaseFlow purchase flow associated with purchase process
+<i>106</i>&nbsp;	 * @return request id
+<i>107</i>&nbsp;	 */
+<i>108</i>&nbsp;	int purchase(@Nonnull String product, @Nonnull String sku, @Nullable String payload, @Nonnull PurchaseFlow purchaseFlow);
+<i>109</i>&nbsp;
+<i>110</i>&nbsp;	int purchase(@Nonnull Sku sku, @Nullable String payload, @Nonnull PurchaseFlow purchaseFlow);
+<i>111</i>&nbsp;
+<i>112</i>&nbsp;	/**
+<i>113</i>&nbsp;	 * Consumes previously purchased item.
+<i>114</i>&nbsp;	 * See &lt;a href=&quot;http://developer.android.com/google/play/billing/billing_integrate.html#Consume&quot;&gt;Consume&lt;/a&gt; for more
+<i>115</i>&nbsp;	 * information.
+<i>116</i>&nbsp;	 * @param token token which was provided with purchase, see {@link Purchase#token}
+<i>117</i>&nbsp;	 * @param listener request listener, called asynchronously
+<i>118</i>&nbsp;	 * @return request id
+<i>119</i>&nbsp;	 */
+<i>120</i>&nbsp;	int consume(@Nonnull String token, @Nonnull RequestListener&lt;Object&gt; listener);
+<i>121</i>&nbsp;
+<i>122</i>&nbsp;	void cancelAll();
+<i>123</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2014-09-01 15:39</div>
+</div>
+</body>
+</html>

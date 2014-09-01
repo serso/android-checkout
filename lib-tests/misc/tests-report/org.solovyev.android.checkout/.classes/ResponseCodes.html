@@ -1,0 +1,175 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: ResponseCodes</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">org.solovyev.android.checkout</a> ]
+</div>
+
+<h1>Coverage Summary for Class: ResponseCodes (org.solovyev.android.checkout)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">ResponseCodes</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 2)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp; * Copyright 2014 serso aka se.solovyev
+<i>3</i>&nbsp; *
+<i>4</i>&nbsp; * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+<i>5</i>&nbsp; * you may not use this file except in compliance with the License.
+<i>6</i>&nbsp; * You may obtain a copy of the License at
+<i>7</i>&nbsp; *
+<i>8</i>&nbsp; *    http://www.apache.org/licenses/LICENSE-2.0
+<i>9</i>&nbsp; *
+<i>10</i>&nbsp; * Unless required by applicable law or agreed to in writing, software
+<i>11</i>&nbsp; * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+<i>12</i>&nbsp; * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+<i>13</i>&nbsp; * See the License for the specific language governing permissions and
+<i>14</i>&nbsp; * limitations under the License.
+<i>15</i>&nbsp; *
+<i>16</i>&nbsp; * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+<i>17</i>&nbsp; * Contact details
+<i>18</i>&nbsp; *
+<i>19</i>&nbsp; * Email: se.solovyev@gmail.com
+<i>20</i>&nbsp; * Site:  http://se.solovyev.org
+<i>21</i>&nbsp; */
+<i>22</i>&nbsp;
+<i>23</i>&nbsp;package org.solovyev.android.checkout;
+<i>24</i>&nbsp;
+<i>25</i>&nbsp;/**
+<i>26</i>&nbsp; * Billing response codes, codes starting with 10000 are this library specific.
+<i>27</i>&nbsp; * See &lt;a href=&quot;http://developer.android.com/google/play/billing/index.html&quot;&gt;In-App Billing&lt;/a&gt; docs for more information.
+<i>28</i>&nbsp; */
+<i>29</i>&nbsp;public final class ResponseCodes {
+<i>30</i>&nbsp;
+<b class="nc"><i>31</i>&nbsp;	private ResponseCodes() {</b>
+<b class="nc"><i>32</i>&nbsp;		throw new AssertionError();</b>
+<i>33</i>&nbsp;	}
+<i>34</i>&nbsp;
+<i>35</i>&nbsp;	/**
+<i>36</i>&nbsp;	 * Success
+<i>37</i>&nbsp;	 */
+<i>38</i>&nbsp;	public static final int OK = 0;
+<i>39</i>&nbsp;	/**
+<i>40</i>&nbsp;	 * User pressed back or canceled a dialog
+<i>41</i>&nbsp;	 */
+<i>42</i>&nbsp;	public static final int USER_CANCELED = 1;
+<i>43</i>&nbsp;	/**
+<i>44</i>&nbsp;	 * Account error, for example, user is not logged in
+<i>45</i>&nbsp;	 * Note: hidden as this is not a part of public API, see &lt;a href=&quot;http://developer.android.com/google/play/billing/billing_reference.html&quot;&gt;In-App Billing Reference&lt;/a&gt;
+<i>46</i>&nbsp;	 */
+<i>47</i>&nbsp;	static final int ACCOUNT_ERROR = 2;
+<i>48</i>&nbsp;	/**
+<i>49</i>&nbsp;	 * This billing API version is not supported for the type requested
+<i>50</i>&nbsp;	 */
+<i>51</i>&nbsp;	public static final int BILLING_UNAVAILABLE = 3;
+<i>52</i>&nbsp;	/**
+<i>53</i>&nbsp;	 * Requested SKU is not available for purchase
+<i>54</i>&nbsp;	 */
+<i>55</i>&nbsp;	public static final int ITEM_UNAVAILABLE = 4;
+<i>56</i>&nbsp;	/**
+<i>57</i>&nbsp;	 * Invalid arguments provided to the API
+<i>58</i>&nbsp;	 */
+<i>59</i>&nbsp;	public static final int DEVELOPER_ERROR = 5;
+<i>60</i>&nbsp;	/**
+<i>61</i>&nbsp;	 * Fatal error during the API action
+<i>62</i>&nbsp;	 */
+<i>63</i>&nbsp;	public static final int ERROR = 6;
+<i>64</i>&nbsp;	/**
+<i>65</i>&nbsp;	 * Failure to purchase since item is already owned
+<i>66</i>&nbsp;	 */
+<i>67</i>&nbsp;	public static final int ITEM_ALREADY_OWNED = 7;
+<i>68</i>&nbsp;	/**
+<i>69</i>&nbsp;	 * Failure to consume since item is not owned
+<i>70</i>&nbsp;	 */
+<i>71</i>&nbsp;	public static final int ITEM_NOT_OWNED = 8;
+<i>72</i>&nbsp;
+<i>73</i>&nbsp;
+<i>74</i>&nbsp;	/**
+<i>75</i>&nbsp;	 * Billing service can&#39;t be connected, {@link android.content.Context#bindService} returned &lt;code&gt;false&lt;/code&gt;.
+<i>76</i>&nbsp;	 * @see android.content.Context#bindService
+<i>77</i>&nbsp;	 */
+<i>78</i>&nbsp;	public static final int SERVICE_NOT_CONNECTED = 10000;
+<i>79</i>&nbsp;	/**
+<i>80</i>&nbsp;	 * Exception occurred during executing the request
+<i>81</i>&nbsp;	 */
+<i>82</i>&nbsp;	public static final int EXCEPTION = 10001;
+<i>83</i>&nbsp;	/**
+<i>84</i>&nbsp;	 * Purchase has a wrong signature
+<i>85</i>&nbsp;	 */
+<i>86</i>&nbsp;	public static final int WRONG_SIGNATURE = 10002;
+<i>87</i>&nbsp;	/**
+<i>88</i>&nbsp;	 * Intent passed to {@link ActivityCheckout#onActivityResult(int, int, android.content.Intent)} is null
+<i>89</i>&nbsp;	 */
+<i>90</i>&nbsp;	public static final int NULL_INTENT = 10003;
+<i>91</i>&nbsp;
+<i>92</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2014-09-01 15:39</div>
+</div>
+</body>
+</html>

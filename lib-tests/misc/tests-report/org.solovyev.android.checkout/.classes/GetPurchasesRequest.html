@@ -1,0 +1,167 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: GetPurchasesRequest</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">org.solovyev.android.checkout</a> ]
+</div>
+
+<h1>Coverage Summary for Class: GetPurchasesRequest (org.solovyev.android.checkout)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">GetPurchasesRequest</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/ 1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (6/ 6)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (20/ 20)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;/*
+<i>2</i>&nbsp; * Copyright 2014 serso aka se.solovyev
+<i>3</i>&nbsp; *
+<i>4</i>&nbsp; * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+<i>5</i>&nbsp; * you may not use this file except in compliance with the License.
+<i>6</i>&nbsp; * You may obtain a copy of the License at
+<i>7</i>&nbsp; *
+<i>8</i>&nbsp; *    http://www.apache.org/licenses/LICENSE-2.0
+<i>9</i>&nbsp; *
+<i>10</i>&nbsp; * Unless required by applicable law or agreed to in writing, software
+<i>11</i>&nbsp; * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+<i>12</i>&nbsp; * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+<i>13</i>&nbsp; * See the License for the specific language governing permissions and
+<i>14</i>&nbsp; * limitations under the License.
+<i>15</i>&nbsp; *
+<i>16</i>&nbsp; * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+<i>17</i>&nbsp; * Contact details
+<i>18</i>&nbsp; *
+<i>19</i>&nbsp; * Email: se.solovyev@gmail.com
+<i>20</i>&nbsp; * Site:  http://se.solovyev.org
+<i>21</i>&nbsp; */
+<i>22</i>&nbsp;
+<i>23</i>&nbsp;package org.solovyev.android.checkout;
+<i>24</i>&nbsp;
+<i>25</i>&nbsp;import android.os.Bundle;
+<i>26</i>&nbsp;import android.os.RemoteException;
+<i>27</i>&nbsp;import com.android.vending.billing.IInAppBillingService;
+<i>28</i>&nbsp;import org.json.JSONException;
+<i>29</i>&nbsp;
+<i>30</i>&nbsp;import javax.annotation.Nonnull;
+<i>31</i>&nbsp;import javax.annotation.Nullable;
+<i>32</i>&nbsp;
+<i>33</i>&nbsp;final class GetPurchasesRequest extends Request&lt;Purchases&gt; {
+<i>34</i>&nbsp;
+<i>35</i>&nbsp;	@Nonnull
+<i>36</i>&nbsp;	private final String product;
+<i>37</i>&nbsp;
+<i>38</i>&nbsp;	@Nullable
+<i>39</i>&nbsp;	private final String continuationToken;
+<i>40</i>&nbsp;
+<i>41</i>&nbsp;	GetPurchasesRequest(@Nonnull String product, @Nullable String continuationToken) {
+<b class="fc"><i>42</i>&nbsp;		super(RequestType.GET_PURCHASES);</b>
+<b class="fc"><i>43</i>&nbsp;		this.product = product;</b>
+<b class="fc"><i>44</i>&nbsp;		this.continuationToken = continuationToken;</b>
+<b class="fc"><i>45</i>&nbsp;	}</b>
+<i>46</i>&nbsp;
+<i>47</i>&nbsp;	GetPurchasesRequest(@Nonnull GetPurchasesRequest request, @Nonnull String continuationToken) {
+<b class="fc"><i>48</i>&nbsp;		super(RequestType.GET_PURCHASES, request);</b>
+<b class="fc"><i>49</i>&nbsp;		this.product = request.product;</b>
+<b class="fc"><i>50</i>&nbsp;		this.continuationToken = continuationToken;</b>
+<b class="fc"><i>51</i>&nbsp;	}</b>
+<i>52</i>&nbsp;
+<i>53</i>&nbsp;	@Nonnull
+<i>54</i>&nbsp;	String getProduct() {
+<b class="fc"><i>55</i>&nbsp;		return product;</b>
+<i>56</i>&nbsp;	}
+<i>57</i>&nbsp;
+<i>58</i>&nbsp;	@Nullable
+<i>59</i>&nbsp;	String getContinuationToken() {
+<b class="fc"><i>60</i>&nbsp;		return continuationToken;</b>
+<i>61</i>&nbsp;	}
+<i>62</i>&nbsp;
+<i>63</i>&nbsp;	@Override
+<i>64</i>&nbsp;	void start(@Nonnull IInAppBillingService service, int apiVersion, @Nonnull String packageName) throws RemoteException {
+<b class="fc"><i>65</i>&nbsp;		final Bundle bundle = service.getPurchases(apiVersion, packageName, product, continuationToken);</b>
+<b class="fc"><i>66</i>&nbsp;		if (!handleError(bundle)) {</b>
+<i>67</i>&nbsp;			try {
+<b class="fc"><i>68</i>&nbsp;				onSuccess(Purchases.fromBundle(bundle, product));</b>
+<b class="fc"><i>69</i>&nbsp;			} catch (JSONException e) {</b>
+<b class="fc"><i>70</i>&nbsp;				onError(e);</b>
+<b class="fc"><i>71</i>&nbsp;			}</b>
+<i>72</i>&nbsp;		}
+<b class="fc"><i>73</i>&nbsp;	}</b>
+<i>74</i>&nbsp;
+<i>75</i>&nbsp;	@Nullable
+<i>76</i>&nbsp;	@Override
+<i>77</i>&nbsp;	protected String getCacheKey() {
+<b class="fc"><i>78</i>&nbsp;		if (continuationToken != null) {</b>
+<b class="fc"><i>79</i>&nbsp;			return product + &quot;_&quot; + continuationToken;</b>
+<i>80</i>&nbsp;		} else {
+<b class="fc"><i>81</i>&nbsp;			return product;</b>
+<i>82</i>&nbsp;		}
+<i>83</i>&nbsp;	}
+<i>84</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2014-09-01 15:39</div>
+</div>
+</body>
+</html>
