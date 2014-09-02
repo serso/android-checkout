@@ -136,9 +136,9 @@ public final class Inventory {
 	}
 
 	private void loadPurchases(@Nonnull final BillingRequests requests, @Nonnull Product product, long id) {
-		requests.getAllPurchases(product.id, new ProductRequestListener<org.solovyev.android.checkout.Purchases>(product, id) {
+		requests.getAllPurchases(product.id, new ProductRequestListener<Purchases>(product, id) {
 			@Override
-			public void onSuccess(@Nonnull org.solovyev.android.checkout.Purchases purchases) {
+			public void onSuccess(@Nonnull Purchases purchases) {
 				if (isAlive()) {
 					product.purchases.addAll(purchases.list);
 				}
@@ -248,7 +248,7 @@ public final class Inventory {
 
 		@Nullable
 		public Purchase getPurchaseInState(@Nonnull String sku, @Nonnull Purchase.State state) {
-			return org.solovyev.android.checkout.Purchases.getPurchaseInState(purchases, sku, state);
+			return Purchases.getPurchaseInState(purchases, sku, state);
 		}
 
 		@Nullable
