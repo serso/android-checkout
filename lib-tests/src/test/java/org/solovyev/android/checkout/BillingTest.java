@@ -113,13 +113,18 @@ public class BillingTest {
 	}
 
 	@Test
-	public void testShouldDisconnectOnlyIfDisconnecting() throws Exception {
-		billing.setState(Billing.State.FAILED);
+	public void testShouldDisconnectOnlyIfNotInInitialState() throws Exception {
+		billing.setState(Billing.State.INITIAL);
 		billing.setService(null, false);
 
-		assertEquals(Billing.State.FAILED, billing.getState());
+		assertEquals(Billing.State.INITIAL, billing.getState());
 
 		billing.setState(Billing.State.DISCONNECTING);
+		billing.setService(null, false);
+
+		assertEquals(Billing.State.DISCONNECTED, billing.getState());
+
+		billing.setState(Billing.State.CONNECTED);
 		billing.setService(null, false);
 
 		assertEquals(Billing.State.DISCONNECTED, billing.getState());
@@ -144,7 +149,9 @@ public class BillingTest {
 		final int SLEEP = 10;
 
 		final Billing b = Tests.newBilling(false);
-		b.setConnector(new AsyncServiceConnector(b));
+		b.setMainThread(Tests.sameThreadExecutor());
+		final AsyncServiceConnector c = new AsyncServiceConnector(b);
+		b.setConnector(c);
 		final CountDownLatch latch = new CountDownLatch(REQUESTS);
 		final RequestListener l = new CountDownListener(latch);
 		for (int i = 0; i < REQUESTS; i++) {
@@ -152,7 +159,7 @@ public class BillingTest {
 				if (random.nextBoolean()) {
 					b.connect();
 				} else {
-					b.disconnect();
+					c.disconnect();
 				}
 			}
 			b.runWhenConnected(new SleepingRequest(random.nextInt(SLEEP)), l, null);
