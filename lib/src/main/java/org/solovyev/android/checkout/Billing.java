@@ -54,7 +54,7 @@ public final class Billing {
 	@Nonnull
 	private static final String TAG = Billing.class.getSimpleName();
 
-	public static boolean DEBUG = false;
+	public static boolean DEBUG = true;
 
 	@Nonnull
 	private static final EmptyListener EMPTY_LISTENER = new EmptyListener();
@@ -162,9 +162,11 @@ public final class Billing {
 					newState = State.CONNECTED;
 				}
 			} else {
-				if (state != State.DISCONNECTING) {
+				if (state == State.INITIAL) {
+					// preserve initial state
 					return;
 				}
+				// service might be disconnected abruptly
 				newState = State.DISCONNECTED;
 			}
 			this.service = service;
@@ -191,6 +193,7 @@ public final class Billing {
 	void setState(@Nonnull State newState) {
 		synchronized (lock) {
 			if (state != newState) {
+				Billing.error("New state: " + newState);
 				state = newState;
 				switch (state) {
 					case CONNECTED:
@@ -230,13 +233,13 @@ public final class Billing {
 				return;
 			}
 			setState(State.CONNECTING);
+			mainThread.execute(new Runnable() {
+				@Override
+				public void run() {
+					connectOnMainThread();
+				}
+			});
 		}
-		mainThread.execute(new Runnable() {
-			@Override
-			public void run() {
-				connectOnMainThread();
-			}
-		});
 	}
 
 	private void connectOnMainThread() {
@@ -247,19 +250,20 @@ public final class Billing {
 		}
 	}
 
-	public void disconnect() {
+	void disconnect() {
 		synchronized (lock) {
 			if (state == State.DISCONNECTED || state == State.DISCONNECTING || state == State.INITIAL) {
 				return;
 			}
 			setState(State.DISCONNECTING);
+			mainThread.execute(new Runnable() {
+				@Override
+				public void run() {
+					disconnectOnMainThread();
+				}
+			});
+			pendingRequests.cancelAll();
 		}
-		mainThread.execute(new Runnable() {
-			@Override
-			public void run() {
-				disconnectOnMainThread();
-			}
-		});
 	}
 
 	private void disconnectOnMainThread() {
