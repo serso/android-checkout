@@ -57,7 +57,7 @@ final class Check {
 		isNotNull(o, "Object should not be null");
 	}
 
-	static void isNotNull(Object o, @Nonnull String message) {
+	static void isNotNull(@Nullable Object o, @Nonnull String message) {
 		if (o == null) {
 			throw new AssertionException(message);
 		}
