@@ -116,8 +116,10 @@ abstract class Request<R> {
 	}
 
 	void setListener(@Nullable RequestListener<R> listener) {
-		Check.isNull(this.listener);
-		this.listener = listener;
+		synchronized (this) {
+			Check.isNull(this.listener);
+			this.listener = listener;
+		}
 	}
 
 	protected void onSuccess(@Nonnull R result) {

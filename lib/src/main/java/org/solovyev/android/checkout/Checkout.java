@@ -312,7 +312,7 @@ public class Checkout {
 	}
 
 	public boolean isBillingSupported(@Nonnull String product) {
-		Check.isTrue(product.contains(product), "Product should be added to the products list");
+		Check.isTrue(products.getIds().contains(product), "Product should be added to the products list");
 		Check.isTrue(supportedProducts.containsKey(product), "Billing information is not ready yet");
 		return supportedProducts.get(product);
 	}

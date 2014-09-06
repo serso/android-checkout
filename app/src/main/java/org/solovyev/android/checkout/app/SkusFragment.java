@@ -126,7 +126,7 @@ public class SkusFragment extends BaseListFragment {
 		});
 	}
 
-	private class SkuComparator implements Comparator<SkuUi> {
+	private static class SkuComparator implements Comparator<SkuUi> {
 		@Override
 		public int compare(@Nonnull SkuUi l, @Nonnull SkuUi r) {
 			return l.sku.title.compareTo(r.sku.title);

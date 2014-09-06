@@ -55,7 +55,7 @@ public final class Billing {
 	@Nonnull
 	private static final String TAG = Billing.class.getSimpleName();
 
-	public static boolean DEBUG = true;
+	public static final boolean DEBUG = false;
 
 	@Nonnull
 	private static final EmptyListener EMPTY_LISTENER = new EmptyListener();
