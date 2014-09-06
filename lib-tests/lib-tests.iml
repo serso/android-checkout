@@ -68,8 +68,8 @@
     <orderEntry type="library" exported="" scope="TEST" name="json-20090211" level="project" />
     <orderEntry type="library" exported="" scope="TEST" name="support-annotations-20.0.0" level="project" />
     <orderEntry type="library" exported="" scope="TEST" name="acra-4.5.0" level="project" />
-    <orderEntry type="library" exported="" scope="TEST" name="internal_impl-20.0.0" level="project" />
     <orderEntry type="library" exported="" scope="TEST" name="classes" level="project" />
+    <orderEntry type="library" exported="" scope="TEST" name="internal_impl-20.0.0" level="project" />
     <orderEntry type="library" exported="" scope="TEST" name="classes" level="project" />
     <orderEntry type="library" exported="" scope="TEST" name="jsr305-2.0.3" level="project" />
     <orderEntry type="library" exported="" scope="TEST" name="_home_serso_projects_java_android_checkout_app_build_classes_debug" level="project" />

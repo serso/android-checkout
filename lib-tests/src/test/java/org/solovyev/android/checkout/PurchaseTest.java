@@ -112,18 +112,47 @@ public class PurchaseTest {
 	}
 
 	static void verifyPurchase(@Nonnull Purchase purchase, long id, Purchase.State state) {
-		assertEquals(String.valueOf(id), purchase.sku);
-		assertEquals("orderId_" + id, purchase.orderId);
-		assertEquals("packageName_" + id, purchase.packageName);
+		verifyPurchase(purchase, id, state, true, false);
+	}
+
+	static void verifyPurchase(@Nonnull Purchase purchase, long id, Purchase.State state, boolean complete, boolean sub) {
+		if (sub) {
+			assertEquals("sub" + String.valueOf(id), purchase.sku);
+		} else {
+			assertEquals(String.valueOf(id), purchase.sku);
+		}
+		if (sub) {
+			assertEquals("suborderId_" + id, purchase.orderId);
+		} else {
+			assertEquals("orderId_" + id, purchase.orderId);
+		}
+		if (complete) {
+			assertEquals("packageName_" + id, purchase.packageName);
+		}
 		assertEquals(id, purchase.time);
 		assertEquals(state, purchase.state);
 		assertEquals("developerPayload_" + id, purchase.payload);
-		assertEquals("purchaseToken_" + id, purchase.token);
+		if (complete) {
+			assertEquals("purchaseToken_" + id, purchase.token);
+		}
 	}
 
 	@Nonnull
 	static String newJson(long id, Purchase.State state) throws JSONException {
 		return newJsonObject(id, state).toString();
+	}
+
+	@Nonnull
+	static String newJsonSubscription(long id, Purchase.State state) throws JSONException {
+		return newJsonObjectSubscription(id, state).toString();
+	}
+
+	@Nonnull
+	static JSONObject newJsonObjectSubscription(long id, Purchase.State state) throws JSONException {
+		JSONObject json = newJsonObject(id, state);
+		json.put("productId", "sub" + json.getString("productId"));
+		json.put("orderId", "sub" + json.getString("orderId"));
+		return json;
 	}
 
 	@Nonnull

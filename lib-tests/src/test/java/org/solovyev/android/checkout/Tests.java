@@ -28,6 +28,8 @@ import org.robolectric.Robolectric;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+import java.util.concurrent.Executor;
+
 import static org.mockito.Mockito.mock;
 
 public final class Tests {
@@ -38,16 +40,7 @@ public final class Tests {
 
 	@Nonnull
 	static CancellableExecutor sameThreadExecutor() {
-		return new CancellableExecutor() {
-			@Override
-			public void execute(@Nonnull Runnable runnable) {
-				runnable.run();
-			}
-
-			@Override
-			public void cancel(@Nonnull Runnable runnable) {
-			}
-		};
+		return SameThreadExecutor.INSTANCE;
 	}
 
 	@Nonnull
@@ -77,6 +70,11 @@ public final class Tests {
 			public Cache getCache() {
 				return cache ? Billing.newCache() : null;
 			}
+
+			@Override
+			public Inventory getFallbackInventory(@Nonnull Checkout checkout, @Nonnull Executor onLoadExecutor) {
+				return null;
+			}
 		};
 	}
 
@@ -92,17 +90,10 @@ public final class Tests {
 	}
 
 	static void setService(@Nonnull final Billing billing, @Nonnull final IInAppBillingService service) {
-		billing.setConnector(new Billing.ServiceConnector() {
-			@Override
-			public boolean connect() {
-				billing.setService(service, true);
-				return true;
-			}
-
-			@Override
-			public void disconnect() {
-				billing.setService(null, false);
-			}
-		});
+		if (billing.getState() != Billing.State.INITIAL) {
+			billing.disconnect();
+		}
+		billing.setConnector(new TestServiceConnector(billing, service));
 	}
+
 }

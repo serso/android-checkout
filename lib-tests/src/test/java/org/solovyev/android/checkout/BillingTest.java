@@ -294,7 +294,7 @@ public class BillingTest {
 	}
 
 	@Nonnull
-	private Bundle newPurchasesBundle(long id, boolean withContinuationToken) throws JSONException {
+	static Bundle newPurchasesBundle(long id, boolean withContinuationToken) throws JSONException {
 		final Bundle bundle = newBundle(OK);
 		final ArrayList<String> list = new ArrayList<String>();
 		list.add(PurchaseTest.newJson(id, Purchase.State.PURCHASED));

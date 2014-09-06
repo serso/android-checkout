@@ -139,7 +139,7 @@ public class SkusFragment extends BaseListFragment {
 			final Inventory.Product product = products.get(IN_APP);
 			adapter.setNotifyOnChange(false);
 			adapter.clear();
-			if (product.isSupported()) {
+			if (product.supported) {
 				for (Sku sku : product.getSkus()) {
 					final Purchase purchase = product.getPurchaseInState(sku, Purchase.State.PURCHASED);
 					adapter.add(SkuUi.create(sku, purchase != null ? purchase.token : null));
