@@ -53,7 +53,7 @@ public final class Billing {
 	private static final int API_VERSION = 3;
 
 	@Nonnull
-	private static final String TAG = Billing.class.getSimpleName();
+	private static final String TAG = "Checkout";
 
 	public static final boolean DEBUG = false;
 
@@ -214,7 +214,6 @@ public final class Billing {
 	void setState(@Nonnull State newState) {
 		synchronized (lock) {
 			if (state != newState) {
-				Billing.error("New state: " + newState);
 				state = newState;
 				switch (state) {
 					case CONNECTED:
