@@ -130,7 +130,9 @@ public final class Purchase {
 	public static enum State {
 		PURCHASED(0),
 		CANCELLED(1),
-		REFUNDED(2);
+		REFUNDED(2),
+		// billing v2 only
+		EXPIRED(3);
 
 		public final int id;
 
@@ -147,6 +149,8 @@ public final class Purchase {
 					return CANCELLED;
 				case 2:
 					return REFUNDED;
+				case 3:
+					return EXPIRED;
 			}
 			throw new IllegalArgumentException("Id=" + id + " is not supported");
 		}

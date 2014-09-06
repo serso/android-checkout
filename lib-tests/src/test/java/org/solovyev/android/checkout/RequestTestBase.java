@@ -68,7 +68,7 @@ abstract class RequestTestBase {
 	}
 
 	@Nonnull
-	protected static Bundle newBundle(int response) {
+	static Bundle newBundle(int response) {
 		final Bundle bundle = new Bundle();
 		bundle.putInt("RESPONSE_CODE", response);
 		return bundle;

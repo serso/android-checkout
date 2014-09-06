@@ -27,13 +27,16 @@ import android.app.Application;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.net.Uri;
-import android.util.*;
+import android.util.Base64;
+import android.util.Log;
 import org.acra.ReportingInteractionMode;
 import org.acra.annotation.ReportsCrashes;
 import org.solovyev.android.checkout.*;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+
+import java.util.concurrent.Executor;
 
 import static android.content.Intent.ACTION_VIEW;
 import static java.util.Arrays.asList;
@@ -54,7 +57,7 @@ public class CheckoutApplication extends Application {
 	 * For better performance billing class should be used as singleton
 	 */
 	@Nonnull
-	private final Billing billing = new Billing(this, new Billing.Configuration() {
+	private final Billing billing = new Billing(this, new Billing.DefaultConfiguration() {
 		@Nonnull
 		@Override
 		public String getPublicKey() {
@@ -69,8 +72,12 @@ public class CheckoutApplication extends Application {
 
 		@Nullable
 		@Override
-		public Cache getCache() {
-			return Billing.newCache();
+		public Inventory getFallbackInventory(@Nonnull Checkout checkout, @Nonnull Executor onLoadExecutor) {
+			if (RobotmediaDatabase.exists(billing.getContext())) {
+				return new RobotmediaInventory(checkout, onLoadExecutor);
+			} else {
+				return null;
+			}
 		}
 	});
 

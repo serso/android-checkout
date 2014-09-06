@@ -27,14 +27,28 @@ import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.Map;
 
+import static java.lang.Thread.currentThread;
+
 final class Check {
+
+	private static final boolean junit = isJunit();
+
+	private static boolean isJunit() {
+		final StackTraceElement[] stackTrace = currentThread().getStackTrace();
+		for (StackTraceElement element : stackTrace) {
+			if (element.getClassName().startsWith("org.junit.")) {
+				return true;
+			}
+		}
+		return false;
+	}
 
 	private Check() {
 		throw new AssertionError();
 	}
 
 	static void isMainThread() {
-		if (!MainThread.isMainThread()) {
+		if (!junit && !MainThread.isMainThread()) {
 			throw new AssertionException("Should be called on the main thread");
 		}
 	}

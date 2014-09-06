@@ -42,6 +42,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 
 import static java.lang.System.currentTimeMillis;
 import static org.solovyev.android.checkout.ResponseCodes.ITEM_ALREADY_OWNED;
@@ -67,9 +68,6 @@ public final class Billing {
 	@Nonnull
 	private final Context context;
 
-	@Nonnull
-	private final String publicKey;
-
 	@GuardedBy("lock")
 	@Nullable
 	private IInAppBillingService service;
@@ -85,10 +83,18 @@ public final class Billing {
 	private CancellableExecutor mainThread;
 
 	@Nonnull
+	private final Configuration configuration;
+
+	@Nonnull
 	private final ConcurrentCache cache;
 
 	@Nonnull
-	private Executor background = Executors.newSingleThreadExecutor();
+	private Executor background = Executors.newSingleThreadExecutor(new ThreadFactory() {
+		@Override
+		public Thread newThread(Runnable r) {
+			return new Thread(r, "RequestThread");
+		}
+	});
 
 	@Nonnull
 	private final PendingRequests pendingRequests = new PendingRequests();
@@ -131,9 +137,24 @@ public final class Billing {
 			this.context = context.getApplicationContext();
 		}
 		this.mainThread = new MainThread(handler);
-		this.publicKey = configuration.getPublicKey();
-		Check.isNotEmpty(this.publicKey);
+		this.configuration = new StaticConfiguration(configuration);
+		Check.isNotEmpty(this.configuration.getPublicKey());
 		this.cache = new ConcurrentCache(configuration.getCache());
+	}
+
+	@Nonnull
+	public Context getContext() {
+		return context;
+	}
+
+	@Nonnull
+	Configuration getConfiguration() {
+		return configuration;
+	}
+
+	@Nonnull
+	ServiceConnector getConnector() {
+		return connector;
 	}
 
 	/**
@@ -356,6 +377,18 @@ public final class Billing {
 		return requests;
 	}
 
+	@Nonnull
+	Requests getRequests(@Nullable Context context) {
+		if (context instanceof Activity) {
+			return (Requests) getRequests((Activity) context);
+		} else if (context instanceof Service) {
+			return (Requests) getRequests((Service) context);
+		} else {
+			Check.isNull(context);
+			return (Requests) getRequests();
+		}
+	}
+
 	@SuppressWarnings("unchecked")
 	@Nonnull
 	private static <R> RequestListener<R> emptyListener() {
@@ -425,11 +458,12 @@ public final class Billing {
 				}
 			};
 		}
-		return new PurchaseFlow(activity, publicKey, requestCode, listener, signatureVerifier);
+		return new PurchaseFlow(activity, configuration.getPublicKey(), requestCode, listener, signatureVerifier);
 	}
 
 	/**
 	 * Cancels listener recursively
+	 *
 	 * @param listener listener to be cancelled
 	 */
 	static void cancel(@Nonnull RequestListener<?> listener) {
@@ -438,6 +472,7 @@ public final class Billing {
 		}
 	}
 
+	@Nonnull
 	<R> RequestListener<R> onMainThread(@Nonnull final RequestListener<R> listener) {
 		return new MainThreadRequestListener<R>(mainThread, listener);
 	}
@@ -635,7 +670,7 @@ public final class Billing {
 		}
 	}
 
-	private final class Requests implements BillingRequests {
+	final class Requests implements BillingRequests {
 
 		@Nullable
 		private final Object tag;
@@ -661,6 +696,11 @@ public final class Billing {
 		@Nonnull
 		private <R> RequestListener<R> wrapListener(@Nonnull RequestListener<R> listener) {
 			return onMainThread ? onMainThread(listener) : listener;
+		}
+
+		@Nonnull
+		Executor getDeliveryExecutor() {
+			return onMainThread ? mainThread : SameThreadExecutor.INSTANCE;
 		}
 
 		@Override
@@ -802,6 +842,7 @@ public final class Billing {
 				Billing.cancel(listener);
 			}
 		}
+
 	}
 
 	private class CachingRequestListener<R> extends RequestListenerWrapper<R> {
@@ -884,7 +925,22 @@ public final class Billing {
 
 	static interface ServiceConnector {
 		boolean connect();
+
 		void disconnect();
+	}
+
+	public abstract static class DefaultConfiguration implements Configuration {
+		@Nullable
+		@Override
+		public Cache getCache() {
+			return newCache();
+		}
+
+		@Nullable
+		@Override
+		public Inventory getFallbackInventory(@Nonnull Checkout checkout, @Nonnull Executor onLoadExecutor) {
+			return null;
+		}
 	}
 
 	public static interface Configuration {
@@ -899,5 +955,48 @@ public final class Billing {
 
 		@Nullable
 		Cache getCache();
+
+		/**
+		 * @return inventory to be used if Billing v.3 is not supported
+		 * @param checkout checkout
+		 * @param onLoadExecutor executor to be used to call {@link org.solovyev.android.checkout.Inventory.Listener} methods
+		 */
+		@Nullable
+		Inventory getFallbackInventory(@Nonnull Checkout checkout, @Nonnull Executor onLoadExecutor);
 	}
+
+	/**
+	 * Gets public key only once, all other methods are called from original configuration
+	 */
+	private static final class StaticConfiguration implements Configuration {
+		@Nonnull
+		private final Configuration original;
+
+		@Nonnull
+		private final String publicKey;
+
+		private StaticConfiguration(@Nonnull Configuration original) {
+			this.original = original;
+			this.publicKey = original.getPublicKey();
+		}
+
+		@Nonnull
+		@Override
+		public String getPublicKey() {
+			return publicKey;
+		}
+
+		@Nullable
+		@Override
+		public Cache getCache() {
+			return original.getCache();
+		}
+
+		@Nullable
+		@Override
+		public Inventory getFallbackInventory(@Nonnull Checkout checkout, @Nonnull Executor onLoadExecutor) {
+			return original.getFallbackInventory(checkout, onLoadExecutor);
+		}
+	}
+
 }

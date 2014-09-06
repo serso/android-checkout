@@ -28,10 +28,12 @@ import android.content.Context;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.annotation.concurrent.GuardedBy;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Executor;
 
 /**
  * <p/>
@@ -117,6 +119,11 @@ public class Checkout {
 		return new Checkout(null, billing, products);
 	}
 
+	@Nonnull
+	Context getContext() {
+		return billing.getContext();
+	}
+
 	/**
 	 * Initial request listener, all methods are called on the main application thread
 	 */
@@ -163,14 +170,21 @@ public class Checkout {
 	@Nonnull
 	private final Products products;
 
-	private BillingRequests requests;
+	@Nonnull
+	final Object lock = new Object();
 
+	@GuardedBy("lock")
+	private Billing.Requests requests;
+
+	@GuardedBy("lock")
 	@Nonnull
 	private State state = State.INITIAL;
 
+	@GuardedBy("lock")
 	@Nonnull
 	private final Listeners listeners = new Listeners();
 
+	@GuardedBy("lock")
 	@Nonnull
 	private final Map<String, Boolean> supportedProducts = new HashMap<String, Boolean>();
 
@@ -192,41 +206,47 @@ public class Checkout {
 
 	public void start(@Nullable final Listener listener) {
 		Check.isMainThread();
-		Check.isFalse(state == State.STARTED, "Already started");
-		Check.isNull(requests, "Already started");
-		state = State.STARTED;
-		requests = createRequests();
-		if (listener != null) {
-			listeners.add(listener);
-		}
-		for (final String product : products.getIds()) {
-			requests.isBillingSupported(product, new RequestListener<Object>() {
-				@Override
-				public void onSuccess(@Nonnull Object result) {
-					onBillingSupportedResult(product, true);
-				}
 
-				@Override
-				public void onError(int response, @Nonnull Exception e) {
-					onBillingSupportedResult(product, false);
-				}
-			});
+		synchronized (lock) {
+			Check.isFalse(state == State.STARTED, "Already started");
+			Check.isNull(requests, "Already started");
+			state = State.STARTED;
+			requests = billing.getRequests(context);
+			if (listener != null) {
+				listeners.add(listener);
+			}
+			for (final String product : products.getIds()) {
+				requests.isBillingSupported(product, new RequestListener<Object>() {
+					@Override
+					public void onSuccess(@Nonnull Object result) {
+						onBillingSupported(product, true);
+					}
+
+					@Override
+					public void onError(int response, @Nonnull Exception e) {
+						onBillingSupported(product, false);
+					}
+				});
+			}
 		}
 	}
 
 	public void whenReady(@Nonnull Listener listener) {
 		Check.isMainThread();
-		for (Map.Entry<String, Boolean> entry : supportedProducts.entrySet()) {
-			listener.onReady(requests, entry.getKey(), entry.getValue());
-		}
 
-		if (isReady()) {
-			checkIsNotStopped();
-			Check.isNotNull(requests);
-			listener.onReady(requests);
-		} else {
-			// still waiting
-			listeners.add(listener);
+		synchronized (lock) {
+			for (Map.Entry<String, Boolean> entry : supportedProducts.entrySet()) {
+				listener.onReady(requests, entry.getKey(), entry.getValue());
+			}
+
+			if (isReady()) {
+				checkIsNotStopped();
+				Check.isNotNull(requests);
+				listener.onReady(requests);
+			} else {
+				// still waiting
+				listeners.add(listener);
+			}
 		}
 	}
 
@@ -235,35 +255,38 @@ public class Checkout {
 	}
 
 	private boolean isReady() {
+		Check.isTrue(Thread.holdsLock(lock), "Should be called from synchronized block");
 		return supportedProducts.size() == products.size();
 	}
 
-	@Nonnull
-	private BillingRequests createRequests() {
-		if (context instanceof Activity) {
-			return billing.getRequests((Activity) context);
-		} else if (context instanceof Service) {
-			return billing.getRequests((Service) context);
-		} else {
-			Check.isNull(context);
-			return billing.getRequests();
-		}
-	}
-
-	private void onBillingSupportedResult(@Nonnull String product, boolean supported) {
-		supportedProducts.put(product, supported);
-		listeners.onReady(requests, product, supported);
-		if (isReady()) {
-			listeners.onReady(requests);
-			listeners.clear();
+	private void onBillingSupported(@Nonnull String product, boolean supported) {
+		synchronized (lock) {
+			supportedProducts.put(product, supported);
+			listeners.onReady(requests, product, supported);
+			if (isReady()) {
+				listeners.onReady(requests);
+				listeners.clear();
+			}
 		}
 	}
 
 	@Nonnull
 	public Inventory loadInventory() {
 		Check.isMainThread();
-		checkIsNotStopped();
-		final Inventory inventory = new Inventory(this);
+
+		Executor executor;
+		synchronized (lock) {
+			checkIsNotStopped();
+			executor = requests.getDeliveryExecutor();
+		}
+
+		final Inventory inventory;
+		final Inventory fallbackInventory = billing.getConfiguration().getFallbackInventory(this, executor);
+		if (fallbackInventory == null) {
+			inventory = new CheckoutInventory(this);
+		} else {
+			inventory = new FallingBackInventory(this, fallbackInventory);
+		}
 		inventory.load();
 		return inventory;
 	}
@@ -274,14 +297,17 @@ public class Checkout {
 	 */
 	public void stop() {
 		Check.isMainThread();
-		supportedProducts.clear();
-		listeners.clear();
-		if (state != State.INITIAL) {
-			state = State.STOPPED;
-		}
-		if (requests != null) {
-			requests.cancelAll();
-			requests = null;
+
+		synchronized (lock) {
+			supportedProducts.clear();
+			listeners.clear();
+			if (state != State.INITIAL) {
+				state = State.STOPPED;
+			}
+			if (requests != null) {
+				requests.cancelAll();
+				requests = null;
+			}
 		}
 	}
 
