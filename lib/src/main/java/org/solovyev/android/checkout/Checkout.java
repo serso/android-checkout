@@ -188,6 +188,9 @@ public class Checkout {
 	@Nonnull
 	private final Map<String, Boolean> supportedProducts = new HashMap<String, Boolean>();
 
+	@Nonnull
+	private final OnLoadExecutor onLoadExecutor = new OnLoadExecutor();
+
 	Checkout(@Nullable Context context, @Nonnull Billing billing, @Nonnull Products products) {
 		this.billing = billing;
 		Check.isNotEmpty(products.getIds());
@@ -274,14 +277,12 @@ public class Checkout {
 	public Inventory loadInventory() {
 		Check.isMainThread();
 
-		Executor executor;
 		synchronized (lock) {
 			checkIsNotStopped();
-			executor = requests.getDeliveryExecutor();
 		}
 
 		final Inventory inventory;
-		final Inventory fallbackInventory = billing.getConfiguration().getFallbackInventory(this, executor);
+		final Inventory fallbackInventory = billing.getConfiguration().getFallbackInventory(this, onLoadExecutor);
 		if (fallbackInventory == null) {
 			inventory = new CheckoutInventory(this);
 		} else {
@@ -345,6 +346,22 @@ public class Checkout {
 
 		public void clear() {
 			list.clear();
+		}
+	}
+
+	private final class OnLoadExecutor implements Executor {
+		@Override
+		public void execute(Runnable command) {
+			final Executor executor;
+			synchronized (lock) {
+				executor = requests != null ? requests.getDeliveryExecutor() : null;
+			}
+
+			if (executor != null) {
+				executor.execute(command);
+			} else {
+				Billing.error("Trying to deliver result on stopped checkout.");
+			}
 		}
 	}
 
