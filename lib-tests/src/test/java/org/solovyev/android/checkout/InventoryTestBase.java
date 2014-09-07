@@ -31,6 +31,7 @@ import java.util.List;
 
 import static java.util.Arrays.asList;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
@@ -112,6 +113,8 @@ public abstract class InventoryTestBase {
 		verifyPurchase(actualSubs.get(1), 3, REFUNDED, complete, true);
 		verifyPurchase(actualSubs.get(2), 2, CANCELLED, complete, true);
 		verifyPurchase(actualSubs.get(3), 1, PURCHASED, complete, true);
+
+		assertSame(listener.products, inventory.getProducts());
 	}
 
 	protected abstract boolean shouldVerifyPurchaseCompletely();
