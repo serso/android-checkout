@@ -32,10 +32,12 @@ import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 
 import javax.annotation.Nonnull;
-import java.util.ArrayList;
+import java.util.*;
 
+import static java.lang.System.currentTimeMillis;
 import static java.util.Arrays.asList;
 import static org.junit.Assert.*;
+import static org.solovyev.android.checkout.Purchase.State.*;
 import static org.solovyev.android.checkout.PurchaseTest.verifyPurchase;
 
 @RunWith(RobolectricTestRunner.class)
@@ -63,7 +65,7 @@ public class PurchasesTest {
 		assertEquals(3, purchases.list.size());
 		verifyPurchase(purchases.list.get(0), 1, Purchase.State.REFUNDED);
 		verifyPurchase(purchases.list.get(1), 2, Purchase.State.CANCELLED);
-		verifyPurchase(purchases.list.get(2), 3, Purchase.State.PURCHASED);
+		verifyPurchase(purchases.list.get(2), 3, PURCHASED);
 	}
 
 	@Nonnull
@@ -71,7 +73,7 @@ public class PurchasesTest {
 		final ArrayList<String> list = new ArrayList<String>();
 		list.add(PurchaseTest.newJson(1, Purchase.State.REFUNDED));
 		list.add(PurchaseTest.newJson(2, Purchase.State.CANCELLED));
-		list.add(PurchaseTest.newJson(3, Purchase.State.PURCHASED));
+		list.add(PurchaseTest.newJson(3, PURCHASED));
 		final Bundle bundle = new Bundle();
 		bundle.putStringArrayList(Purchases.BUNDLE_DATA_LIST, list);
 		return bundle;
@@ -130,12 +132,12 @@ public class PurchasesTest {
 
 		assertTrue(purchases.hasPurchaseInState("1", Purchase.State.REFUNDED));
 		assertTrue(purchases.hasPurchaseInState("2", Purchase.State.CANCELLED));
-		assertTrue(purchases.hasPurchaseInState("3", Purchase.State.PURCHASED));
+		assertTrue(purchases.hasPurchaseInState("3", PURCHASED));
 		assertFalse(purchases.hasPurchaseInState("3", Purchase.State.CANCELLED));
 		assertFalse(purchases.hasPurchaseInState("1", Purchase.State.CANCELLED));
 		assertFalse(purchases.hasPurchaseInState("4", Purchase.State.CANCELLED));
 
-		final Purchase purchase3 = purchases.getPurchaseInState("3", Purchase.State.PURCHASED);
+		final Purchase purchase3 = purchases.getPurchaseInState("3", PURCHASED);
 		assertNotNull(purchase3);
 		assertEquals("3", purchase3.sku);
 	}
@@ -154,7 +156,7 @@ public class PurchasesTest {
 
 	@Nonnull
 	private Purchase newPurchase(long id) throws JSONException {
-		return Purchase.fromJson(PurchaseTest.newJson(id, Purchase.State.PURCHASED), "signature" + id);
+		return Purchase.fromJson(PurchaseTest.newJson(id, PURCHASED), "signature" + id);
 	}
 
 	@Test
@@ -179,7 +181,7 @@ public class PurchasesTest {
 		assertEquals("test", json.getString("product"));
 		for (int i = 0; i < jsonArray.length(); i++) {
 			final JSONObject o = jsonArray.getJSONObject(i);
-			verifyPurchase(Purchase.fromJson(o.toString(), null), i, Purchase.State.PURCHASED);
+			verifyPurchase(Purchase.fromJson(o.toString(), null), i, PURCHASED);
 		}
 		assertEquals("{" +
 						"\"product\":\"test\"," +
@@ -199,5 +201,102 @@ public class PurchasesTest {
 		final JSONObject json = purchases.toJsonObject(true);
 		final JSONArray jsonArray = json.getJSONArray("list");
 		assertEquals(0, jsonArray.length());
+	}
+
+	@Test
+	public void testShouldNeutralizePurchasesWithSameSkus() throws Exception {
+		List<Purchase> purchases = Purchases.neutralize(asList(newPurchase("test", 100, PURCHASED),
+				newPurchase("test", 120, CANCELLED),
+				newPurchase("test", 135, PURCHASED)));
+
+		assertEquals(1, purchases.size());
+		final Purchase purchase = purchases.get(0);
+		assertEquals(135, purchase.time);
+
+		purchases = Purchases.neutralize(asList(newPurchase("test", 100, PURCHASED), newPurchase("test", 120, CANCELLED)));
+		assertEquals(0, purchases.size());
+
+		purchases = Purchases.neutralize(asList(newPurchase("test", 100, PURCHASED), newPurchase("test", 120, CANCELLED),
+				newPurchase("test", 135, PURCHASED), newPurchase("test", 145, CANCELLED)));
+		assertEquals(0, purchases.size());
+	}
+
+	@Test
+	public void testShouldNotNeutralizePurchasesWithDifferentSkus() throws Exception {
+		List<Purchase> purchases = Purchases.neutralize(asList(newPurchase("0", 100, PURCHASED),
+				newPurchase("1", 120, CANCELLED),
+				newPurchase("2", 122, EXPIRED),
+				newPurchase("3", 123, REFUNDED),
+				newPurchase("4", 135, PURCHASED),
+				newPurchase("5", 137, CANCELLED),
+				newPurchase("6", 138, REFUNDED),
+				newPurchase("7", 140, EXPIRED),
+				newPurchase("8", 141, PURCHASED)
+		));
+
+		assertEquals(9, purchases.size());
+	}
+
+	@Test
+	public void testShouldRemovePurchaseDuplicates() throws Exception {
+		List<Purchase> purchases = Purchases.neutralize(asList(newPurchase("test", 1, PURCHASED),
+				newPurchase("test", 2, PURCHASED),
+				newPurchase("test", 3, PURCHASED)));
+
+		assertEquals(1, purchases.size());
+		Purchase purchase = purchases.get(0);
+		assertEquals(3, purchase.time);
+
+		purchases = Purchases.neutralize(asList(newPurchase("test", 1, PURCHASED),
+				newPurchase("test", 2, PURCHASED)));
+
+		assertEquals(1, purchases.size());
+		purchase = purchases.get(0);
+		assertEquals(2, purchase.time);
+	}
+
+	@Test
+	public void testShouldNeutralizeDanglingPurchases() throws Exception {
+		List<Purchase> purchases = Purchases.neutralize(asList(newPurchase("test", 1, EXPIRED),
+				newPurchase("test", 2, PURCHASED)));
+
+		assertEquals(1, purchases.size());
+		final Purchase purchase = purchases.get(0);
+		assertEquals(2, purchase.time);
+	}
+
+	@Test
+	public void testSinglePurchaseCantBeNeutralized() throws Exception {
+		List<Purchase> purchases = Purchases.neutralize(asList(newPurchase("test", 1, EXPIRED)));
+		assertEquals(1, purchases.size());
+		Purchase purchase = purchases.get(0);
+		assertEquals(1, purchase.time);
+
+		purchases = Purchases.neutralize(asList(newPurchase("test", 1, REFUNDED)));
+		assertEquals(1, purchases.size());
+		purchase = purchases.get(0);
+		assertEquals(1, purchase.time);
+	}
+
+	@Test
+	public void testShouldNotContainDuplicates() throws Exception {
+		final List<Purchase> purchases = new ArrayList<Purchase>(1000);
+		final Random r = new Random(currentTimeMillis());
+		for (int i = 0; i < 1000; i++) {
+			purchases.add(newPurchase(String.valueOf(i % 100), r.nextLong(), Purchase.State.valueOf(r.nextInt(4))));
+		}
+
+		final List<Purchase> actual = Purchases.neutralize(purchases);
+		final Map<String, Integer> counters = new HashMap<String, Integer>();
+		for (Purchase purchase : actual) {
+			final Integer counter = counters.get(purchase.sku);
+			assertNull("Several purchases with same SKU are in the neutralized list", counter);
+			counters.put(purchase.sku, 1);
+		}
+	}
+
+	@Nonnull
+	private Purchase newPurchase(@Nonnull String sku, long time, @Nonnull Purchase.State state) {
+		return new Purchase(sku, "", "", time, state.id, "", "", "");
 	}
 }

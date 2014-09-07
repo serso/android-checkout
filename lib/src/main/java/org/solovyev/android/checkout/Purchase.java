@@ -123,7 +123,9 @@ public final class Purchase {
 	@Override
 	public String toString() {
 		return "Purchase{" +
-				"sku='" + sku + '\'' +
+				"state=" + state +
+				", time=" + time +
+				", sku='" + sku + '\'' +
 				'}';
 	}
 

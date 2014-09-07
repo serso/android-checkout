@@ -96,7 +96,7 @@ public final class RobotmediaDatabase {
 
 			final List<String> skus = products.getSkuIds(productId);
 			if (!skus.isEmpty()) {
-				product.purchases.addAll(loadPurchases(skus, db));
+				product.setPurchases(loadPurchases(skus, db));
 			}
 
 			result.add(product);

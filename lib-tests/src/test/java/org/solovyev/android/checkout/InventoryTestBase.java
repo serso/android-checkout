@@ -99,19 +99,19 @@ public abstract class InventoryTestBase {
 		final List<Purchase> actualInApps = inApp.getPurchases();
 		assertEquals(4, actualInApps.size());
 
-		verifyPurchase(actualInApps.get(0), 1, PURCHASED, complete, false);
-		verifyPurchase(actualInApps.get(1), 2, CANCELLED, complete, false);
-		verifyPurchase(actualInApps.get(2), 3, REFUNDED, complete, false);
-		verifyPurchase(actualInApps.get(3), 4, EXPIRED, complete, false);
+		verifyPurchase(actualInApps.get(0), 4, EXPIRED, complete, false);
+		verifyPurchase(actualInApps.get(1), 3, REFUNDED, complete, false);
+		verifyPurchase(actualInApps.get(2), 2, CANCELLED, complete, false);
+		verifyPurchase(actualInApps.get(3), 1, PURCHASED, complete, false);
 
 		final Inventory.Product sub = listener.products.get(SUBSCRIPTION);
 		final List<Purchase> actualSubs = sub.getPurchases();
 		assertEquals(4, actualSubs.size());
 
-		verifyPurchase(actualSubs.get(0), 1, PURCHASED, complete, true);
-		verifyPurchase(actualSubs.get(1), 2, CANCELLED, complete, true);
-		verifyPurchase(actualSubs.get(2), 3, REFUNDED, complete, true);
-		verifyPurchase(actualSubs.get(3), 4, EXPIRED, complete, true);
+		verifyPurchase(actualSubs.get(0), 4, EXPIRED, complete, true);
+		verifyPurchase(actualSubs.get(1), 3, REFUNDED, complete, true);
+		verifyPurchase(actualSubs.get(2), 2, CANCELLED, complete, true);
+		verifyPurchase(actualSubs.get(3), 1, PURCHASED, complete, true);
 	}
 
 	protected abstract boolean shouldVerifyPurchaseCompletely();

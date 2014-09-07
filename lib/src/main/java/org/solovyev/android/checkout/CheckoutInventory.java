@@ -90,7 +90,7 @@ final class CheckoutInventory extends BaseInventory {
 			public void onSuccess(@Nonnull Purchases purchases) {
 				synchronized (lock) {
 					if (isAlive()) {
-						product.purchases.addAll(purchases.list);
+						product.setPurchases(purchases.list);
 					}
 					onFinished(id);
 				}
@@ -129,7 +129,7 @@ final class CheckoutInventory extends BaseInventory {
 				public void onSuccess(@Nonnull Skus skus) {
 					synchronized (lock) {
 						if (isAlive()) {
-							product.skus.addAll(skus.list);
+							product.setSkus(skus.list);
 						}
 						onFinished(id);
 					}
