@@ -30,8 +30,7 @@ import org.robolectric.RobolectricTestRunner;
 
 import javax.annotation.Nonnull;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 @RunWith(RobolectricTestRunner.class)
 public class SkuTest {
@@ -84,5 +83,30 @@ public class SkuTest {
 		json.put("title", "title_" + id);
 		json.put("description", "description_" + id);
 		return json;
+	}
+
+	@Test
+	public void testShouldHaveNotValidPriceIfNoDetailedDataAvailable() throws Exception {
+		final Sku sku = Sku.fromJson(newJson("1"), "test");
+
+		assertFalse(sku.detailedPrice.isValid());
+	}
+
+	@Test
+	public void testShouldHaveDetailedPrice() throws Exception {
+		testDetailedPrice(Long.MAX_VALUE, "USD");
+		testDetailedPrice(1, "RUB");
+		testDetailedPrice(111, "руб");
+	}
+
+	private void testDetailedPrice(long amount, @Nonnull String currency) throws JSONException {
+		final JSONObject json = newJsonObject("1");
+		json.put("price_amount_micros", amount);
+		json.put("price_currency_code", currency);
+		final Sku sku = Sku.fromJson(json.toString(), "test");
+
+		assertTrue(sku.detailedPrice.isValid());
+		assertEquals(currency, sku.detailedPrice.currency);
+		assertEquals(amount, sku.detailedPrice.amount);
 	}
 }

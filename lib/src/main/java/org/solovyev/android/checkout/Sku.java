@@ -22,6 +22,7 @@
 
 package org.solovyev.android.checkout;
 
+import android.text.TextUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -41,15 +42,19 @@ public final class Sku {
 	public final String price;
 
 	@Nonnull
+	public final Price detailedPrice;
+
+	@Nonnull
 	public final String title;
 
 	@Nonnull
 	public final String description;
 
-	Sku(@Nonnull String product, @Nonnull String id, @Nonnull String price, @Nonnull String title, @Nonnull String description) {
+	Sku(@Nonnull String product, @Nonnull String id, @Nonnull String price, @Nonnull Price detailedPrice, @Nonnull String title, @Nonnull String description) {
 		this.product = product;
 		this.id = id;
 		this.price = price;
+		this.detailedPrice = detailedPrice;
 		this.title = title;
 		this.description = description;
 	}
@@ -59,8 +64,46 @@ public final class Sku {
 		final JSONObject object = new JSONObject(json);
 		final String sku = object.getString("productId");
 		final String price = object.getString("price");
+		final Price detailedPrice = Price.fromJson(object);
 		final String title = object.getString("title");
 		final String description = object.optString("description");
-		return new Sku(product, sku, price, title, description);
+		return new Sku(product, sku, price, detailedPrice, title, description);
+	}
+
+	/**
+	 * Contains detailed information about SKU's price as described <a href="http://developer.android.com/google/play/billing/billing_reference.html#getSkuDetails">here</a>
+	 */
+	public static final class Price {
+
+		@Nonnull
+		static final Price EMPTY = new Price(0, "");
+
+		public final long amount;
+
+		@Nonnull
+		public final String currency;
+
+		private Price(long amount, @Nonnull String currency) {
+			this.amount = amount;
+			this.currency = currency;
+		}
+
+		@Nonnull
+		private static Price fromJson(@Nonnull JSONObject json) throws JSONException {
+			final long amount = json.optLong("price_amount_micros");
+			final String currency = json.optString("price_currency_code");
+			if (amount == 0 || TextUtils.isEmpty(currency)) {
+				return EMPTY;
+			} else {
+				return new Price(amount, currency);
+			}
+		}
+
+		/**
+		 * @return true if both {@link #amount} and {@link #currency} are valid (non empty)
+		 */
+		public boolean isValid() {
+			return amount > 0 && !TextUtils.isEmpty(currency);
+		}
 	}
 }
