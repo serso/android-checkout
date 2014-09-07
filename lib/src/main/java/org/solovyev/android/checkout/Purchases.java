@@ -32,6 +32,7 @@ import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -170,5 +171,77 @@ public final class Purchases {
 			}
 		}
 		return null;
+	}
+
+	@Nonnull
+	static List<Purchase> neutralize(@Nonnull List<Purchase> purchases) {
+		// probably, it's possible to avoid creation of temporary list. The reason for it is that we don't want to
+		// modify original list
+		purchases = new LinkedList<Purchase>(purchases);
+
+		final List<Purchase> result = new ArrayList<Purchase>(purchases.size());
+
+		Collections.sort(purchases, PurchaseComparator.earliestFirst());
+		while (!purchases.isEmpty()) {
+			final Purchase purchase = purchases.get(0);
+			switch (purchase.state) {
+				case PURCHASED:
+					if(!isNeutralized(purchases, purchase)) {
+						result.add(purchase);
+					}
+					break;
+				case CANCELLED:
+				case REFUNDED:
+				case EXPIRED:
+					if (!isDangling(purchases, purchase)) {
+						result.add(purchase);
+					}
+					break;
+			}
+			purchases.remove(0);
+		}
+
+		// purchases were added earliest first but we want result to be latest first
+		Collections.reverse(result);
+
+		return result;
+	}
+
+	private static boolean isDangling(@Nonnull List<Purchase> purchases, @Nonnull Purchase purchase) {
+		Check.isFalse(purchase.state == Purchase.State.PURCHASED, "Must not be PURCHASED");
+		for (int i = 1; i < purchases.size(); i++) {
+			final Purchase same = purchases.get(i);
+			if(same.sku.equals(purchase.sku)) {
+				// for not purchases transaction exists newer transaction => this transaction is dangling
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	private static boolean isNeutralized(@Nonnull List<Purchase> purchases, @Nonnull Purchase purchase) {
+		Check.isTrue(purchase.state == Purchase.State.PURCHASED, "Must be PURCHASED");
+		for (int i = 1; i < purchases.size(); i++) {
+			final Purchase same = purchases.get(i);
+			if(same.sku.equals(purchase.sku)) {
+				switch (same.state) {
+					case PURCHASED:
+						// found same later purchase => obviously there is a bug somewhere as user can't own
+						// several purchases with same SKU. For now let's skip the item
+						Billing.warning("Two purchases with same SKU found: " + purchase + " and " + same);
+						break;
+					case CANCELLED:
+					case REFUNDED:
+					case EXPIRED:
+						// neutralization found => need to remove it
+						purchases.remove(i);
+						break;
+				}
+				return true;
+			}
+		}
+
+		return false;
 	}
 }

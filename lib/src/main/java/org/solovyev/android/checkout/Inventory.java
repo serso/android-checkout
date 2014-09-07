@@ -27,6 +27,7 @@ import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 import java.util.*;
 
+import static java.util.Collections.sort;
 import static java.util.Collections.unmodifiableCollection;
 import static java.util.Collections.unmodifiableList;
 
@@ -112,14 +113,22 @@ public interface Inventory {
 	}
 
 	/**
-	 * One product in the inventory. Contains list of purchases and optionally list of SKUs (if {@link Inventory.Products})
-	 * contains such information
+	 * One product in the inventory. Contains list of purchases and optionally list of SKUs (if
+	 * {@link org.solovyev.android.checkout.Products} contains information about SKUs)
 	 */
 	@Immutable
 	final class Product {
 
+		/**
+		 * Product ID, see {@link org.solovyev.android.checkout.ProductTypes}
+		 */
 		@Nonnull
 		public final String id;
+
+		/**
+		 * True if product is supported by {@link Inventory}. Note that Billing for this product might not be supported:
+		 * this just indicates that {@link Inventory} loaded purchases/SKUs for the product.
+		 */
 		public final boolean supported;
 
 		@Nonnull
@@ -155,14 +164,34 @@ public interface Inventory {
 			return getPurchaseInState(sku.id, state);
 		}
 
+		/**
+		 * This list doesn't contain duplicates, i.e. each element in the list has unique SKU
+		 * @return unmodifiable list of purchases sorted by purchase date (latest first)
+		 */
 		@Nonnull
 		public List<Purchase> getPurchases() {
 			return unmodifiableList(purchases);
 		}
 
+		/**
+		 * Note that this list might be empty if {@link org.solovyev.android.checkout.Inventory} doesn't contain
+		 * information about SKUs
+		 * @return unmodifiable list of SKUs
+		 */
 		@Nonnull
 		public List<Sku> getSkus() {
 			return unmodifiableList(skus);
+		}
+
+		void setSkus(@Nonnull List<Sku> skus) {
+			Check.isTrue(this.skus.isEmpty(), "Must be called only once");
+			this.skus.addAll(skus);
+		}
+
+		void setPurchases(@Nonnull List<Purchase> purchases) {
+			Check.isTrue(this.purchases.isEmpty(), "Must be called only once");
+			this.purchases.addAll(Purchases.neutralize(purchases));
+			sort(this.purchases, PurchaseComparator.latestFirst());
 		}
 	}
 }
