@@ -38,6 +38,7 @@ There are several ways how you can get the library:
     <groupId>org.solovyev.android</groupId>
     <artifactId>checkout</artifactId>
     <version>x.x.x</version>
+    <type>apklib</type>
 </dependency>
 ```
 - For Gradle users:
