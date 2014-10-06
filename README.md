@@ -181,6 +181,11 @@ is a subclass which also provides access to [PurchaseFlow](https://github.com/se
 
 **Inventory** contains static information abouts products, purchases and SKUs. It should be reloaded every time the purchase state is changed in order to be actual.
 
+### Billing Version 2
+
+Some users might not have Google Play Services supporting Billing Version 3. As these users might have purchases it should be possible to retrieve purchase information for them. You can provide fallback functionality for such users by returning not null object from ```Billing.Configuration#getFallbackInventory``` method.
+If you used [Robotmedia Android Billing Library](https://github.com/robotmedia/AndroidBillingLibrary) before fallback is already implemented, see [RobotmediaInvenotry](https://github.com/serso/android-checkout/blob/master/lib/src/main/java/org/solovyev/android/checkout/RobotmediaInventory.java) class ([sample code](https://github.com/serso/android-checkout/blob/master/app/src/main/java/org/solovyev/android/checkout/app/CheckoutApplication.java))
+
 ### Proguard
 
 You need to include the contents of [proguard rules](https://github.com/serso/android-checkout/blob/master/lib/proguard-rules.txt)
