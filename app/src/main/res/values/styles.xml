@@ -6,7 +6,9 @@
 		<item name="android:listSelector">@drawable/clickable_selector</item>
 	</style>
 
-	<style name="BaseTheme" parent="android:Theme.Holo.Light.NoActionBar">
+	<style name="ThemeHoloLightNoActionBar"/>
+
+	<style name="BaseTheme" parent="ThemeHoloLightNoActionBar">
 		<item name="android:background">@null</item>
 		<item name="android:windowBackground">@color/bg</item>
 		<item name="android:listViewStyle">@style/ListView</item>
@@ -16,7 +18,9 @@
 		<item name="android:textColorTertiary">@color/text</item>
 	</style>
 
-	<style name="BaseDialogTheme" parent="android:Theme.Holo.Light.Dialog.NoActionBar">
+	<style name="ThemeHoloLightDialogNoActionBar"/>
+
+	<style name="BaseDialogTheme" parent="ThemeHoloLightDialogNoActionBar">
 		<item name="android:background">@null</item>
 		<item name="android:windowBackground">@android:color/transparent</item>
 		<item name="android:listViewStyle">@style/ListView</item>
