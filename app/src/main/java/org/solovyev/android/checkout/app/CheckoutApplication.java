@@ -61,6 +61,14 @@ public class CheckoutApplication extends Application {
 		@Nonnull
 		@Override
 		public String getPublicKey() {
+			// Note that this is not plain public key but public key encoded with CheckoutApplication.x() method where
+			// key = MAIL. As symmetric ciphering is used in CheckoutApplication.x() the same method is used for both
+			// ciphering and deciphering. Additionally result of the ciphering is converted to Base64 string => for
+			// deciphering with need to convert it back. Generally, x(fromBase64(toBase64(x(PK, salt))), salt) == PK
+			// To cipher use CheckoutApplication.toX(), to decipher - CheckoutApplication.fromX().
+			// Note that you also can use plain public key and just write `return "Your public key"` but this
+			// is not recommended by Google, see http://developer.android.com/google/play/billing/billing_best_practices.html#key
+			// Also consider using your own ciphering/deciphering algorithm.
 			final String s = "PixnMSYGLjg7Ah0xDwYILlVZUy0sIiBoMi4jLDcoXTcNLiQjKgtlIC48NiRcHxwKHEcYEyZrPyMWXFRpV10VES9ENz" +
 					"g1Hj06HTV1MCAHJlpgEDcmOxFDEkA8OiQRKjEQDxhRWVVEMBYmNl1AJghcKUAYVT15KSQgBQABMgwqKSlqF1gZBA4fAw5rMyxKI" +
 					"w9LJFc7AhxZGjoPATgRUiUjKSsOWyRKDi4nIA9lKgAGOhMLDF06CwoKGFR6Wj0hGwReS10NXzQTIREhKlkuMz4XDTwUQjRCJUA+" +
@@ -81,27 +89,46 @@ public class CheckoutApplication extends Application {
 		}
 	});
 
+	/**
+	 * Method deciphers previously ciphered message
+	 * @param message ciphered message
+	 * @param salt salt which was used for ciphering
+	 * @return deciphered message
+	 */
 	@Nonnull
-	static String fromX(@Nonnull String message, @Nonnull String key) {
-		return x(new String(Base64.decode(message, 0)), key);
+	static String fromX(@Nonnull String message, @Nonnull String salt) {
+		return x(new String(Base64.decode(message, 0)), salt);
 	}
 
+	/**
+	 * Method ciphers message. Later {@link #fromX} method might be used for deciphering
+	 * @param message message to be ciphered
+	 * @param salt salt to be used for ciphering
+	 * @return ciphered message
+	 */
 	@Nonnull
-	static String toX(@Nonnull String message, @Nonnull String key) {
-		return new String(Base64.encode(x(message, key).getBytes(), 0));
+	static String toX(@Nonnull String message, @Nonnull String salt) {
+		return new String(Base64.encode(x(message, salt).getBytes(), 0));
 	}
 
+	/**
+	 * Symmetric algorithm used for ciphering/deciphering. Note that in your application you probably want to modify
+	 * algorithm used for ciphering/deciphering.
+	 * @param message message
+	 * @param salt salt
+	 * @return ciphered/deciphered message
+	 */
 	@Nonnull
-	static String x(@Nonnull String message, @Nonnull String key) {
+	static String x(@Nonnull String message, @Nonnull String salt) {
 		final char[] m = message.toCharArray();
-		final char[] k = key.toCharArray();
+		final char[] s = salt.toCharArray();
 
 		final int ml = m.length;
-		final int kl = k.length;
+		final int sl = s.length;
 		final char[] result = new char[ml];
 
 		for (int i = 0; i < ml; i++) {
-			result[i] = (char) (m[i] ^ k[i % kl]);
+			result[i] = (char) (m[i] ^ s[i % sl]);
 		}
 		return new String(result);
 	}
