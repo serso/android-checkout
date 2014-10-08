@@ -91,7 +91,7 @@ public final class Billing {
 	@Nonnull
 	private Executor background = Executors.newSingleThreadExecutor(new ThreadFactory() {
 		@Override
-		public Thread newThread(Runnable r) {
+		public Thread newThread(@Nonnull Runnable r) {
 			return new Thread(r, "RequestThread");
 		}
 	});
