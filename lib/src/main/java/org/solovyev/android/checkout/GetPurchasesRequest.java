@@ -29,6 +29,9 @@ import org.json.JSONException;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.List;
+
+import static org.solovyev.android.checkout.ResponseCodes.EXCEPTION;
 
 final class GetPurchasesRequest extends Request<Purchases> {
 
@@ -38,16 +41,21 @@ final class GetPurchasesRequest extends Request<Purchases> {
 	@Nullable
 	private final String continuationToken;
 
-	GetPurchasesRequest(@Nonnull String product, @Nullable String continuationToken) {
+	@Nonnull
+	private final PurchaseVerifier verifier;
+
+	GetPurchasesRequest(@Nonnull String product, @Nullable String continuationToken, @Nonnull PurchaseVerifier verifier) {
 		super(RequestType.GET_PURCHASES);
 		this.product = product;
 		this.continuationToken = continuationToken;
+		this.verifier = verifier;
 	}
 
 	GetPurchasesRequest(@Nonnull GetPurchasesRequest request, @Nonnull String continuationToken) {
 		super(RequestType.GET_PURCHASES, request);
 		this.product = request.product;
 		this.continuationToken = continuationToken;
+		this.verifier = request.verifier;
 	}
 
 	@Nonnull
@@ -65,7 +73,9 @@ final class GetPurchasesRequest extends Request<Purchases> {
 		final Bundle bundle = service.getPurchases(apiVersion, packageName, product, continuationToken);
 		if (!handleError(bundle)) {
 			try {
-				onSuccess(Purchases.fromBundle(bundle, product));
+				final String continuationToken = Purchases.getContinuationTokenFromBundle(bundle);
+				final List<Purchase> purchases = Purchases.getListFromBundle(bundle);
+				verifier.verify(purchases, new VerificationListener(this, product, continuationToken));
 			} catch (JSONException e) {
 				onError(e);
 			}
@@ -79,6 +89,35 @@ final class GetPurchasesRequest extends Request<Purchases> {
 			return product + "_" + continuationToken;
 		} else {
 			return product;
+		}
+	}
+
+	private static class VerificationListener implements RequestListener<List<Purchase>> {
+		@Nonnull
+		private final Request<Purchases> request;
+		@Nonnull
+		private final String product;
+		@Nullable
+		private final String continuationToken;
+
+		public VerificationListener(@Nonnull Request<Purchases> request, @Nonnull String product, @Nullable String continuationToken) {
+			this.request = request;
+			this.product = product;
+			this.continuationToken = continuationToken;
+		}
+
+		@Override
+		public void onSuccess(@Nonnull List<Purchase> verifiedPurchases) {
+			request.onSuccess(new Purchases(product, verifiedPurchases, continuationToken));
+		}
+
+		@Override
+		public void onError(int response, @Nonnull Exception e) {
+			if (response == EXCEPTION) {
+				request.onError(e);
+			} else {
+				request.onError(response);
+			}
 		}
 	}
 }

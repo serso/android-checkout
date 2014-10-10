@@ -23,13 +23,20 @@
 package org.solovyev.android.checkout;
 
 import com.android.vending.billing.IInAppBillingService;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 import org.robolectric.Robolectric;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.Executor;
 
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyList;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 
 public final class Tests {
@@ -51,6 +58,7 @@ public final class Tests {
 	@Nonnull
 	static Billing newBilling(boolean cache) {
 		final Billing billing = new Billing(Robolectric.application, newConfiguration(cache));
+		billing.setPurchaseVerifier(Tests.newMockVerifier(true));
 		final IInAppBillingService service = mock(IInAppBillingService.class);
 		setService(billing, service);
 		return billing;
@@ -71,6 +79,12 @@ public final class Tests {
 				return cache ? Billing.newCache() : null;
 			}
 
+			@Nonnull
+			@Override
+			public PurchaseVerifier getPurchaseVerifier() {
+				return Billing.newPurchaseVerifier(this.getPublicKey());
+			}
+
 			@Override
 			public Inventory getFallbackInventory(@Nonnull Checkout checkout, @Nonnull Executor onLoadExecutor) {
 				return null;
@@ -81,6 +95,7 @@ public final class Tests {
 	@Nonnull
 	static Billing newSynchronousBilling() {
 		final Billing billing = new Billing(Robolectric.application, newConfiguration(true));
+		billing.setPurchaseVerifier(Tests.newMockVerifier(true));
 		final IInAppBillingService service = mock(IInAppBillingService.class);
 		final CancellableExecutor sameThreadExecutor = sameThreadExecutor();
 		billing.setBackground(sameThreadExecutor);
@@ -96,4 +111,22 @@ public final class Tests {
 		billing.setConnector(new TestServiceConnector(billing, service));
 	}
 
+	@Nonnull
+	static PurchaseVerifier newMockVerifier(final boolean verified) {
+		return mockVerifier(mock(PurchaseVerifier.class), verified);
+	}
+
+	@Nonnull
+	static PurchaseVerifier mockVerifier(@Nonnull PurchaseVerifier verifier, final boolean verified) {
+		doAnswer(new Answer<Object>() {
+			@Override
+			public Object answer(InvocationOnMock invocation) throws Throwable {
+				final List<Purchase> purchases = (List<Purchase>) invocation.getArguments()[0];
+				final RequestListener<List<Purchase>> l = (RequestListener) invocation.getArguments()[1];
+				l.onSuccess(verified ? new ArrayList<Purchase>(purchases) : Collections.<Purchase>emptyList());
+				return null;
+			}
+		}).when(verifier).verify(anyList(), any(RequestListener.class));
+		return verifier;
+	}
 }

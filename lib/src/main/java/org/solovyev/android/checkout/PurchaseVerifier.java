@@ -23,14 +23,16 @@
 package org.solovyev.android.checkout;
 
 import javax.annotation.Nonnull;
+import java.util.List;
 
-interface SignatureVerifier {
+public interface PurchaseVerifier {
 	/**
-	 * Checks that signature of <var>data</var> with <var>publicKey</var> is the same as <var>signature</var>
-	 * @param publicKey public key to be used in signature generation
-	 * @param data data
-	 * @param signature signature to be verified
-	 * @return true in case of successful verification (signature(data, publicKey) == signature)
+	 * Verifies a list <var>purchases</var> and passes a list of verified purchases to <var>listener</var>.
+	 * Note that this method might be called on any thread and methods of <var>listener</var> must be called on the same
+	 * thread (if method was called on the main thread listener methods should be also called on the main thread).
+	 * The actual verification though might use background thread for communicating with remote server.
+	 * @param purchases purchases to be verified
+	 * @param listener callback which gets a list of verified purchases
 	 */
-	boolean verify(@Nonnull String publicKey, @Nonnull String data, @Nonnull String signature);
+	void verify(@Nonnull List<Purchase> purchases, @Nonnull RequestListener<List<Purchase>> listener);
 }
