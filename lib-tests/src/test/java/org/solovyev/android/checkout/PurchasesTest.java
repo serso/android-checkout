@@ -297,6 +297,6 @@ public class PurchasesTest {
 
 	@Nonnull
 	private Purchase newPurchase(@Nonnull String sku, long time, @Nonnull Purchase.State state) {
-		return new Purchase(sku, "", "", time, state.id, "", "", "");
+		return new Purchase(sku, "", "", time, state.id, "", "", "", "");
 	}
 }

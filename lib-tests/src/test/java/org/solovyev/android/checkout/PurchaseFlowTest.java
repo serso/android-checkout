@@ -49,13 +49,14 @@ public class PurchaseFlowTest {
 	private PurchaseFlow flow;
 
 	@Nonnull
-	private SignatureVerifier verifier;
+	private PurchaseVerifier verifier;
 
 	@Before
 	public void setUp() throws Exception {
 		listener = mock(RequestListener.class);
-		verifier = mock(SignatureVerifier.class);
-		flow = new PurchaseFlow(new Activity(), "", 1, listener, verifier);
+		verifier = mock(PurchaseVerifier.class);
+		Tests.mockVerifier(verifier, false);
+		flow = new PurchaseFlow(new Activity(), 1, listener, verifier);
 	}
 
 	@Test
@@ -107,15 +108,15 @@ public class PurchaseFlowTest {
 
 	@Test
 	public void testShouldErrorWithEmptySignature() throws Exception {
-		flow.onActivityResult(1, RESULT_OK, newIntent(OK, "data", ""));
+		flow.onActivityResult(1, RESULT_OK, newIntent(OK, "{productId:'test', purchaseTime:1000}", ""));
 
 		verifyError(ResponseCodes.WRONG_SIGNATURE, RuntimeException.class);
 	}
 
 	@Test
 	public void testShouldErrorIfVerificationFailed() throws Exception {
-		when(verifier.verify(anyString(), anyString(), anyString())).thenReturn(false);
-		flow.onActivityResult(1, RESULT_OK, newIntent(OK, "data", "signature"));
+		Tests.mockVerifier(verifier, false);
+		flow.onActivityResult(1, RESULT_OK, newIntent(OK, "{productId:'test', purchaseTime:1000}", "signature"));
 
 		verifyError(ResponseCodes.WRONG_SIGNATURE, RuntimeException.class);
 
@@ -123,7 +124,7 @@ public class PurchaseFlowTest {
 
 	@Test
 	public void testShouldFinishSuccessfully() throws Exception {
-		when(verifier.verify(anyString(), anyString(), anyString())).thenReturn(true);
+		Tests.mockVerifier(verifier, true);
 		flow.onActivityResult(1, RESULT_OK, newOkIntent());
 
 		verify(listener, never()).onError(anyInt(), any(Exception.class));
@@ -132,7 +133,7 @@ public class PurchaseFlowTest {
 
 	@Test
 	public void testShouldNotCallListenerIfCancelled() throws Exception {
-		when(verifier.verify(anyString(), anyString(), anyString())).thenReturn(true);
+		Tests.mockVerifier(verifier, true);
 		flow.cancel();
 		flow.onActivityResult(1, RESULT_OK, newOkIntent());
 		flow.onActivityResult(1, RESULT_OK, newIntent(ACCOUNT_ERROR, "{productId:'test', purchaseTime:1000}", "signature"));

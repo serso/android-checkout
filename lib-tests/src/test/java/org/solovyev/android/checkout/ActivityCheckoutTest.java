@@ -33,10 +33,10 @@ import javax.annotation.Nonnull;
 import static java.util.Arrays.asList;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
-import static org.mockito.Matchers.*;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyObject;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.*;
 import static org.solovyev.android.checkout.PurchaseFlowTest.newOkIntent;
 import static org.solovyev.android.checkout.ResponseCodes.NULL_INTENT;
 
@@ -136,9 +136,9 @@ public class ActivityCheckoutTest {
 
 	@Test
 	public void testOneShowPurchaseFlowShouldBeRemovedOnSuccess() throws Exception {
-		final SignatureVerifier verifier = mock(SignatureVerifier.class);
-		when(verifier.verify(anyString(), anyString(), anyString())).thenReturn(true);
-		billing.setSignatureVerifier(verifier);
+		final PurchaseVerifier verifier = mock(PurchaseVerifier.class);
+		Tests.mockVerifier(verifier, true);
+		billing.setPurchaseVerifier(verifier);
 
 		final RequestListener l = mock(RequestListener.class);
 		checkout.createOneShotPurchaseFlow(l);
@@ -147,6 +147,5 @@ public class ActivityCheckoutTest {
 
 		verify(l).onSuccess(anyObject());
 		verifyPurchaseFlowDoesntExist();
-
 	}
 }

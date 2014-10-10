@@ -30,11 +30,11 @@ import org.json.JSONException;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.List;
 
 import static android.app.Activity.RESULT_OK;
-import static org.solovyev.android.checkout.ResponseCodes.NULL_INTENT;
-import static org.solovyev.android.checkout.ResponseCodes.OK;
-import static org.solovyev.android.checkout.ResponseCodes.WRONG_SIGNATURE;
+import static java.util.Arrays.asList;
+import static org.solovyev.android.checkout.ResponseCodes.*;
 
 /**
  * Class which handles different events during the purchase process
@@ -48,20 +48,16 @@ public final class PurchaseFlow implements CancellableRequestListener<PendingInt
 	@Nonnull
 	private final Activity activity;
 
-	@Nonnull
-	private final String publicKey;
-
 	private final int requestCode;
 
 	@Nullable
 	private RequestListener<Purchase> listener;
 
 	@Nonnull
-	private final SignatureVerifier verifier;
+	private final PurchaseVerifier verifier;
 
-	PurchaseFlow(@Nonnull Activity activity, @Nonnull String publicKey, int requestCode, @Nonnull RequestListener<Purchase> listener, @Nonnull SignatureVerifier verifier) {
+	PurchaseFlow(@Nonnull Activity activity, int requestCode, @Nonnull RequestListener<Purchase> listener, @Nonnull PurchaseVerifier verifier) {
 		this.activity = activity;
-		this.publicKey = publicKey;
 		this.requestCode = requestCode;
 		this.listener = listener;
 		this.verifier = verifier;
@@ -97,13 +93,8 @@ public final class PurchaseFlow implements CancellableRequestListener<PendingInt
 				Check.isNotNull(data);
 				Check.isNotNull(signature);
 
-				if (verifier.verify(publicKey, data, signature)) {
-					if (listener != null) {
-						listener.onSuccess(Purchase.fromJson(data, signature));
-					}
-				} else {
-					handleError(WRONG_SIGNATURE);
-				}
+				final Purchase purchase = Purchase.fromJson(data, signature);
+				verifier.verify(asList(purchase), new VerificationListener());
 			} else {
 				handleError(responseCode);
 			}
@@ -116,9 +107,7 @@ public final class PurchaseFlow implements CancellableRequestListener<PendingInt
 
 	private void handleError(int response) {
 		Billing.error("Error response: " + response + " in " + PurchaseRequest.class.getSimpleName() + " request");
-		if (listener != null) {
-			listener.onError(response, new BillingException(response));
-		}
+		onError(response, new BillingException(response));
 	}
 
 	private void handleError(@Nonnull Exception e) {
@@ -142,6 +131,30 @@ public final class PurchaseFlow implements CancellableRequestListener<PendingInt
 		if (listener != null) {
 			Billing.cancel(listener);
 			listener = null;
+		}
+	}
+
+	private class VerificationListener implements RequestListener<List<Purchase>> {
+		@Override
+		public void onSuccess(@Nonnull List<Purchase> verifiedPurchases) {
+			Check.isMainThread();
+			if (!verifiedPurchases.isEmpty()) {
+				if (listener != null) {
+					listener.onSuccess(verifiedPurchases.get(0));
+				}
+			} else {
+				handleError(WRONG_SIGNATURE);
+			}
+		}
+
+		@Override
+		public void onError(int response, @Nonnull Exception e) {
+			Check.isMainThread();
+			if (response == EXCEPTION) {
+				handleError(e);
+			} else {
+				handleError(response);
+			}
 		}
 	}
 }

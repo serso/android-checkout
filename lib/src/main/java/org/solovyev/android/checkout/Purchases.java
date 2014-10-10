@@ -72,17 +72,28 @@ public final class Purchases {
 
 	@Nonnull
 	static Purchases fromBundle(@Nonnull Bundle bundle, @Nonnull String product) throws JSONException {
+		final String continuationToken = getContinuationTokenFromBundle(bundle);
+		final List<Purchase> purchases = getListFromBundle(bundle);
+		return new Purchases(product, purchases, continuationToken);
+	}
+
+	@Nullable
+	static String getContinuationTokenFromBundle(@Nonnull Bundle bundle) {
+		return bundle.getString(BUNDLE_CONTINUATION_TOKEN);
+	}
+
+	@Nonnull
+	static List<Purchase> getListFromBundle(@Nonnull Bundle bundle) throws JSONException {
 		final List<String> datas = extractDatasList(bundle);
 		final List<String> signatures = bundle.getStringArrayList(BUNDLE_SIGNATURE_LIST);
-		final String continuationToken = bundle.getString(BUNDLE_CONTINUATION_TOKEN);
 
 		final List<Purchase> purchases = new ArrayList<Purchase>(datas.size());
 		for (int i = 0; i < datas.size(); i++) {
 			final String data = datas.get(i);
-			final String signature = signatures != null ? signatures.get(i) : null;
+			final String signature = signatures != null ? signatures.get(i) : "";
 			purchases.add(Purchase.fromJson(data, signature));
 		}
-		return new Purchases(product, purchases, continuationToken);
+		return purchases;
 	}
 
 	/**

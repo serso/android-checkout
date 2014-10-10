@@ -44,13 +44,13 @@ import static org.solovyev.android.checkout.PurchaseTest.verifyPurchase;
 public abstract class InventoryTestBase {
 
 	@Nonnull
-	private Inventory inventory;
-
-	@Nonnull
 	protected Billing billing;
 
 	@Nonnull
 	private Checkout checkout;
+
+	@Nonnull
+	private Inventory inventory;
 
 	@Before
 	public void setUp() throws Exception {

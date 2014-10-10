@@ -106,12 +106,7 @@ public final class Billing {
 	private ServiceConnector connector = new DefaultServiceConnector();
 
 	@Nonnull
-	private SignatureVerifier signatureVerifier = new SignatureVerifier() {
-		@Override
-		public boolean verify(@Nonnull String publicKey, @Nonnull String data, @Nonnull String signature) {
-			return Security.verifyPurchase(publicKey, data, signature);
-		}
-	};
+	private PurchaseVerifier purchaseVerifier;
 
 	/**
 	 * Same as {@link #Billing(android.content.Context, android.os.Handler, Configuration)} with new handler
@@ -140,6 +135,7 @@ public final class Billing {
 		this.configuration = new StaticConfiguration(configuration);
 		Check.isNotEmpty(this.configuration.getPublicKey());
 		this.cache = new ConcurrentCache(configuration.getCache());
+		this.purchaseVerifier = configuration.getPurchaseVerifier();
 	}
 
 	@Nonnull
@@ -207,8 +203,8 @@ public final class Billing {
 		this.mainThread = mainThread;
 	}
 
-	void setSignatureVerifier(@Nonnull SignatureVerifier signatureVerifier) {
-		this.signatureVerifier = signatureVerifier;
+	void setPurchaseVerifier(@Nonnull PurchaseVerifier purchaseVerifier) {
+		this.purchaseVerifier = purchaseVerifier;
 	}
 
 	void setState(@Nonnull State newState) {
@@ -441,9 +437,20 @@ public final class Billing {
 		}
 	}
 
+	/**
+	 * @return default cache implementation
+	 */
 	@Nonnull
 	public static Cache newCache() {
 		return new MapCache();
+	}
+
+	/**
+	 * @return default purchase verifier
+	 */
+	@Nonnull
+	public static PurchaseVerifier newPurchaseVerifier(@Nonnull String publicKey) {
+		return new DefaultPurchaseVerifier(publicKey);
 	}
 
 	@Nonnull
@@ -457,7 +464,7 @@ public final class Billing {
 				}
 			};
 		}
-		return new PurchaseFlow(activity, configuration.getPublicKey(), requestCode, listener, signatureVerifier);
+		return new PurchaseFlow(activity, requestCode, listener, purchaseVerifier);
 	}
 
 	/**
@@ -705,14 +712,14 @@ public final class Billing {
 		@Override
 		public int getPurchases(@Nonnull final String product, @Nullable final String continuationToken, @Nonnull RequestListener<Purchases> listener) {
 			Check.isNotEmpty(product);
-			return runWhenConnected(new GetPurchasesRequest(product, continuationToken), wrapListener(listener), tag);
+			return runWhenConnected(new GetPurchasesRequest(product, continuationToken, purchaseVerifier), wrapListener(listener), tag);
 		}
 
 		@Override
 		public int getAllPurchases(@Nonnull String product, @Nonnull RequestListener<Purchases> listener) {
 			Check.isNotEmpty(product);
 			final GetAllPurchasesListener getAllPurchasesListener = new GetAllPurchasesListener(listener);
-			final GetPurchasesRequest request = new GetPurchasesRequest(product, null);
+			final GetPurchasesRequest request = new GetPurchasesRequest(product, null, purchaseVerifier);
 			getAllPurchasesListener.request = request;
 			return runWhenConnected(request, wrapListener(getAllPurchasesListener), tag);
 		}
@@ -721,7 +728,7 @@ public final class Billing {
 		public int isPurchased(@Nonnull final String product, @Nonnull final String sku, @Nonnull final RequestListener<Boolean> listener) {
 			Check.isNotEmpty(sku);
 			final IsPurchasedListener isPurchasedListener = new IsPurchasedListener(sku, listener);
-			final GetPurchasesRequest request = new GetPurchasesRequest(product, null);
+			final GetPurchasesRequest request = new GetPurchasesRequest(product, null, purchaseVerifier);
 			isPurchasedListener.request = request;
 			return runWhenConnected(request, wrapListener(isPurchasedListener), tag);
 		}
@@ -935,6 +942,12 @@ public final class Billing {
 			return newCache();
 		}
 
+		@Nonnull
+		@Override
+		public PurchaseVerifier getPurchaseVerifier() {
+			return newPurchaseVerifier(getPublicKey());
+		}
+
 		@Nullable
 		@Override
 		public Inventory getFallbackInventory(@Nonnull Checkout checkout, @Nonnull Executor onLoadExecutor) {
@@ -952,8 +965,19 @@ public final class Billing {
 		@Nonnull
 		String getPublicKey();
 
+		/**
+		 * @return cache instance to be used for caching, null for no caching
+		 * @see Billing#newCache()
+		 */
 		@Nullable
 		Cache getCache();
+
+		/**
+		 * @return {@link PurchaseVerifier} to be used to validate the purchases
+		 * @see org.solovyev.android.checkout.PurchaseVerifier
+		 */
+		@Nonnull
+		PurchaseVerifier getPurchaseVerifier();
 
 		/**
 		 * @return inventory to be used if Billing v.3 is not supported
@@ -989,6 +1013,12 @@ public final class Billing {
 		@Override
 		public Cache getCache() {
 			return original.getCache();
+		}
+
+		@Nonnull
+		@Override
+		public PurchaseVerifier getPurchaseVerifier() {
+			return original.getPurchaseVerifier();
 		}
 
 		@Nullable

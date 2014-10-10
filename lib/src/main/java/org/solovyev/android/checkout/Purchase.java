@@ -27,7 +27,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 @Immutable
@@ -46,10 +45,19 @@ public final class Purchase {
 	public final String payload;
 	@Nonnull
 	public final String token;
+
+	/**
+	 * Raw data returned from {@link com.android.vending.billing.IInAppBillingService#getPurchases}
+	 */
+	@Nonnull
+	public final String data;
+	/**
+	 * Signature of {@link #data}
+	 */
 	@Nonnull
 	public final String signature;
 
-	Purchase(@Nonnull String sku, @Nonnull String orderId, @Nonnull String packageName, long time, int state, @Nonnull String payload, @Nonnull String token, @Nonnull String signature) {
+	Purchase(@Nonnull String sku, @Nonnull String orderId, @Nonnull String packageName, long time, int state, @Nonnull String payload, @Nonnull String token, @Nonnull String data, @Nonnull String signature) {
 		this.sku = sku;
 		this.orderId = orderId;
 		this.packageName = packageName;
@@ -58,10 +66,11 @@ public final class Purchase {
 		this.payload = payload;
 		this.token = token;
 		this.signature = signature;
+		this.data = data;
 	}
 
 	@Nonnull
-	static Purchase fromJson(@Nonnull String data, @Nullable String signature) throws JSONException {
+	static Purchase fromJson(@Nonnull String data, @Nonnull String signature) throws JSONException {
 		final JSONObject json = new JSONObject(data);
 		final String sku = json.getString("productId");
 		final String orderId = json.optString("orderId");
@@ -70,11 +79,13 @@ public final class Purchase {
 		final int purchaseState = json.optInt("purchaseState", 0);
 		final String payload = json.optString("developerPayload");
 		final String token = json.optString("token", json.optString("purchaseToken"));
-		return new Purchase(sku, orderId, packageName, purchaseTime, purchaseState, payload, token, signature == null ? "" : signature);
+		return new Purchase(sku, orderId, packageName, purchaseTime, purchaseState, payload, token, data, signature);
 	}
 
 	/**
-	 * Same as {@link #toJson(boolean)} with {@code withSignature=false}
+	 * Same as {@link #toJson(boolean)} with {@code withSignature=false}.
+	 * Note that this method returns JSON which is not the same as original JSON returned by Google. Original JSON is
+	 * stored in {@link #data}, use it if you want to do a signature check (as {@link #signature} signs {@link #data})
 	 * @return JSON representation of this object
 	 */
 	@Nonnull

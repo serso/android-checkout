@@ -121,7 +121,7 @@ public final class RobotmediaDatabase {
 					final String sku = c.getString(2);
 					final long time = c.getLong(3);
 					final String payload = c.getString(4);
-					final Purchase p = new Purchase(sku, orderId, packageName, time, state, payload, "", "");
+					final Purchase p = new Purchase(sku, orderId, packageName, time, state, payload, "", "", "");
 					purchases.add(p);
 				} while (c.moveToNext());
 			}
