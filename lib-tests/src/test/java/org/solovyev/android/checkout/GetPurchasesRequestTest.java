@@ -112,6 +112,21 @@ public class GetPurchasesRequestTest extends RequestTestBase {
 		assertTrue(l.purchases.list.size() == 4);
 	}
 
+	@Test
+	public void testEmptyListShouldNotBeVerified() throws Exception {
+		final PurchaseVerifier verifier = mock(PurchaseVerifier.class);
+		final GetPurchasesRequest request = new GetPurchasesRequest("test", null, verifier);
+		final RequestListener listener = mock(RequestListener.class);
+		request.setListener(listener);
+
+		final IInAppBillingService service = mock(IInAppBillingService.class);
+		when(service.getPurchases(anyInt(), anyString(), anyString(), anyString())).thenReturn(newBundle(OK));
+		request.start(service, 3, "test");
+
+		verify(verifier, never()).verify(anyList(), any(RequestListener.class));
+		verify(listener, times(1)).onSuccess(anyObject());
+	}
+
 	private static class AsyncPurchaseVerifier implements PurchaseVerifier {
 		@Nonnull
 		private Executor executor = Executors.newSingleThreadExecutor();

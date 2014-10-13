@@ -148,8 +148,8 @@ abstract class Request<R> {
 		}
 	}
 
-	protected final boolean handleError(@Nonnull Bundle bundle) {
-		final int response = bundle.getInt("RESPONSE_CODE");
+	protected final boolean handleError(@Nullable Bundle bundle) {
+		final int response = bundle != null ? bundle.getInt("RESPONSE_CODE") : ResponseCodes.ERROR;
 		return handleError(response);
 	}
 
