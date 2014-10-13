@@ -27,12 +27,16 @@ import java.util.List;
 
 public interface PurchaseVerifier {
 	/**
-	 * Verifies a list <var>purchases</var> and passes a list of verified purchases to <var>listener</var>.
+	 * Verifies a list of <var>purchases</var> and passes a list of verified purchases to <var>listener</var>.
 	 * Note that this method might be called on any thread and methods of <var>listener</var> must be called on the same
 	 * thread (if method was called on the main thread listener methods should be also called on the main thread).
 	 * The actual verification though might use background thread for communicating with remote server.
+	 * {@link org.solovyev.android.checkout.BasePurchaseVerifier} contains default thread management logic, please
+	 * extend it in order to avoid bugs.
+	 *
 	 * @param purchases purchases to be verified
-	 * @param listener callback which gets a list of verified purchases
+	 * @param listener  callback which gets a list of verified purchases
+	 * @see org.solovyev.android.checkout.BasePurchaseVerifier
 	 */
 	void verify(@Nonnull List<Purchase> purchases, @Nonnull RequestListener<List<Purchase>> listener);
 }

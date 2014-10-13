@@ -75,6 +75,24 @@ final class Check {
 		}
 	}
 
+	public static void equals(@Nullable Object expected, @Nullable Object actual) {
+		equals(expected, actual, "Should be equal");
+	}
+
+	public static void equals(@Nullable Object expected, @Nullable Object actual, @Nonnull String message) {
+		if (expected == actual) {
+			// both nulls or same
+			return;
+		}
+
+		if (expected != null && actual != null && expected.equals(actual)) {
+			// equals
+			return;
+		}
+
+		throw new AssertionException(message);
+	}
+
 	static void isTrue(boolean expression, @Nonnull String message) {
 		if (!expression) {
 			throw new AssertionException(message);
