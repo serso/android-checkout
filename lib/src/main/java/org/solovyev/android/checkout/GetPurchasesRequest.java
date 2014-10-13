@@ -75,7 +75,11 @@ final class GetPurchasesRequest extends Request<Purchases> {
 			try {
 				final String continuationToken = Purchases.getContinuationTokenFromBundle(bundle);
 				final List<Purchase> purchases = Purchases.getListFromBundle(bundle);
-				verifier.verify(purchases, new VerificationListener(this, product, continuationToken));
+				if (!purchases.isEmpty()) {
+					verifier.verify(purchases, new VerificationListener(this, product, continuationToken));
+				} else {
+					onSuccess(new Purchases(product, purchases, continuationToken));
+				}
 			} catch (JSONException e) {
 				onError(e);
 			}
