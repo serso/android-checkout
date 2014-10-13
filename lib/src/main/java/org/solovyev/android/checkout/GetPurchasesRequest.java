@@ -76,7 +76,11 @@ final class GetPurchasesRequest extends Request<Purchases> {
 				final String continuationToken = Purchases.getContinuationTokenFromBundle(bundle);
 				final List<Purchase> purchases = Purchases.getListFromBundle(bundle);
 				if (!purchases.isEmpty()) {
-					verifier.verify(purchases, new VerificationListener(this, product, continuationToken));
+					final VerificationListener listener = new VerificationListener(this, product, continuationToken);
+					verifier.verify(purchases, listener);
+					if (!listener.called) {
+						listener.onError(ResponseCodes.EXCEPTION, new IllegalStateException("Either onSuccess or onError methods must be called by PurchaseVerifier"));
+					}
 				} else {
 					onSuccess(new Purchases(product, purchases, continuationToken));
 				}
@@ -103,20 +107,28 @@ final class GetPurchasesRequest extends Request<Purchases> {
 		private final String product;
 		@Nullable
 		private final String continuationToken;
+		@Nonnull
+		private final Thread thread;
+		private boolean called;
 
 		public VerificationListener(@Nonnull Request<Purchases> request, @Nonnull String product, @Nullable String continuationToken) {
 			this.request = request;
 			this.product = product;
 			this.continuationToken = continuationToken;
+			this.thread = Thread.currentThread();
 		}
 
 		@Override
 		public void onSuccess(@Nonnull List<Purchase> verifiedPurchases) {
+			Check.equals(thread, Thread.currentThread(), "Must be called on the same thread");
+			called = true;
 			request.onSuccess(new Purchases(product, verifiedPurchases, continuationToken));
 		}
 
 		@Override
 		public void onError(int response, @Nonnull Exception e) {
+			Check.equals(thread, Thread.currentThread(), "Must be called on the same thread");
+			called = true;
 			if (response == EXCEPTION) {
 				request.onError(e);
 			} else {
