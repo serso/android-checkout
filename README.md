@@ -181,6 +181,10 @@ is a subclass which also provides access to [PurchaseFlow](https://github.com/se
 
 **Inventory** contains static information abouts products, purchases and SKUs. It should be reloaded every time the purchase state is changed in order to be actual.
 
+### Purchase verification
+
+By default **Checkout** uses simple purchase verification algorithm (see [DefaultPurchaseVerifier](https://github.com/serso/android-checkout/blob/master/lib/src/main/java/org/solovyev/android/checkout/DefaultPurchaseVerifier.java)). As exmplained in Android [documentation](http://developer.android.com/google/play/billing/billing_best_practices.html#sign) it's better to verify purchases on remote server. **Checkout** allows you to provide your own [PurchaseVerifier](https://github.com/serso/android-checkout/blob/master/lib/src/main/java/org/solovyev/android/checkout/PurchaseVerifier.java) by implementing ```Billing.Configuration#getPurchaseVerifier```. Note that ```PurchaseVerifier#verify``` is called every time purchases information is requested from Android Billing API and might be called on both main and background threads. [BasePurchaseVerifier](https://github.com/serso/android-checkout/blob/master/lib/src/main/java/org/solovyev/android/checkout/BasePurchaseVerifier.java) deals with thread management and it is recommended to extend this class if you want to provide custom verification procedure. It is safe to do network requests from ```BasePurchaseVerifier#doVerify``` as this method is guaranteed to be called on the background thread.
+
 ### Billing Version 2
 
 Some users might not have Google Play Services supporting Billing Version 3. As these users might have purchases it should be possible to retrieve purchase information for them. You can provide fallback functionality for such users by returning not null object from ```Billing.Configuration#getFallbackInventory``` method.
