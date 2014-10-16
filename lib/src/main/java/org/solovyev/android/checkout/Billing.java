@@ -55,7 +55,7 @@ public final class Billing {
 	@Nonnull
 	private static final String TAG = "Checkout";
 
-	public static final boolean DEBUG = false;
+	public static final boolean DEBUG = true;
 
 	@Nonnull
 	private static final EmptyListener EMPTY_LISTENER = new EmptyListener();
@@ -945,6 +945,7 @@ public final class Billing {
 		@Nonnull
 		@Override
 		public PurchaseVerifier getPurchaseVerifier() {
+			Billing.warning("Default purchase verification procedure is used, please read https://github.com/serso/android-checkout#purchase-verification");
 			return newPurchaseVerifier(getPublicKey());
 		}
 
