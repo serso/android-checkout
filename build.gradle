@@ -1,11 +1,11 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 
 public int version_code() {
-    return 13
+    return 15
 }
 
 public String version_name() {
-    return '0.5.1'
+    return '0.6.0'
 }
 
 buildscript {
