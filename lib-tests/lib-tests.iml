@@ -72,12 +72,13 @@
     <orderEntry type="library" exported="" scope="TEST" name="maven-ant-tasks-2.1.3" level="project" />
     <orderEntry type="library" exported="" scope="TEST" name="json-20090211" level="project" />
     <orderEntry type="library" exported="" scope="TEST" name="support-annotations-20.0.0" level="project" />
-    <orderEntry type="library" exported="" scope="TEST" name="_home_serso_projects_java_android_checkout_app_build_intermediates_exploded_aar_org_solovyev_android_lib_0_5_1_classes_jar" level="project" />
+    <orderEntry type="library" exported="" scope="TEST" name="classes" level="project" />
     <orderEntry type="library" exported="" scope="TEST" name="acra-4.5.0" level="project" />
-    <orderEntry type="library" exported="" scope="TEST" name="_home_serso_projects_java_android_checkout_app_build_intermediates_exploded_aar_com_android_support_support_v4_20_0_0_classes_jar" level="project" />
+    <orderEntry type="library" exported="" scope="TEST" name="internal_impl-20.0.0" level="project" />
+    <orderEntry type="library" exported="" scope="TEST" name="classes" level="project" />
     <orderEntry type="library" exported="" scope="TEST" name="jsr305-2.0.3" level="project" />
-    <orderEntry type="library" exported="" scope="TEST" name="_home_serso_projects_java_android_checkout_app_build_intermediates_classes_debug" level="project" />
-    <orderEntry type="library" exported="" scope="TEST" name="_home_serso_projects_java_android_checkout_app_build_intermediates_dependency_cache_debug" level="project" />
+    <orderEntry type="library" exported="" scope="TEST" name="_home_serso_projects_java_serso_android_checkout_app_build_intermediates_classes_debug" level="project" />
+    <orderEntry type="library" exported="" scope="TEST" name="_home_serso_projects_java_serso_android_checkout_app_build_intermediates_dependency_cache_debug" level="project" />
     <orderEntry type="library" exported="" scope="TEST" name="android" level="project" />
   </component>
   <component name="org.twodividedbyzero.idea.findbugs">
