@@ -920,7 +920,9 @@ public final class Billing {
 
 		@Override
 		public boolean connect() {
-			return context.bindService(new Intent("com.android.vending.billing.InAppBillingService.BIND"), connection, Context.BIND_AUTO_CREATE);
+			final Intent intent = new Intent("com.android.vending.billing.InAppBillingService.BIND");
+			intent.setPackage("com.android.vending");
+			return context.bindService(intent, connection, Context.BIND_AUTO_CREATE);
 		}
 
 		@Override
