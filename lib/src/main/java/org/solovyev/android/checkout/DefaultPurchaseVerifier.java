@@ -26,6 +26,8 @@ import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
 
+import static android.text.TextUtils.isEmpty;
+
 /**
  * Checks the purchase signature with default Android implementation {@link Security}
  */
@@ -44,6 +46,12 @@ class DefaultPurchaseVerifier implements PurchaseVerifier {
 		for (Purchase purchase : purchases) {
 			if (Security.verifyPurchase(publicKey, purchase.data, purchase.signature)) {
 				verifiedPurchases.add(purchase);
+			} else {
+				if (isEmpty(purchase.signature)) {
+					Billing.error("Cannot verify purchase: " + purchase + ". Signature is empty");
+				} else {
+					Billing.error("Cannot verify purchase: " + purchase + ". Wrong signature");
+				}
 			}
 		}
 		listener.onSuccess(verifiedPurchases);
