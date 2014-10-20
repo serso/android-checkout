@@ -8,12 +8,12 @@ public String version_name() {
     return '0.6.0'
 }
 
-public String android_sdk_version() {
-    return 'android-L'
+public int android_sdk_version() {
+    return 21
 }
 
 public String android_build_tools_version() {
-    return '21.0.1'
+    return '20'
 }
 
 public String android_min_sdk_version() {
