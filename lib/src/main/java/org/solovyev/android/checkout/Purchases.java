@@ -42,7 +42,7 @@ import java.util.List;
 public final class Purchases {
 
 	static final String BUNDLE_DATA_LIST = "INAPP_PURCHASE_DATA_LIST";
-	static final String BUNDLE_SIGNATURE_LIST = "INAPP_DATA_SIGNATURE";
+	static final String BUNDLE_SIGNATURE_LIST = "INAPP_DATA_SIGNATURE_LIST";
 	static final String BUNDLE_CONTINUATION_TOKEN = "INAPP_CONTINUATION_TOKEN";
 	/**
 	 * Product type
