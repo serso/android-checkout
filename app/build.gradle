@@ -67,8 +67,8 @@ task androidSourcesJar(type: Jar) {
 
 artifacts {
     archives androidSourcesJar
-    archives file: file('build/apk/checkout-release.apk'), name: 'checkout-app', type: 'apk'
-    archives file: file('build/proguard/release/mapping.txt'), name: 'checkout-app', classifier: 'proguard', type: 'txt'
+    archives file: file('build/outputs/apk/checkout-release.apk'), name: 'checkout-app', type: 'apk'
+    archives file: file('build/outputs/proguard/release/mapping.txt'), name: 'checkout-app', classifier: 'proguard', type: 'txt'
 }
 
 signing {
