@@ -44,7 +44,7 @@ android {
 
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
-    compile 'com.android.support:support-v4:21.0.3'
+    compile 'com.android.support:support-v4:21.0.+'
     compile ('ch.acra:acra:4.5.0') {
         exclude group: 'org.json'
     }
