@@ -9,11 +9,11 @@ public String version_name() {
 }
 
 public int android_sdk_version() {
-    return 20
+    return 21
 }
 
 public String android_build_tools_version() {
-    return '20'
+    return '21.1.2'
 }
 
 public String android_min_sdk_version() {
@@ -26,7 +26,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:0.12.2'
+        classpath 'com.android.tools.build:gradle:0.14.2'
     }
 }
 
