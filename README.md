@@ -1,4 +1,4 @@
-# Android Checkout Library
+# Checkout (Android In-App Billing Library)
 
 ## Description
 
