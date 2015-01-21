@@ -17,7 +17,7 @@ public String android_build_tools_version() {
 }
 
 public String android_min_sdk_version() {
-    return 9
+    return 8
 }
 
 buildscript {
