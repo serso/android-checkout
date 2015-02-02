@@ -239,6 +239,12 @@ public final class Billing {
 		}
 	}
 
+	/**
+	 * Connects to Billing service. Called automatically when first request is done,
+	 * Use {@link #disconnect()} to disconnect.
+	 * It's allowed to call this method several times, if service is already connected nothing will
+	 * happen.
+	 */
 	public void connect() {
 		synchronized (lock) {
 			if (state == State.CONNECTED) {
@@ -266,7 +272,14 @@ public final class Billing {
 		}
 	}
 
-	void disconnect() {
+	/**
+	 * Disconnects from Billing service cancelling all pending requests. Any subsequent
+	 * request will automatically reconnect Billing service, thus, don't run any requests after
+	 * disconnection (otherwise Billing service will be connected again).
+	 * It's allowed to call this method several times, if service is already disconnected nothing
+	 * will happen.
+	 */
+	public void disconnect() {
 		synchronized (lock) {
 			if (state == State.DISCONNECTED || state == State.DISCONNECTING || state == State.INITIAL) {
 				return;
