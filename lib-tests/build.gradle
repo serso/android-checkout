@@ -30,7 +30,7 @@ dependencies {
     testCompile androidModule.android.applicationVariants.toList().first().javaCompile.outputs.files
     testCompile files(androidModule.plugins.findPlugin("android").getBootClasspath())
 
-    testCompile 'junit:junit:4.+'
+    testCompile 'junit:junit:4.12'
     testCompile 'org.robolectric:robolectric:2.3'
     testCompile "org.mockito:mockito-all:1.9.5"
     testCompile "org.skyscreamer:jsonassert:1.2.3"
