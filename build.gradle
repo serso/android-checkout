@@ -38,4 +38,12 @@ allprojects {
         }
         mavenCentral()
     }
+
+    if (!project.hasProperty("ossrhUsername")) {
+        ext.ossrhUsername = "no-username"
+    }
+
+    if (!project.hasProperty("ossrhPassword")) {
+        ext.ossrhPassword = "no-password"
+    }
 }
