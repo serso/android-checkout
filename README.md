@@ -25,6 +25,7 @@ integrating it, like:
 
 * Say it right! ([Google Play](https://play.google.com/store/apps/details?id=org.solovyev.android.dictionary.forvo))
 * Calculator++ ([Google Play](https://play.google.com/store/apps/details?id=org.solovyev.android.calculator), [sources](https://github.com/serso/android-calculatorpp))
+* AcDisplay ([Google Play](http://get.acdisplay.org), [sources](http://repo.acdisplay.org))
 
 ## Getting started
 
