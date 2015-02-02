@@ -100,9 +100,9 @@ uploadArchives {
             }
 
             pom.project {
+                artifactId = 'checkout'
                 name 'Android Checkout Library'
                 packaging 'aar'
-                // optionally artifactId can be defined here
                 description 'Library for Android In-App Billing (Version 3)'
                 url 'https://github.com/serso/android-checkout'
 

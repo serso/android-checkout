@@ -69,7 +69,7 @@ task androidSourcesJar(type: Jar) {
 
 artifacts {
     archives androidSourcesJar
-    archives file: file('build/outputs/apk/checkout-release.apk'), name: 'checkout-app', type: 'apk'
+    archives file: file('build/outputs/apk/checkout-release.apk'), name: 'checkout-app', classifier: 'signed', type: 'apk'
     archives file: file('build/outputs/mapping/release/mapping.txt'), name: 'checkout-app', classifier: 'proguard', type: 'txt'
 }
 
@@ -94,9 +94,9 @@ uploadArchives {
             }
 
             pom.project {
+                artifactId = 'checkout-app'
                 name 'Android Checkout App'
                 packaging 'apk'
-                // optionally artifactId can be defined here
                 description 'Sample App for Android In-App Billing (Version 3)'
                 url 'https://github.com/serso/android-checkout'
 
