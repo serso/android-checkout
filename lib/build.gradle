@@ -20,7 +20,7 @@
  * Site:  http://se.solovyev.org
  */
 
-apply plugin: 'android-library'
+apply plugin: 'com.android.library'
 apply plugin: 'maven'
 apply plugin: 'signing'
 
@@ -84,7 +84,6 @@ signing {
 }
 
 group = "org.solovyev.android"
-archivesBaseName = "checkout"
 version = version_name()
 
 uploadArchives {
