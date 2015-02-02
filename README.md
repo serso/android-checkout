@@ -158,7 +158,9 @@ Sources are available [here](https://github.com/serso/android-checkout/tree/mast
 
 ### Building from sources
 
-**Checkout** is built by Gradle. The project structure and build procedure are standard for Android libraries. Please
+**Checkout** is built by Gradle. The project structure and build procedure are standard for Android libraries.
+An environmental variable with name ANDROID_HOME must be set before building and should point to Android SDK installation folder (f.e. /opt/android/sdk).
+Please
 refer to [Gradle User Guide](http://tools.android.com/tech-docs/new-build-system/user-guide) for more information about building.
 
 Android Studio/IDEA project configuration files are also checked into the repository. Use "File->Open..." to open the project.
