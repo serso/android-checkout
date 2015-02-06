@@ -72,27 +72,13 @@ public abstract class InventoryTestBase {
 
 	@Test
 	public void testShouldLoadPurchases() throws Exception {
-		final List<Purchase> expectedInApps = asList(
-				Purchase.fromJson(PurchaseTest.newJson(1, PURCHASED), null),
-				Purchase.fromJson(PurchaseTest.newJson(2, CANCELLED), null),
-				Purchase.fromJson(PurchaseTest.newJson(3, REFUNDED), null),
-				Purchase.fromJson(PurchaseTest.newJson(4, EXPIRED), null)
-		);
-		insertPurchases(IN_APP, expectedInApps);
-
-		final List<Purchase> expectedSubs = asList(
-				Purchase.fromJson(PurchaseTest.newJsonSubscription(1, PURCHASED), null),
-				Purchase.fromJson(PurchaseTest.newJsonSubscription(2, CANCELLED), null),
-				Purchase.fromJson(PurchaseTest.newJsonSubscription(3, REFUNDED), null),
-				Purchase.fromJson(PurchaseTest.newJsonSubscription(4, EXPIRED), null)
-		);
-		insertPurchases(SUBSCRIPTION, expectedSubs);
+		populatePurchases();
 
 		final TestListener listener = new TestListener();
 		checkout.start();
 		inventory.load().whenLoaded(listener);
 
-		waitWhileLoading();
+		waitWhileLoading(inventory);
 
 		final boolean complete = shouldVerifyPurchaseCompletely();
 
@@ -117,6 +103,24 @@ public abstract class InventoryTestBase {
 		assertSame(listener.products, inventory.getProducts());
 	}
 
+	protected void populatePurchases() throws Exception {
+		final List<Purchase> expectedInApps = asList(
+				Purchase.fromJson(PurchaseTest.newJson(1, PURCHASED), null),
+				Purchase.fromJson(PurchaseTest.newJson(2, CANCELLED), null),
+				Purchase.fromJson(PurchaseTest.newJson(3, REFUNDED), null),
+				Purchase.fromJson(PurchaseTest.newJson(4, EXPIRED), null)
+		);
+		insertPurchases(IN_APP, expectedInApps);
+
+		final List<Purchase> expectedSubs = asList(
+				Purchase.fromJson(PurchaseTest.newJsonSubscription(1, PURCHASED), null),
+				Purchase.fromJson(PurchaseTest.newJsonSubscription(2, CANCELLED), null),
+				Purchase.fromJson(PurchaseTest.newJsonSubscription(3, REFUNDED), null),
+				Purchase.fromJson(PurchaseTest.newJsonSubscription(4, EXPIRED), null)
+		);
+		insertPurchases(SUBSCRIPTION, expectedSubs);
+	}
+
 	protected abstract boolean shouldVerifyPurchaseCompletely();
 
 	protected abstract void insertPurchases(@Nonnull String product, @Nonnull List<Purchase> purchases) throws Exception;
@@ -131,7 +135,7 @@ public abstract class InventoryTestBase {
 		inventory.whenLoaded(l2);
 		checkout.start();
 		inventory.load();
-		waitWhileLoading();
+		waitWhileLoading(inventory);
 		inventory.whenLoaded(l3);
 
 		verify(l1, times(1)).onLoaded(anyProducts());
@@ -153,7 +157,7 @@ public abstract class InventoryTestBase {
 		inventory.whenLoaded(l);
 		checkout.start();
 		inventory.load();
-		waitWhileLoading();
+		waitWhileLoading(inventory);
 
 		verify(l, times(1)).onLoaded(anyProducts());
 	}
@@ -164,7 +168,7 @@ public abstract class InventoryTestBase {
 
 		checkout.start();
 		inventory.load();
-		waitWhileLoading();
+		waitWhileLoading(inventory);
 		inventory.whenLoaded(l);
 		inventory.whenLoaded(l);
 		inventory.whenLoaded(l);
@@ -180,13 +184,13 @@ public abstract class InventoryTestBase {
 		inventory.load();
 		inventory.load();
 		inventory.load();
-		waitWhileLoading();
+		waitWhileLoading(inventory);
 		inventory.load();
 		inventory.load();
 		verify(l, times(1)).onLoaded(anyProducts());
 	}
 
-	private void waitWhileLoading() throws InterruptedException {
+	void waitWhileLoading(@Nonnull Inventory inventory) throws InterruptedException {
 		int sleeping = 0;
 		while (!isLoaded(inventory)) {
 			Thread.sleep(50L);
@@ -199,9 +203,9 @@ public abstract class InventoryTestBase {
 
 	protected abstract boolean isLoaded(Inventory inventory);
 
-	private static class TestListener implements Inventory.Listener {
+	static class TestListener implements Inventory.Listener {
 		@Nonnull
-		private volatile Inventory.Products products;
+		volatile Inventory.Products products;
 
 		@Override
 		public void onLoaded(@Nonnull Inventory.Products products) {
