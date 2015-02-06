@@ -97,6 +97,8 @@ public final class RobotmediaDatabase {
 			final List<String> skus = products.getSkuIds(productId);
 			if (!skus.isEmpty()) {
 				product.setPurchases(loadPurchases(skus, db));
+			} else {
+				Billing.warning("There are no SKUs for \"" + product.id + "\" product. No purchase information will be loaded");
 			}
 
 			result.add(product);

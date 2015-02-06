@@ -135,6 +135,11 @@ final class CheckoutInventory extends BaseInventory {
 					}
 				}
 			});
+		} else {
+			Billing.warning("There are no SKUs for \"" + product.id + "\" product. No SKU information will be loaded");
+			synchronized (lock) {
+				onFinished(id);
+			}
 		}
 	}
 
