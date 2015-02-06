@@ -22,6 +22,8 @@
 
 apply plugin: 'java'
 
+evaluationDependsOn(':app')
+
 dependencies {
     def androidModule = project(':app')
     compile androidModule
