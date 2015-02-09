@@ -42,9 +42,8 @@ public final class ResponseCodes {
 	public static final int USER_CANCELED = 1;
 	/**
 	 * Account error, for example, user is not logged in
-	 * Note: hidden as this is not a part of public API, see <a href="http://developer.android.com/google/play/billing/billing_reference.html">In-App Billing Reference</a>
 	 */
-	static final int ACCOUNT_ERROR = 2;
+	public static final int ACCOUNT_ERROR = 2;
 	/**
 	 * This billing API version is not supported for the type requested
 	 */
