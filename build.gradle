@@ -1,11 +1,11 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 
 public int version_code() {
-    return 20
+    return 21
 }
 
 public String version_name() {
-    return '0.6.2'
+    return '0.7.0'
 }
 
 public int android_sdk_version() {
