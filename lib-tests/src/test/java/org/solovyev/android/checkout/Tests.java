@@ -57,7 +57,12 @@ public final class Tests {
 
 	@Nonnull
 	static Billing newBilling(boolean cache) {
-		final Billing billing = new Billing(Robolectric.application, newConfiguration(cache));
+		return newBilling(cache, false);
+	}
+
+	@Nonnull
+	static Billing newBilling(boolean cache, boolean autoConnect) {
+		final Billing billing = new Billing(Robolectric.application, newConfiguration(cache, autoConnect));
 		billing.setPurchaseVerifier(Tests.newMockVerifier(true));
 		final IInAppBillingService service = mock(IInAppBillingService.class);
 		setService(billing, service);
@@ -65,7 +70,7 @@ public final class Tests {
 	}
 
 	@Nonnull
-	private static Billing.Configuration newConfiguration(final boolean cache) {
+	private static Billing.Configuration newConfiguration(final boolean cache, final boolean autoConnect) {
 		return new Billing.Configuration() {
 			@Nonnull
 			@Override
@@ -89,12 +94,17 @@ public final class Tests {
 			public Inventory getFallbackInventory(@Nonnull Checkout checkout, @Nonnull Executor onLoadExecutor) {
 				return null;
 			}
+
+			@Override
+			public boolean isAutoConnect() {
+				return autoConnect;
+			}
 		};
 	}
 
 	@Nonnull
 	static Billing newSynchronousBilling() {
-		final Billing billing = new Billing(Robolectric.application, newConfiguration(true));
+		final Billing billing = new Billing(Robolectric.application, newConfiguration(true, false));
 		billing.setPurchaseVerifier(Tests.newMockVerifier(true));
 		final IInAppBillingService service = mock(IInAppBillingService.class);
 		final CancellableExecutor sameThreadExecutor = sameThreadExecutor();

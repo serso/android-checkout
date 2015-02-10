@@ -305,6 +305,20 @@ public class BillingTest {
 		return bundle;
 	}
 
+	@Test
+	public void testShouldAutoDisconnect() throws Exception {
+		final Billing billing = Tests.newBilling(true, true);
+		assertTrue(billing.getState() == Billing.State.INITIAL);
+		billing.onCheckoutStarted();
+		assertTrue(billing.getState() == Billing.State.CONNECTED);
+		billing.onCheckoutStarted();
+		assertTrue(billing.getState() == Billing.State.CONNECTED);
+		billing.onCheckoutStopped();
+		assertTrue(billing.getState() == Billing.State.CONNECTED);
+		billing.onCheckoutStopped();
+		assertTrue(billing.getState() == Billing.State.DISCONNECTED);
+	}
+
 	private static class CountDownListener<R> implements RequestListener<R> {
 
 		private final CountDownLatch latch;

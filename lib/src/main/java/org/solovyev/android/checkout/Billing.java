@@ -108,6 +108,9 @@ public final class Billing {
 	@Nonnull
 	private PurchaseVerifier purchaseVerifier;
 
+	@GuardedBy("lock")
+	private volatile int checkouts;
+
 	/**
 	 * Same as {@link #Billing(android.content.Context, android.os.Handler, Configuration)} with new handler
 	 */
@@ -253,6 +256,9 @@ public final class Billing {
 			}
 			if (state == State.CONNECTING) {
 				return;
+			}
+			if (configuration.isAutoConnect() && checkouts <= 0) {
+				warning("Auto connection feature is turned on. There is no need in calling Billing.connect() manually. See Billing.Configuration.isAutoConnect");
 			}
 			setState(State.CONNECTING);
 			mainThread.execute(new Runnable() {
@@ -498,6 +504,30 @@ public final class Billing {
 	@Nonnull
 	<R> RequestListener<R> onMainThread(@Nonnull final RequestListener<R> listener) {
 		return new MainThreadRequestListener<R>(mainThread, listener);
+	}
+
+	public void onCheckoutStarted() {
+		Check.isMainThread();
+		synchronized (lock) {
+			checkouts++;
+			if (checkouts > 0 && configuration.isAutoConnect()) {
+				connect();
+			}
+		}
+	}
+
+	public void onCheckoutStopped() {
+		Check.isMainThread();
+		synchronized (lock) {
+			checkouts--;
+			if (checkouts < 0) {
+				checkouts = 0;
+				warning("Billing#onCheckoutStopped is called more than Billing#onCheckoutStarted");
+			}
+			if (checkouts == 0 && configuration.isAutoConnect()) {
+				disconnect();
+			}
+		}
 	}
 
 	/**
@@ -973,6 +1003,11 @@ public final class Billing {
 		public Inventory getFallbackInventory(@Nonnull Checkout checkout, @Nonnull Executor onLoadExecutor) {
 			return null;
 		}
+
+		@Override
+		public boolean isAutoConnect() {
+			return true;
+		}
 	}
 
 	public static interface Configuration {
@@ -1006,6 +1041,16 @@ public final class Billing {
 		 */
 		@Nullable
 		Inventory getFallbackInventory(@Nonnull Checkout checkout, @Nonnull Executor onLoadExecutor);
+
+		/**
+		 * Return true if you want Billing to connect to/disconnect from Billing API Service
+		 * automatically. If this method returns true then there is not need in calling {@link Billing#connect()}
+		 * or {@link Billing#disconnect()} manually.
+		 *
+		 * @return true if Billing should connect to/disconnect from Billing API service automatically
+		 * according to the number of started Checkouts
+		 */
+		boolean isAutoConnect();
 	}
 
 	/**
@@ -1045,6 +1090,11 @@ public final class Billing {
 		@Override
 		public Inventory getFallbackInventory(@Nonnull Checkout checkout, @Nonnull Executor onLoadExecutor) {
 			return original.getFallbackInventory(checkout, onLoadExecutor);
+		}
+
+		@Override
+		public boolean isAutoConnect() {
+			return original.isAutoConnect();
 		}
 	}
 
