@@ -147,12 +147,6 @@ public class CheckoutApplication extends Application {
 		instance = this;
 	}
 
-	@Override
-	public void onCreate() {
-		super.onCreate();
-		billing.connect();
-	}
-
 	@Nonnull
 	public static CheckoutApplication get() {
 		return instance;

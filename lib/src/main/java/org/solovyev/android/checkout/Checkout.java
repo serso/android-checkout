@@ -214,6 +214,7 @@ public class Checkout {
 			Check.isFalse(state == State.STARTED, "Already started");
 			Check.isNull(requests, "Already started");
 			state = State.STARTED;
+			billing.onCheckoutStarted();
 			requests = billing.getRequests(context);
 			if (listener != null) {
 				listeners.add(listener);
@@ -308,6 +309,9 @@ public class Checkout {
 			if (requests != null) {
 				requests.cancelAll();
 				requests = null;
+			}
+			if (state == State.STOPPED) {
+				billing.onCheckoutStopped();
 			}
 		}
 	}
