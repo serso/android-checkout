@@ -967,9 +967,16 @@ public final class Billing {
 
 		@Override
 		public boolean connect() {
-			final Intent intent = new Intent("com.android.vending.billing.InAppBillingService.BIND");
-			intent.setPackage("com.android.vending");
-			return context.bindService(intent, connection, Context.BIND_AUTO_CREATE);
+			try {
+				final Intent intent = new Intent("com.android.vending.billing.InAppBillingService.BIND");
+				intent.setPackage("com.android.vending");
+				return context.bindService(intent, connection, Context.BIND_AUTO_CREATE);
+			} catch (IllegalArgumentException e) {
+				// some devices throw IllegalArgumentException (Service Intent must be explicit)
+				// even though we set package name explicitly. Let's not crash the app and catch
+				// such exceptions here, the billing on such devices will not work.
+				return false;
+			}
 		}
 
 		@Override
