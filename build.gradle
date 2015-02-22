@@ -1,7 +1,7 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 
 public int version_code() {
-    return 22
+    return 23
 }
 
 public String version_name() {
