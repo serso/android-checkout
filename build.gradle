@@ -5,7 +5,7 @@ public int version_code() {
 }
 
 public String version_name() {
-    return '0.7.1'
+    return '0.7.2'
 }
 
 public int android_sdk_version() {

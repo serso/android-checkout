@@ -8,7 +8,7 @@ The main goal is to reduce work which should be done by developers who want to i
 their products. The project is inspired by [Volley](https://android.googlesource.com/platform/frameworks/volley/) library and
 is designed to be easy to use, fast and flexible.
 
-**Current version:** 0.7.0
+**Current version:** 0.7.2
 
 ### Why do I need it?
 
@@ -93,12 +93,6 @@ public class MyApplication extends Application {
 
     public MyApplication() {
         instance = this;
-    }
-
-    @Override
-    public void onCreate() {
-        super.onCreate();
-        billing.connect();
     }
 
     public static MyApplication get() {
