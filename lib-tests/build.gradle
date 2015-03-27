@@ -25,12 +25,12 @@ apply plugin: 'java'
 evaluationDependsOn(':app')
 
 dependencies {
-    def androidModule = project(':app')
-    compile androidModule
+    def app = project(':app')
+    compile app
 
-    testCompile androidModule.android.applicationVariants.toList().first().javaCompile.classpath
-    testCompile androidModule.android.applicationVariants.toList().first().javaCompile.outputs.files
-    testCompile files(androidModule.plugins.findPlugin("android").getBootClasspath())
+    testCompile app.android.applicationVariants.toList().first().javaCompile.classpath
+    testCompile app.android.applicationVariants.toList().first().javaCompile.outputs.files
+    testCompile files(app.android.getBootClasspath())
 
     testCompile 'junit:junit:4.12'
     testCompile 'org.robolectric:robolectric:2.3'
