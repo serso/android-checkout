@@ -43,7 +43,7 @@ dependencies {
 
 task androidJavadocs(type: Javadoc) {
     source = android.sourceSets.main.java.srcDirs
-    classpath += project.files(android.plugin.getBootClasspath().join(File.pathSeparator))
+    classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
     configurations.compile.each { File file -> classpath += project.files(file.path) }
 }
 
