@@ -45,6 +45,7 @@ public final class Purchase {
 	public final String payload;
 	@Nonnull
 	public final String token;
+	public final boolean autoRenewing;
 
 	/**
 	 * Raw data returned from {@link com.android.vending.billing.IInAppBillingService#getPurchases}
@@ -57,7 +58,7 @@ public final class Purchase {
 	@Nonnull
 	public final String signature;
 
-	Purchase(@Nonnull String sku, @Nonnull String orderId, @Nonnull String packageName, long time, int state, @Nonnull String payload, @Nonnull String token, @Nonnull String data, @Nonnull String signature) {
+	Purchase(@Nonnull String sku, @Nonnull String orderId, @Nonnull String packageName, long time, int state, @Nonnull String payload, @Nonnull String token, @Nonnull String data, @Nonnull String signature, @Nonnull boolean autoRenew) {
 		this.sku = sku;
 		this.orderId = orderId;
 		this.packageName = packageName;
@@ -67,6 +68,7 @@ public final class Purchase {
 		this.token = token;
 		this.signature = signature;
 		this.data = data;
+		this.autoRenewing = autoRenew;
 	}
 
 	@Nonnull
@@ -79,7 +81,8 @@ public final class Purchase {
 		final int purchaseState = json.optInt("purchaseState", 0);
 		final String payload = json.optString("developerPayload");
 		final String token = json.optString("token", json.optString("purchaseToken"));
-		return new Purchase(sku, orderId, packageName, purchaseTime, purchaseState, payload, token, data, signature);
+		final boolean autoRenew = json.optBoolean("autoRenewing", false);
+		return new Purchase(sku, orderId, packageName, purchaseTime, purchaseState, payload, token, data, signature, autoRenew);
 	}
 
 	/**
@@ -113,6 +116,7 @@ public final class Purchase {
 			tryPut(json, "packageName", packageName);
 			json.put("purchaseTime", time);
 			json.put("purchaseState", state.id);
+			json.put("autoRenewing", autoRenewing);
 			tryPut(json, "developerPayload", payload);
 			tryPut(json, "token", token);
 			if (withSignature) {
