@@ -45,7 +45,7 @@ public final class Purchase {
 	public final String payload;
 	@Nonnull
 	public final String token;
-    public final boolean autoRenewing;
+	public final boolean autoRenewing;
 
 	/**
 	 * Raw data returned from {@link com.android.vending.billing.IInAppBillingService#getPurchases}
@@ -68,7 +68,7 @@ public final class Purchase {
 		this.token = token;
 		this.signature = signature;
 		this.data = data;
-        this.autoRenewing = autoRenew;
+		this.autoRenewing = autoRenew;
 	}
 
 	@Nonnull
@@ -81,7 +81,7 @@ public final class Purchase {
 		final int purchaseState = json.optInt("purchaseState", 0);
 		final String payload = json.optString("developerPayload");
 		final String token = json.optString("token", json.optString("purchaseToken"));
-        final boolean autoRenew = json.optBoolean("autoRenewing", false);
+		final boolean autoRenew = json.optBoolean("autoRenewing", false);
 		return new Purchase(sku, orderId, packageName, purchaseTime, purchaseState, payload, token, data, signature, autoRenew);
 	}
 
@@ -116,7 +116,7 @@ public final class Purchase {
 			tryPut(json, "packageName", packageName);
 			json.put("purchaseTime", time);
 			json.put("purchaseState", state.id);
-            json.put("autoRenewing", autoRenewing);
+			json.put("autoRenewing", autoRenewing);
 			tryPut(json, "developerPayload", payload);
 			tryPut(json, "token", token);
 			if (withSignature) {

@@ -26,12 +26,12 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 
 import static android.database.sqlite.SQLiteDatabase.OPEN_READONLY;
 import static android.database.sqlite.SQLiteDatabase.openDatabase;
