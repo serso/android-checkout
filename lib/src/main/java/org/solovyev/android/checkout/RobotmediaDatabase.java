@@ -26,11 +26,12 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 import static android.database.sqlite.SQLiteDatabase.OPEN_READONLY;
 import static android.database.sqlite.SQLiteDatabase.openDatabase;
@@ -123,7 +124,7 @@ public final class RobotmediaDatabase {
 					final String sku = c.getString(2);
 					final long time = c.getLong(3);
 					final String payload = c.getString(4);
-					final Purchase p = new Purchase(sku, orderId, packageName, time, state, payload, "", "", "");
+					final Purchase p = new Purchase(sku, orderId, packageName, time, state, payload, "", "", "", false);
 					purchases.add(p);
 				} while (c.moveToNext());
 			}
