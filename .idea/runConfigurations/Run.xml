@@ -6,7 +6,7 @@
     <option name="DEPLOY" value="true" />
     <option name="ARTIFACT_NAME" value="" />
     <option name="TARGET_SELECTION_MODE" value="SHOW_DIALOG" />
-    <option name="USE_LAST_SELECTED_DEVICE" value="false" />
+    <option name="USE_LAST_SELECTED_DEVICE" value="true" />
     <option name="PREFERRED_AVD" value="" />
     <option name="USE_COMMAND_LINE" value="true" />
     <option name="COMMAND_LINE" value="" />
@@ -17,6 +17,10 @@
     <option name="CLEAR_LOGCAT" value="false" />
     <option name="SHOW_LOGCAT_AUTOMATICALLY" value="true" />
     <option name="FILTER_LOGCAT_AUTOMATICALLY" value="true" />
+    <option name="SELECTED_MATRIX_CONFIGURATION_ID" value="-1" />
+    <option name="SELECTED_CLOUD_PROJECT_ID" value="Please select a project..." />
+    <option name="IS_VALID_CLOUD_SELECTION" value="false" />
+    <option name="INVALID_CLOUD_SELECTION_ERROR" value="Matrix configuration not specified" />
     <RunnerSettings RunnerId="AndroidDebugRunner" />
     <ConfigurationWrapper RunnerId="AndroidDebugRunner" />
     <method />

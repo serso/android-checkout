@@ -8,7 +8,8 @@
     </facet>
     <facet type="java-gradle" name="Java-Gradle">
       <configuration>
-        <option name="BUILD_FOLDER_PATH" />
+        <option name="BUILD_FOLDER_PATH" value="$MODULE_DIR$/build" />
+        <option name="BUILDABLE" value="true" />
       </configuration>
     </facet>
   </component>
@@ -71,14 +72,16 @@
     <orderEntry type="library" exported="" scope="TEST" name="wagon-http-shared-1.0-beta-6" level="project" />
     <orderEntry type="library" exported="" scope="TEST" name="xercesMinimal-1.9.6.2" level="project" />
     <orderEntry type="library" exported="" scope="TEST" name="nekohtml-1.9.6.2" level="project" />
-    <orderEntry type="library" exported="" scope="TEST" name="support-annotations-22.0.0" level="project" />
+    <orderEntry type="library" exported="" scope="TEST" name="internal_impl-22.1.1" level="project" />
     <orderEntry type="library" exported="" scope="TEST" name="classes" level="project" />
-    <orderEntry type="library" exported="" scope="TEST" name="_home_serso_projects_java_serso_android_checkout_app_build_intermediates_exploded_aar_com_android_support_support_v4_22_0_0_classes_jar" level="project" />
     <orderEntry type="library" exported="" scope="TEST" name="acra-4.5.0" level="project" />
+    <orderEntry type="library" exported="" scope="TEST" name="support-annotations-22.1.1" level="project" />
+    <orderEntry type="library" exported="" scope="TEST" name="classes" level="project" />
     <orderEntry type="library" exported="" scope="TEST" name="jsr305-2.0.3" level="project" />
     <orderEntry type="library" exported="" scope="TEST" name="_home_serso_projects_java_serso_android_checkout_app_build_intermediates_classes_debug" level="project" />
     <orderEntry type="library" exported="" scope="TEST" name="_home_serso_projects_java_serso_android_checkout_app_build_intermediates_dependency_cache_debug" level="project" />
     <orderEntry type="library" exported="" scope="TEST" name="android" level="project" />
+    <orderEntry type="library" exported="" name="lib-tests.lib-tests" level="project" />
   </component>
   <component name="org.twodividedbyzero.idea.findbugs">
     <option name="_basePreferences">
@@ -277,4 +280,3 @@
     </option>
   </component>
 </module>
-
