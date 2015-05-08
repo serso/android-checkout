@@ -23,21 +23,36 @@
 package org.solovyev.android.checkout;
 
 import android.os.Bundle;
-import edu.emory.mathcs.backport.java.util.Collections;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+
 import javax.annotation.Nonnull;
-import java.util.*;
+
+import edu.emory.mathcs.backport.java.util.Collections;
 
 import static java.lang.System.currentTimeMillis;
 import static java.util.Arrays.asList;
-import static org.junit.Assert.*;
-import static org.solovyev.android.checkout.Purchase.State.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.solovyev.android.checkout.Purchase.State.CANCELLED;
+import static org.solovyev.android.checkout.Purchase.State.EXPIRED;
+import static org.solovyev.android.checkout.Purchase.State.PURCHASED;
+import static org.solovyev.android.checkout.Purchase.State.REFUNDED;
 import static org.solovyev.android.checkout.PurchaseTest.verifyPurchase;
 
 @RunWith(RobolectricTestRunner.class)
@@ -154,6 +169,23 @@ public class PurchasesTest {
 		assertEquals("signature2", jsonArray.getJSONObject(2).getString("signature"));
 	}
 
+	@Test
+	public void testShouldReadAutoRenewing() throws Exception {
+		JSONObject json = PurchaseTest.newJsonObject(0, PURCHASED);
+		json.put("autoRenewing", true);
+
+		Purchase purchase = Purchase.fromJson(json.toString(), "signature");
+		Assert.assertTrue(purchase.autoRenewing);
+
+		json.put("autoRenewing", false);
+		purchase = Purchase.fromJson(json.toString(), "signature");
+		Assert.assertFalse(purchase.autoRenewing);
+
+		json.remove("autoRenewing");
+		purchase = Purchase.fromJson(json.toString(), "signature");
+		Assert.assertFalse(purchase.autoRenewing);
+	}
+
 	@Nonnull
 	private Purchase newPurchase(long id) throws JSONException {
 		return Purchase.fromJson(PurchaseTest.newJson(id, PURCHASED), "signature" + id);
@@ -173,7 +205,10 @@ public class PurchasesTest {
 
 	@Test
 	public void testShouldJson() throws Exception {
-		final Purchases purchases = new Purchases("test", asList(newPurchase(0), newPurchase(1), newPurchase(2)), null);
+		final JSONObject purchaseJson2 = PurchaseTest.newJsonObject(2, PURCHASED);
+		purchaseJson2.put("autoRenewing", true);
+		final Purchase purchase2 = Purchase.fromJson(purchaseJson2.toString(), "signature" + 2);
+		final Purchases purchases = new Purchases("test", asList(newPurchase(0), newPurchase(1), purchase2), null);
 
 		final JSONObject json = purchases.toJsonObject(false);
 		final JSONArray jsonArray = json.getJSONArray("list");
@@ -189,7 +224,7 @@ public class PurchasesTest {
 						"[" +
 						"{\"developerPayload\":\"developerPayload_0\",\"packageName\":\"packageName_0\",\"token\":\"purchaseToken_0\",\"purchaseState\":0,\"orderId\":\"orderId_0\",\"purchaseTime\":0,\"productId\":\"0\"}," +
 						"{\"developerPayload\":\"developerPayload_1\",\"packageName\":\"packageName_1\",\"token\":\"purchaseToken_1\",\"purchaseState\":0,\"orderId\":\"orderId_1\",\"purchaseTime\":1,\"productId\":\"1\"}," +
-						"{\"developerPayload\":\"developerPayload_2\",\"packageName\":\"packageName_2\",\"token\":\"purchaseToken_2\",\"purchaseState\":0,\"orderId\":\"orderId_2\",\"purchaseTime\":2,\"productId\":\"2\"}" +
+						"{\"developerPayload\":\"developerPayload_2\",\"autoRenewing\":true,\"packageName\":\"packageName_2\",\"token\":\"purchaseToken_2\",\"purchaseState\":0,\"orderId\":\"orderId_2\",\"purchaseTime\":2,\"productId\":\"2\"}" +
 						"]" +
 						"}",
 				json.toString());
@@ -297,6 +332,6 @@ public class PurchasesTest {
 
 	@Nonnull
 	private Purchase newPurchase(@Nonnull String sku, long time, @Nonnull Purchase.State state) {
-		return new Purchase(sku, "", "", time, state.id, "", "", "", "");
+		return new Purchase(sku, "", "", time, state.id, "", "", false, "", "");
 	}
 }

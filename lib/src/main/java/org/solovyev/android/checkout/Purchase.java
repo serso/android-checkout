@@ -23,6 +23,7 @@
 package org.solovyev.android.checkout;
 
 import android.text.TextUtils;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -58,7 +59,11 @@ public final class Purchase {
 	// a token that uniquely identifies a purchase for a given item and user pair
 	@Nonnull
 	public final String token;
-
+	// Indicates whether the subscription renews automatically. If true, the subscription is active,
+	// and will automatically renew on the next billing date. If false, indicates that the user has
+	// canceled the subscription. The user has access to subscription content until the next billing
+	// date and will lose access at that time unless they re-enable automatic renewal
+	public final boolean autoRenewing;
 	/**
 	 * Raw data returned from {@link com.android.vending.billing.IInAppBillingService#getPurchases}
 	 */
@@ -70,7 +75,7 @@ public final class Purchase {
 	@Nonnull
 	public final String signature;
 
-	Purchase(@Nonnull String sku, @Nonnull String orderId, @Nonnull String packageName, long time, int state, @Nonnull String payload, @Nonnull String token, @Nonnull String data, @Nonnull String signature) {
+	Purchase(@Nonnull String sku, @Nonnull String orderId, @Nonnull String packageName, long time, int state, @Nonnull String payload, @Nonnull String token, boolean autoRenewing, @Nonnull String data, @Nonnull String signature) {
 		this.sku = sku;
 		this.orderId = orderId;
 		this.packageName = packageName;
@@ -78,6 +83,7 @@ public final class Purchase {
 		this.state = State.valueOf(state);
 		this.payload = payload;
 		this.token = token;
+		this.autoRenewing = autoRenewing;
 		this.signature = signature;
 		this.data = data;
 	}
@@ -92,7 +98,8 @@ public final class Purchase {
 		final int purchaseState = json.optInt("purchaseState", 0);
 		final String payload = json.optString("developerPayload");
 		final String token = json.optString("token", json.optString("purchaseToken"));
-		return new Purchase(sku, orderId, packageName, purchaseTime, purchaseState, payload, token, data, signature);
+		final boolean autoRenewing = json.optBoolean("autoRenewing");
+		return new Purchase(sku, orderId, packageName, purchaseTime, purchaseState, payload, token, autoRenewing, data, signature);
 	}
 
 	/**
@@ -128,6 +135,9 @@ public final class Purchase {
 			json.put("purchaseState", state.id);
 			tryPut(json, "developerPayload", payload);
 			tryPut(json, "token", token);
+			if (autoRenewing) {
+				json.put("autoRenewing", true);
+			}
 			if (withSignature) {
 				tryPut(json, "signature", signature);
 			}
@@ -138,7 +148,7 @@ public final class Purchase {
 		return json;
 	}
 
-	private static void tryPut(JSONObject json, @Nonnull String key, @Nonnull String name) throws JSONException {
+	private static void tryPut(@Nonnull JSONObject json, @Nonnull String key, @Nonnull String name) throws JSONException {
 		if (!TextUtils.isEmpty(name)) {
 			json.put(key, name);
 		}
