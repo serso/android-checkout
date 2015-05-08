@@ -29,24 +29,33 @@ import org.json.JSONObject;
 import javax.annotation.Nonnull;
 import javax.annotation.concurrent.Immutable;
 
+/**
+ * SKU object as described <a href="http://developer.android.com/google/play/billing/billing_reference.html#getSkuDetails">here</a>
+ */
 @Immutable
 public final class Sku {
 
+	// value must be “inapp” for an in-app product or "subs" for subscriptions.
 	@Nonnull
 	public final String product;
 
+	// the product ID for the product
 	@Nonnull
 	public final String id;
 
+	// formatted price of the item, including its currency sign. The price does not include tax.
+	// See #detailedPrice for parsed values
 	@Nonnull
 	public final String price;
 
 	@Nonnull
 	public final Price detailedPrice;
 
+	// title of the product
 	@Nonnull
 	public final String title;
 
+	// description of the product
 	@Nonnull
 	public final String description;
 
@@ -78,8 +87,12 @@ public final class Sku {
 		@Nonnull
 		static final Price EMPTY = new Price(0, "");
 
+		// price in micro-units, where 1,000,000 micro-units equal one unit of the currency.
+		// For example, if price is "€7.99", price_amount_micros is "7990000"
 		public final long amount;
 
+		// ISO 4217 currency code for price. For example, if price is specified in British pounds
+		// sterling, price_currency_code is "GBP"
 		@Nonnull
 		public final String currency;
 
