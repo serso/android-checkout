@@ -29,20 +29,33 @@ import org.json.JSONObject;
 import javax.annotation.Nonnull;
 import javax.annotation.concurrent.Immutable;
 
+/**
+ * Purchase information as described <a href="http://developer.android.com/google/play/billing/billing_reference.html#purchase-data-table">here</a>
+ */
 @Immutable
 public final class Purchase {
 
+	// the item's product identifier. Every item has a product ID, which you must specify
+	// in the application's product list on the Google Play Developer Console
 	@Nonnull
 	public final String sku;
+	// a unique order identifier for the transaction. This identifier corresponds to the
+	// Google Wallet Order ID
 	@Nonnull
 	public final String orderId;
+	// the application package from which the purchase originated
 	@Nonnull
 	public final String packageName;
+	// the time the product was purchased, in milliseconds since the epoch (Jan 1, 1970)
 	public final long time;
+	// the purchase state of the order
 	@Nonnull
 	public final State state;
+	// a developer-specified string that contains supplemental information about an order.
+	// You can specify a value for this field when you make a getBuyIntent request
 	@Nonnull
 	public final String payload;
+	// a token that uniquely identifies a purchase for a given item and user pair
 	@Nonnull
 	public final String token;
 

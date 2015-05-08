@@ -30,7 +30,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.concurrent.Immutable;
 
 /**
- * SKU object as described <a href="http://developer.android.com/google/play/billing/billing_reference.html#getSkuDetails">here</a>
+ * SKU object as described <a href="http://developer.android.com/google/play/billing/billing_reference.html#product-details-table">here</a>
  */
 @Immutable
 public final class Sku {
