@@ -26,18 +26,24 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import javax.annotation.Nonnull;
 import java.util.List;
+
+import javax.annotation.Nonnull;
 
 import static java.util.Arrays.asList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.solovyev.android.checkout.ProductTypes.IN_APP;
 import static org.solovyev.android.checkout.ProductTypes.SUBSCRIPTION;
-import static org.solovyev.android.checkout.Purchase.State.*;
+import static org.solovyev.android.checkout.Purchase.State.CANCELLED;
+import static org.solovyev.android.checkout.Purchase.State.EXPIRED;
+import static org.solovyev.android.checkout.Purchase.State.PURCHASED;
+import static org.solovyev.android.checkout.Purchase.State.REFUNDED;
 import static org.solovyev.android.checkout.PurchaseTest.verifyPurchase;
 
 @RunWith(CheckoutTestRunner.class)
@@ -105,18 +111,18 @@ public abstract class InventoryTestBase {
 
 	protected void populatePurchases() throws Exception {
 		final List<Purchase> expectedInApps = asList(
-				Purchase.fromJson(PurchaseTest.newJson(1, PURCHASED), null),
-				Purchase.fromJson(PurchaseTest.newJson(2, CANCELLED), null),
-				Purchase.fromJson(PurchaseTest.newJson(3, REFUNDED), null),
-				Purchase.fromJson(PurchaseTest.newJson(4, EXPIRED), null)
+				Purchase.fromJson(PurchaseTest.newJson(1, PURCHASED), ""),
+				Purchase.fromJson(PurchaseTest.newJson(2, CANCELLED), ""),
+				Purchase.fromJson(PurchaseTest.newJson(3, REFUNDED), ""),
+				Purchase.fromJson(PurchaseTest.newJson(4, EXPIRED), "")
 		);
 		insertPurchases(IN_APP, expectedInApps);
 
 		final List<Purchase> expectedSubs = asList(
-				Purchase.fromJson(PurchaseTest.newJsonSubscription(1, PURCHASED), null),
-				Purchase.fromJson(PurchaseTest.newJsonSubscription(2, CANCELLED), null),
-				Purchase.fromJson(PurchaseTest.newJsonSubscription(3, REFUNDED), null),
-				Purchase.fromJson(PurchaseTest.newJsonSubscription(4, EXPIRED), null)
+				Purchase.fromJson(PurchaseTest.newJsonSubscription(1, PURCHASED), ""),
+				Purchase.fromJson(PurchaseTest.newJsonSubscription(2, CANCELLED), ""),
+				Purchase.fromJson(PurchaseTest.newJsonSubscription(3, REFUNDED), ""),
+				Purchase.fromJson(PurchaseTest.newJsonSubscription(4, EXPIRED), "")
 		);
 		insertPurchases(SUBSCRIPTION, expectedSubs);
 	}
