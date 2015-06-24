@@ -23,16 +23,18 @@
 package org.solovyev.android.checkout;
 
 import com.android.vending.billing.IInAppBillingService;
+
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.robolectric.Robolectric;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Executor;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyList;
@@ -62,7 +64,12 @@ public final class Tests {
 
 	@Nonnull
 	static Billing newBilling(boolean cache, boolean autoConnect) {
-		final Billing billing = new Billing(Robolectric.application, newConfiguration(cache, autoConnect));
+		return newBilling(newConfiguration(cache, autoConnect));
+	}
+
+	@Nonnull
+	static Billing newBilling(@Nonnull Billing.Configuration configuration) {
+		final Billing billing = new Billing(Robolectric.application, configuration);
 		billing.setPurchaseVerifier(Tests.newMockVerifier(true));
 		final IInAppBillingService service = mock(IInAppBillingService.class);
 		setService(billing, service);
