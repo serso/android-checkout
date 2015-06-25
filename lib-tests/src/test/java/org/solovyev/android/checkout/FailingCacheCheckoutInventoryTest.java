@@ -83,7 +83,7 @@ public class FailingCacheCheckoutInventoryTest {
 	}
 
 	@Test
-	public void testShouldContinueAfterСacheException() throws Exception {
+	public void testShouldContinueAfterCacheException() throws Exception {
 		populatePurchases();
 
 		final CheckoutInventory inventory = new CheckoutInventory(checkout);
