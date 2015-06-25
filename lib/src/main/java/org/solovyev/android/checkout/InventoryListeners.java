@@ -22,11 +22,12 @@
 
 package org.solovyev.android.checkout;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.annotation.Nonnull;
 import javax.annotation.concurrent.GuardedBy;
 import javax.annotation.concurrent.ThreadSafe;
-import java.util.ArrayList;
-import java.util.List;
 
 @ThreadSafe
 final class InventoryListeners implements Inventory.Listener {
@@ -58,11 +59,15 @@ final class InventoryListeners implements Inventory.Listener {
 	public void onLoaded(@Nonnull Inventory.Products products) {
 		final List<Inventory.Listener> localList;
 		synchronized (lock) {
-			localList = new ArrayList<Inventory.Listener>(list);
+			localList = new ArrayList<>(list);
 			list.clear();
 		}
 		for (Inventory.Listener listener : localList) {
-			listener.onLoaded(products);
+			try {
+				listener.onLoaded(products);
+			} catch (Exception e) {
+				Billing.error(e);
+			}
 		}
 	}
 }
