@@ -73,15 +73,14 @@
     <orderEntry type="library" exported="" scope="TEST" name="xercesMinimal-1.9.6.2" level="project" />
     <orderEntry type="library" exported="" scope="TEST" name="nekohtml-1.9.6.2" level="project" />
     <orderEntry type="library" exported="" scope="TEST" name="internal_impl-22.1.1" level="project" />
-    <orderEntry type="library" exported="" scope="TEST" name="acra-4.5.0" level="project" />
     <orderEntry type="library" exported="" scope="TEST" name="classes" level="project" />
+    <orderEntry type="library" exported="" scope="TEST" name="acra-4.5.0" level="project" />
     <orderEntry type="library" exported="" scope="TEST" name="support-annotations-22.1.1" level="project" />
     <orderEntry type="library" exported="" scope="TEST" name="classes" level="project" />
     <orderEntry type="library" exported="" scope="TEST" name="jsr305-2.0.3" level="project" />
     <orderEntry type="library" exported="" scope="TEST" name="_home_serso_projects_java_serso_android_checkout_app_build_intermediates_classes_debug" level="project" />
     <orderEntry type="library" exported="" scope="TEST" name="_home_serso_projects_java_serso_android_checkout_app_build_intermediates_dependency_cache_debug" level="project" />
     <orderEntry type="library" exported="" scope="TEST" name="android" level="project" />
-    <orderEntry type="library" exported="" name="lib-tests.lib-tests" level="project" />
   </component>
   <component name="org.twodividedbyzero.idea.findbugs">
     <option name="_basePreferences">
