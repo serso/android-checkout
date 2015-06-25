@@ -24,16 +24,21 @@ package org.solovyev.android.checkout;
 
 import android.os.Bundle;
 import android.os.RemoteException;
+
 import com.android.vending.billing.IInAppBillingService;
 
 import org.junit.Assert;
 import org.junit.Test;
 
-import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.mockito.Matchers.*;
+import javax.annotation.Nonnull;
+
+import static org.mockito.Matchers.anyInt;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Matchers.isNull;
 import static org.mockito.Mockito.when;
 import static org.solovyev.android.checkout.ProductTypes.IN_APP;
 import static org.solovyev.android.checkout.ProductTypes.SUBSCRIPTION;
@@ -94,5 +99,35 @@ public class CheckoutInventoryTest extends InventoryTestBase {
 		final Inventory.Product sub = listener.products.get(SUBSCRIPTION);
 		Assert.assertTrue(sub.getSkus().isEmpty());
 		Assert.assertFalse(sub.getPurchases().isEmpty());
+	}
+
+	@Test
+	public void testShouldContinueAfterListenerException() throws Exception {
+		populatePurchases();
+
+		final Products products = Products.create()
+				.add(IN_APP)
+				.add(SUBSCRIPTION);
+		final Checkout checkout = Checkout.forApplication(billing, products);
+
+		final CrashingListener listener = new CrashingListener();
+		final CheckoutInventory inventory = new CheckoutInventory(checkout);
+		checkout.start();
+		inventory.load().whenLoaded(listener);
+
+		waitWhileLoading(inventory);
+
+		Assert.assertTrue(listener.exceptionThrown);
+	}
+
+	private static final class CrashingListener implements Inventory.Listener {
+
+		private volatile boolean exceptionThrown;
+
+		@Override
+		public void onLoaded(@Nonnull Inventory.Products products) {
+			exceptionThrown = true;
+			throw new RuntimeException("Hello there!");
+		}
 	}
 }
