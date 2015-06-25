@@ -25,12 +25,14 @@ package org.solovyev.android.checkout;
 import android.os.Bundle;
 import android.os.RemoteException;
 import android.text.TextUtils;
+
 import com.android.vending.billing.IInAppBillingService;
+
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.GuardedBy;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.solovyev.android.checkout.ResponseCodes.EXCEPTION;
 import static org.solovyev.android.checkout.ResponseCodes.OK;
@@ -54,6 +56,9 @@ abstract class Request<R> {
 	@GuardedBy("this")
 	@Nullable
 	private RequestListener<R> listener;
+
+	@GuardedBy("this")
+	private boolean listenerCalled;
 
 	Request(@Nonnull RequestType type) {
 		this.type = type;
@@ -125,8 +130,19 @@ abstract class Request<R> {
 	protected void onSuccess(@Nonnull R result) {
 		final RequestListener<R> l = getListener();
 		if (l != null) {
+			if (checkListenerCalled()) return;
 			l.onSuccess(result);
 		}
+	}
+
+	private boolean checkListenerCalled() {
+		synchronized (this) {
+			if (listenerCalled) {
+				return true;
+			}
+			listenerCalled = true;
+		}
+		return false;
 	}
 
 	protected void onError(int response) {
@@ -144,6 +160,7 @@ abstract class Request<R> {
 		Check.notEquals(OK, response);
 		final RequestListener<R> l = getListener();
 		if (l != null) {
+			if (checkListenerCalled()) return;
 			l.onError(response, e);
 		}
 	}
