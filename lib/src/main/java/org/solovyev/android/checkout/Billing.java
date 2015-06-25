@@ -33,16 +33,18 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.RemoteException;
 import android.util.Log;
+
 import com.android.vending.billing.IInAppBillingService;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import javax.annotation.concurrent.GuardedBy;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import javax.annotation.concurrent.GuardedBy;
 
 import static java.lang.System.currentTimeMillis;
 import static org.solovyev.android.checkout.ResponseCodes.ITEM_ALREADY_OWNED;
@@ -137,7 +139,8 @@ public final class Billing {
 		this.mainThread = new MainThread(handler);
 		this.configuration = new StaticConfiguration(configuration);
 		Check.isNotEmpty(this.configuration.getPublicKey());
-		this.cache = new ConcurrentCache(configuration.getCache());
+		final Cache cache = configuration.getCache();
+		this.cache = new ConcurrentCache(cache == null ? null : new SafeCache(cache));
 		this.purchaseVerifier = configuration.getPurchaseVerifier();
 	}
 
