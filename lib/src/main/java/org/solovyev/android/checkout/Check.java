@@ -22,10 +22,10 @@
 
 package org.solovyev.android.checkout;
 
+import java.util.Collection;
+
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.Collection;
-import java.util.Map;
 
 import static java.lang.Thread.currentThread;
 
@@ -69,17 +69,17 @@ final class Check {
 		}
 	}
 
-	public static void equals(int expected, int actual) {
+	static void equals(int expected, int actual) {
 		if (expected != actual) {
 			throw new AssertionException("Should be equal");
 		}
 	}
 
-	public static void equals(@Nullable Object expected, @Nullable Object actual) {
+	static void equals(@Nullable Object expected, @Nullable Object actual) {
 		equals(expected, actual, "Should be equal");
 	}
 
-	public static void equals(@Nullable Object expected, @Nullable Object actual, @Nonnull String message) {
+	static void equals(@Nullable Object expected, @Nullable Object actual, @Nonnull String message) {
 		if (expected == actual) {
 			// both nulls or same
 			return;
@@ -121,21 +121,9 @@ final class Check {
 		}
 	}
 
-	static void isNotEmpty(@Nullable String[] array) {
-		if (array == null || array.length == 0) {
-			throw new AssertionException("Array should not be empty");
-		}
-	}
-
 	static void isNotEmpty(@Nullable Collection<?> c) {
 		if (c == null || c.size() == 0) {
 			throw new AssertionException("Collection should not be empty");
-		}
-	}
-
-	static void isNotEmpty(@Nullable Map<?, ?> c) {
-		if (c == null || c.size() == 0) {
-			throw new AssertionException("Map should not be empty");
 		}
 	}
 

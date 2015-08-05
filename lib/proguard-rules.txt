@@ -8,5 +8,5 @@
 }
 
 -assumenosideeffects class org.solovyev.android.checkout.Check {
-        *;
+    static *;
 }
