@@ -58,6 +58,7 @@ public final class Billing {
 	private static final String TAG = "Checkout";
 
 	private static boolean LOG = BuildConfig.DEBUG;
+	private static Logger LOGGER = new DefaultLogger();
 
 	@Nonnull
 	private static final EmptyListener EMPTY_LISTENER = new EmptyListener();
@@ -414,7 +415,7 @@ public final class Billing {
 
 	static void error(@Nonnull String message) {
 		if (LOG) {
-			Log.e(TAG, message);
+			LOGGER.e(TAG,message);
 		}
 	}
 
@@ -430,37 +431,41 @@ public final class Billing {
 				case ResponseCodes.USER_CANCELED:
 				case ResponseCodes.ACCOUNT_ERROR:
 					if (LOG) {
-						Log.e(TAG, message, e);
+						LOGGER.e(TAG,message, e);
 					}
 					break;
 				default:
-					Log.e(TAG, message, e);
+					LOGGER.e(TAG,message, e);
 			}
 		} else {
-			Log.e(TAG, message, e);
+			LOGGER.e(TAG,message, e);
 		}
 	}
 
 	static void debug(@Nonnull String subTag, @Nonnull String message) {
 		if (LOG) {
-			Log.d(TAG + "/" + subTag, message);
+			LOGGER.d(TAG + "/" + subTag, message);
 		}
 	}
 
 	static void debug(@Nonnull String message) {
 		if (LOG) {
-			Log.d(TAG, message);
+			LOGGER.d(TAG, message);
 		}
 	}
 
 	static void warning(@Nonnull String message) {
 		if (LOG) {
-			Log.w(TAG, message);
+			LOGGER.w(TAG, message);
 		}
 	}
 
 	public static void setLog(boolean log) {
 		Billing.LOG = log;
+	}
+
+	public static void setLogger(Logger logger) {
+		Billing.LOGGER = logger;
 	}
 
 	/**
