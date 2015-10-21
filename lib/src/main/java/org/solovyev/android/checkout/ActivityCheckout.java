@@ -26,9 +26,10 @@ import android.app.Activity;
 import android.content.Intent;
 import android.util.SparseArray;
 
-import javax.annotation.Nonnull;
 import java.util.HashSet;
 import java.util.Set;
+
+import javax.annotation.Nonnull;
 
 /**
  * Recommended usage of this class with {@link android.app.Activity}:
@@ -193,17 +194,20 @@ public final class ActivityCheckout extends Checkout {
 		PurchaseFlow flow = purchaseFlows.get(requestCode);
 		if (flow == null) {
 			if (oneShot) {
-				// one-shot purchase flows must be destroyed in case of errors
 				listener = new RequestListenerWrapper<Purchase>(listener) {
 					@Override
 					public void onError(int response, @Nonnull Exception e) {
 						destroyPurchaseFlow(requestCode);
 						super.onError(response, e);
 					}
-
 					@Override
 					public void onCancel() {
 						destroyPurchaseFlow(requestCode);
+					}
+					@Override
+					public void onSuccess(@Nonnull Purchase result) {
+						destroyPurchaseFlow(requestCode);
+						super.onSuccess(result);
 					}
 				};
 			}
@@ -228,13 +232,7 @@ public final class ActivityCheckout extends Checkout {
 	public boolean onActivityResult(int requestCode, int resultCode, Intent data) {
 		final PurchaseFlow flow = purchaseFlows.get(requestCode);
 		if (flow != null) {
-			try {
-				flow.onActivityResult(requestCode, resultCode, data);
-			} finally {
-				if (oneShotPurchaseFlows.contains(requestCode)) {
-					destroyPurchaseFlow(requestCode);
-				}
-			}
+			flow.onActivityResult(requestCode, resultCode, data);
 			return true;
 		} else {
 			Billing.warning("Purchase flow doesn't exist for requestCode=" + requestCode + ". Have you forgotten to create it?");

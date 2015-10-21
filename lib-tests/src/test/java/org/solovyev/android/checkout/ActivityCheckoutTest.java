@@ -23,10 +23,17 @@
 package org.solovyev.android.checkout;
 
 import android.app.Activity;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
+
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Nonnull;
 
@@ -36,7 +43,8 @@ import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyObject;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.solovyev.android.checkout.PurchaseFlowTest.newOkIntent;
 import static org.solovyev.android.checkout.ResponseCodes.NULL_INTENT;
 
@@ -124,7 +132,7 @@ public class ActivityCheckoutTest {
 	}
 
 	@Test
-	public void testOneShowPurchaseFlowShouldBeRemovedOnError() throws Exception {
+	public void testOneShotPurchaseFlowShouldBeRemovedOnError() throws Exception {
 		RequestListener l = mock(RequestListener.class);
 		checkout.createOneShotPurchaseFlow(l);
 
@@ -135,7 +143,7 @@ public class ActivityCheckoutTest {
 	}
 
 	@Test
-	public void testOneShowPurchaseFlowShouldBeRemovedOnSuccess() throws Exception {
+	public void testOneShotPurchaseFlowShouldBeRemovedOnSuccess() throws Exception {
 		final PurchaseVerifier verifier = mock(PurchaseVerifier.class);
 		Tests.mockVerifier(verifier, true);
 		billing.setPurchaseVerifier(verifier);
@@ -146,6 +154,49 @@ public class ActivityCheckoutTest {
 		checkout.onActivityResult(ActivityCheckout.DEFAULT_REQUEST_CODE, Activity.RESULT_OK, newOkIntent());
 
 		verify(l).onSuccess(anyObject());
+		verifyPurchaseFlowDoesntExist();
+	}
+
+	@Test
+	public void testPurchaseWithOneShotPurchaseFlow() throws Exception {
+		final PurchaseVerifier verifier = mock(PurchaseVerifier.class);
+		Tests.mockVerifier(verifier, true);
+		final CountDownLatch verifierWaiter = new CountDownLatch(1);
+		billing.setPurchaseVerifier(new PurchaseVerifier() {
+			@Nonnull
+			private Executor background = Executors.newSingleThreadExecutor();
+			@Override
+			public void verify(@Nonnull final List<Purchase> list, @Nonnull final RequestListener<List<Purchase>> requestListener) {
+				background.execute(new Runnable() {
+					@Override
+					public void run() {
+						try {
+							verifierWaiter.await();
+						} catch (InterruptedException e) {
+						}
+						requestListener.onSuccess(list);
+					}
+				});
+			}
+		});
+
+		final CountDownLatch listenerWaiter = new CountDownLatch(1);
+		final RequestListener<Purchase> l = new RequestListener<Purchase>() {
+			@Override
+			public void onSuccess(@Nonnull Purchase purchase) {
+				listenerWaiter.countDown();
+			}
+
+			@Override
+			public void onError(int i, @Nonnull Exception e) {
+
+			}
+		};
+		checkout.createOneShotPurchaseFlow(l);
+
+		checkout.onActivityResult(ActivityCheckout.DEFAULT_REQUEST_CODE, Activity.RESULT_OK, newOkIntent());
+		verifierWaiter.countDown();
+		listenerWaiter.await(200, TimeUnit.MILLISECONDS);
 		verifyPurchaseFlowDoesntExist();
 	}
 }
