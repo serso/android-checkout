@@ -29,21 +29,26 @@ import android.content.Intent;
 import android.net.Uri;
 import android.util.Base64;
 import android.util.Log;
+
 import org.acra.ReportingInteractionMode;
 import org.acra.annotation.ReportsCrashes;
-import org.solovyev.android.checkout.*;
+import org.solovyev.android.checkout.Billing;
+import org.solovyev.android.checkout.Checkout;
+import org.solovyev.android.checkout.Inventory;
+import org.solovyev.android.checkout.Products;
+import org.solovyev.android.checkout.RobotmediaDatabase;
+import org.solovyev.android.checkout.RobotmediaInventory;
+
+import java.util.concurrent.Executor;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-
-import java.util.concurrent.Executor;
 
 import static android.content.Intent.ACTION_VIEW;
 import static java.util.Arrays.asList;
 import static org.solovyev.android.checkout.ProductTypes.IN_APP;
 
-@ReportsCrashes(formKey = "",
-		mailTo = CheckoutApplication.MAIL,
+@ReportsCrashes(mailTo = CheckoutApplication.MAIL,
 		mode = ReportingInteractionMode.SILENT)
 public class CheckoutApplication extends Application {
 
