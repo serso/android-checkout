@@ -26,7 +26,7 @@ import com.android.vending.billing.IInAppBillingService;
 
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
-import org.robolectric.Robolectric;
+import org.robolectric.RuntimeEnvironment;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -69,7 +69,7 @@ public final class Tests {
 
 	@Nonnull
 	static Billing newBilling(@Nonnull Billing.Configuration configuration) {
-		final Billing billing = new Billing(Robolectric.application, configuration);
+		final Billing billing = new Billing(RuntimeEnvironment.application, configuration);
 		billing.setPurchaseVerifier(Tests.newMockVerifier(true));
 		final IInAppBillingService service = mock(IInAppBillingService.class);
 		setService(billing, service);
@@ -111,7 +111,7 @@ public final class Tests {
 
 	@Nonnull
 	static Billing newSynchronousBilling() {
-		final Billing billing = new Billing(Robolectric.application, newConfiguration(true, false));
+		final Billing billing = new Billing(RuntimeEnvironment.application, newConfiguration(true, false));
 		billing.setPurchaseVerifier(Tests.newMockVerifier(true));
 		final IInAppBillingService service = mock(IInAppBillingService.class);
 		final CancellableExecutor sameThreadExecutor = sameThreadExecutor();

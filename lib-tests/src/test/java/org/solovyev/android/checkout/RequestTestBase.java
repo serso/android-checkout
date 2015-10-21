@@ -25,13 +25,16 @@ package org.solovyev.android.checkout;
 import android.app.PendingIntent;
 import android.content.Intent;
 import android.os.Bundle;
+
 import com.android.vending.billing.IInAppBillingService;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.Robolectric;
+import org.robolectric.RuntimeEnvironment;
+
+import java.util.ArrayList;
 
 import javax.annotation.Nonnull;
-import java.util.ArrayList;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
@@ -39,7 +42,10 @@ import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.anyObject;
 import static org.mockito.Mockito.eq;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static org.solovyev.android.checkout.ResponseCodes.BILLING_UNAVAILABLE;
 import static org.solovyev.android.checkout.ResponseCodes.OK;
 
@@ -90,7 +96,7 @@ abstract class RequestTestBase {
 		skuDetails.putStringArrayList("DETAILS_LIST", new ArrayList<String>());
 		when(service.getSkuDetails(anyInt(), anyString(), anyString(), any(Bundle.class))).thenReturn(skuDetails);
 		final Bundle buyIntent = new Bundle();
-		buyIntent.putParcelable("BUY_INTENT", PendingIntent.getActivity(Robolectric.application, 100, new Intent(), 0));
+		buyIntent.putParcelable("BUY_INTENT", PendingIntent.getActivity(RuntimeEnvironment.application, 100, new Intent(), 0));
 		when(service.getBuyIntent(anyInt(), anyString(), anyString(), anyString(), anyString())).thenReturn(buyIntent);
 
 		r.start(service, 3, "");

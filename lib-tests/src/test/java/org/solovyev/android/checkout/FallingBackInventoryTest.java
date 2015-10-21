@@ -23,13 +23,16 @@
 package org.solovyev.android.checkout;
 
 import android.database.sqlite.SQLiteDatabase;
+
 import com.android.vending.billing.IInAppBillingService;
+
 import org.junit.Before;
 import org.junit.Test;
-import org.robolectric.Robolectric;
+import org.robolectric.RuntimeEnvironment;
+
+import java.util.List;
 
 import javax.annotation.Nonnull;
-import java.util.List;
 
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyString;
@@ -44,7 +47,7 @@ public class FallingBackInventoryTest extends InventoryTestBase {
 	@Override
 	@Before
 	public void setUp() throws Exception {
-		SQLiteDatabase db = Robolectric.application.openOrCreateDatabase(RobotmediaDatabase.NAME, 0, null);
+		SQLiteDatabase db = RuntimeEnvironment.application.openOrCreateDatabase(RobotmediaDatabase.NAME, 0, null);
 		db.close();
 
 		super.setUp();
@@ -77,7 +80,7 @@ public class FallingBackInventoryTest extends InventoryTestBase {
 		if (IN_APP.equals(product)) {
 			CheckoutInventoryTest.insertPurchases(billing, product, purchases);
 		} else {
-			RobotmediaInventoryTest.insertPurchases(new BillingDB(Robolectric.application), purchases);
+			RobotmediaInventoryTest.insertPurchases(new BillingDB(RuntimeEnvironment.application), purchases);
 		}
 	}
 

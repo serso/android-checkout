@@ -23,10 +23,11 @@
 package org.solovyev.android.checkout;
 
 import org.junit.Before;
-import org.robolectric.Robolectric;
+import org.robolectric.RuntimeEnvironment;
+
+import java.util.List;
 
 import javax.annotation.Nonnull;
-import java.util.List;
 
 import static org.solovyev.android.checkout.Tests.sameThreadExecutor;
 
@@ -38,7 +39,7 @@ public class RobotmediaInventoryTest extends InventoryTestBase {
 	@Override
 	@Before
 	public void setUp() throws Exception {
-		db = new BillingDB(Robolectric.application);
+		db = new BillingDB(RuntimeEnvironment.application);
 		super.setUp();
 	}
 
