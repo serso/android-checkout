@@ -33,14 +33,13 @@ import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
 import javax.annotation.Nonnull;
-
-import edu.emory.mathcs.backport.java.util.Collections;
 
 import static java.lang.System.currentTimeMillis;
 import static java.util.Arrays.asList;
@@ -232,7 +231,7 @@ public class PurchasesTest {
 
 	@Test
 	public void testShouldJsonEmptyList() throws Exception {
-		final Purchases purchases = new Purchases("test", Collections.emptyList(), null);
+		final Purchases purchases = new Purchases("test", Collections.<Purchase>emptyList(), null);
 		final JSONObject json = purchases.toJsonObject(true);
 		final JSONArray jsonArray = json.getJSONArray("list");
 		assertEquals(0, jsonArray.length());

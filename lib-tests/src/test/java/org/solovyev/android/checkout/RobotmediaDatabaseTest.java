@@ -25,16 +25,20 @@ package org.solovyev.android.checkout;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
+import org.robolectric.RuntimeEnvironment;
 
-import javax.annotation.Nonnull;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+import javax.annotation.Nonnull;
+
 import static java.util.Arrays.asList;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.solovyev.android.checkout.ProductTypes.IN_APP;
 import static org.solovyev.android.checkout.RobotmediaDatabase.makeInClause;
 import static org.solovyev.android.checkout.Tests.sameThreadExecutor;
@@ -54,13 +58,13 @@ public class RobotmediaDatabaseTest {
 		billing.setMainThread(sameThreadExecutor());
 		final Products products = Products.create().add(IN_APP, asList("sku_0", "sku_1", "sku_2", "sku_3", "sku_4", "sku_6"));
 		checkout = Checkout.forApplication(billing, products);
-		db = new BillingDB(Robolectric.application);
+		db = new BillingDB(RuntimeEnvironment.application);
 	}
 
 	@Test
 	public void testShouldCreateEmptyProductsIfError() throws Exception {
 		db.close();
-		Robolectric.application.deleteDatabase(RobotmediaDatabase.NAME);
+		RuntimeEnvironment.application.deleteDatabase(RobotmediaDatabase.NAME);
 
 		final RobotmediaInventory inventory = new RobotmediaInventory(checkout, sameThreadExecutor());
 		final CountDownListener l = new CountDownListener();
