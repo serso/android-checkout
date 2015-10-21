@@ -1,18 +1,24 @@
 package org.solovyev.android.checkout;
 
+import javax.annotation.Nonnull;
+
 /**
  * Interface to allow custom logger
  */
 public interface Logger {
-    void e(String tag,String msg);
-    void w(String tag,String msg);
-    void i(String tag,String msg);
-    void d(String tag,String msg);
-    void v(String tag,String msg);
 
-    void e(String tag,String msg,Exception e);
-    void w(String tag,String msg,Exception e);
-    void i(String tag,String msg,Exception e);
-    void d(String tag,String msg,Exception e);
-    void v(String tag,String msg,Exception e);
+	void v(@Nonnull String tag, @Nonnull String msg);
+	void v(@Nonnull String tag, @Nonnull String msg, @Nonnull Throwable e);
+
+	void d(@Nonnull String tag, @Nonnull String msg);
+	void d(@Nonnull String tag, @Nonnull String msg, @Nonnull Throwable e);
+
+	void i(@Nonnull String tag, @Nonnull String msg);
+	void i(@Nonnull String tag, @Nonnull String msg, @Nonnull Throwable e);
+
+	void w(@Nonnull String tag, @Nonnull String msg);
+	void w(@Nonnull String tag, @Nonnull String msg, @Nonnull Throwable e);
+
+	void e(@Nonnull String tag, @Nonnull String msg);
+	void e(@Nonnull String tag, @Nonnull String msg, @Nonnull Throwable e);
 }

@@ -32,7 +32,6 @@ import android.content.ServiceConnection;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.RemoteException;
-import android.util.Log;
 
 import com.android.vending.billing.IInAppBillingService;
 
@@ -57,9 +56,6 @@ public final class Billing {
 	@Nonnull
 	private static final String TAG = "Checkout";
 
-	private static boolean LOG = BuildConfig.DEBUG;
-	private static Logger LOGGER = new DefaultLogger();
-
 	@Nonnull
 	private static final EmptyListener EMPTY_LISTENER = new EmptyListener();
 
@@ -67,6 +63,9 @@ public final class Billing {
 	static final long MINUTE = SECOND * 60L;
 	static final long HOUR = MINUTE * 60L;
 	static final long DAY = HOUR * 24L;
+
+	@Nonnull
+	private static Logger LOGGER = new DefaultLogger();
 
 	@Nonnull
 	private final Context context;
@@ -414,9 +413,7 @@ public final class Billing {
 	}
 
 	static void error(@Nonnull String message) {
-		if (LOG) {
-			LOGGER.e(TAG,message);
-		}
+		LOGGER.e(TAG,message);
 	}
 
 	static void error(@Nonnull Exception e) {
@@ -430,9 +427,7 @@ public final class Billing {
 				case ResponseCodes.OK:
 				case ResponseCodes.USER_CANCELED:
 				case ResponseCodes.ACCOUNT_ERROR:
-					if (LOG) {
-						LOGGER.e(TAG,message, e);
-					}
+					LOGGER.e(TAG,message, e);
 					break;
 				default:
 					LOGGER.e(TAG,message, e);
@@ -443,29 +438,19 @@ public final class Billing {
 	}
 
 	static void debug(@Nonnull String subTag, @Nonnull String message) {
-		if (LOG) {
-			LOGGER.d(TAG + "/" + subTag, message);
-		}
+		LOGGER.d(TAG + "/" + subTag, message);
 	}
 
 	static void debug(@Nonnull String message) {
-		if (LOG) {
-			LOGGER.d(TAG, message);
-		}
+		LOGGER.d(TAG, message);
 	}
 
 	static void warning(@Nonnull String message) {
-		if (LOG) {
-			LOGGER.w(TAG, message);
-		}
+		LOGGER.w(TAG, message);
 	}
 
-	public static void setLog(boolean log) {
-		Billing.LOG = log;
-	}
-
-	public static void setLogger(Logger logger) {
-		Billing.LOGGER = logger;
+	public static void setLogger(@Nullable Logger logger) {
+		Billing.LOGGER = logger == null ? new EmptyLogger() : logger;
 	}
 
 	/**
