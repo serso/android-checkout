@@ -67,17 +67,11 @@ public class MyApplication extends Application {
      * For better performance billing class should be used as singleton
      */
     @Nonnull
-    private final Billing billing = new Billing(this, new Billing.Configuration() {
+    private final Billing billing = new Billing(this, new Billing.DefaultConfiguration() {
         @Nonnull
         @Override
         public String getPublicKey() {
             return "Your public key, don't forget to encrypt it somehow";
-        }
-
-        @Nullable
-        @Override
-        public Cache getCache() {
-            return Billing.newCache();
         }
     });
 
