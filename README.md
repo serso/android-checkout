@@ -8,7 +8,7 @@ The main goal is to reduce work which should be done by developers who want to i
 their products. The project is inspired by [Volley](https://android.googlesource.com/platform/frameworks/volley/) library and
 is designed to be easy to use, fast and flexible.
 
-**Current version:** 0.7.4
+**Current version:** 0.7.5
 
 ### Why do I need it?
 
