@@ -77,6 +77,11 @@ public final class Skus {
 		return list != null ? list : Collections.<String>emptyList();
 	}
 
+	@Nonnull
+	public List<Sku> getSkuList() {
+		return list;
+	}
+
 	@Nullable
 	public Sku getSku(@Nonnull String sku) {
 		for (Sku s : list) {
