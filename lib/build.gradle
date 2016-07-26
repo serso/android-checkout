@@ -85,7 +85,7 @@ signing {
 }
 
 group = "org.solovyev.android"
-version = '0.7.5'
+version = android.defaultConfig.versionName
 
 uploadArchives {
     repositories {
