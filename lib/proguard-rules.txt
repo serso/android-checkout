@@ -1,4 +1,3 @@
-# should be copied to application proguard rules config
 -keep class com.android.vending.billing.**
 
 -assumenosideeffects class org.solovyev.android.checkout.Billing {

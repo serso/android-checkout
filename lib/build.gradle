@@ -33,6 +33,7 @@ android {
         targetSdkVersion 24
         versionCode 26
         versionName '0.7.5'
+        consumerProguardFiles 'proguard-rules.txt'
     }
 }
 
