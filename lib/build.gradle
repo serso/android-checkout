@@ -25,14 +25,14 @@ apply plugin: 'maven'
 apply plugin: 'signing'
 
 android {
-    compileSdkVersion android_sdk_version()
-    buildToolsVersion android_build_tools_version()
+    compileSdkVersion 24
+    buildToolsVersion '23.0.3'
 
     defaultConfig {
-        minSdkVersion android_min_sdk_version()
-        targetSdkVersion android_sdk_version()
-        versionCode version_code()
-        versionName version_name()
+        minSdkVersion 8
+        targetSdkVersion 24
+        versionCode 26
+        versionName '0.7.5'
     }
 }
 
@@ -84,7 +84,7 @@ signing {
 }
 
 group = "org.solovyev.android"
-version = version_name()
+version = '0.7.5'
 
 uploadArchives {
     repositories {
