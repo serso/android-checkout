@@ -31,6 +31,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
+import org.skyscreamer.jsonassert.JSONAssert;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -217,7 +218,7 @@ public class PurchasesTest {
 			final JSONObject o = jsonArray.getJSONObject(i);
 			verifyPurchase(Purchase.fromJson(o.toString(), null), i, PURCHASED);
 		}
-		assertEquals("{" +
+		JSONAssert.assertEquals("{" +
 						"\"product\":\"test\"," +
 						"\"list\":" +
 						"[" +
@@ -226,7 +227,7 @@ public class PurchasesTest {
 						"{\"developerPayload\":\"developerPayload_2\",\"autoRenewing\":true,\"packageName\":\"packageName_2\",\"token\":\"purchaseToken_2\",\"purchaseState\":0,\"orderId\":\"orderId_2\",\"purchaseTime\":2,\"productId\":\"2\"}" +
 						"]" +
 						"}",
-				json.toString());
+				json, true);
 	}
 
 	@Test
