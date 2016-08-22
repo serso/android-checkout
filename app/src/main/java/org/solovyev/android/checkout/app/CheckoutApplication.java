@@ -64,7 +64,9 @@ public class CheckoutApplication extends Application {
 		final List<String> skus = new ArrayList<>();
 		skus.addAll(Arrays.asList("coffee", "beer", "cake", "hamburger"));
 		for (int i = 0; i < 20; i++) {
-			skus.add("item_" + (i + 1));
+			final int id = i + 1;
+			final String sku = id < 10 ? "item_0" + id : "item_" + id;
+			skus.add(sku);
 		}
 		products = Products.create().add(IN_APP, skus);
 	}
