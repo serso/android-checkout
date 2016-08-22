@@ -40,6 +40,9 @@ android {
             zipAlignEnabled true
         }
     }
+    lintOptions {
+        abortOnError false
+    }
 }
 
 dependencies {
