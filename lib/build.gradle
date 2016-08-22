@@ -25,14 +25,13 @@ apply plugin: 'maven'
 apply plugin: 'signing'
 
 android {
-    compileSdkVersion 24
-    buildToolsVersion '23.0.3'
-
+    compileSdkVersion versions.sdk.compile
+    buildToolsVersion versions.sdk.buildTools
     defaultConfig {
-        minSdkVersion 8
-        targetSdkVersion 24
-        versionCode 26
-        versionName '0.7.5'
+        minSdkVersion versions.sdk.min
+        targetSdkVersion versions.sdk.target
+        versionCode versions.code
+        versionName versions.name
         consumerProguardFiles 'proguard-rules.txt'
     }
 }

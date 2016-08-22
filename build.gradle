@@ -7,6 +7,12 @@ buildscript {
     dependencies {
         classpath 'com.android.tools.build:gradle:2.1.2'
     }
+    ext {
+        versions = [libs: [support: "24.2.0"],
+                    sdk : [compile: 24, buildTools: "24.0.1", min: 9, target: 24],
+                    code: 26,
+                    name: "0.7.5"]
+    }
 }
 
 allprojects {

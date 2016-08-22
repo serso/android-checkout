@@ -25,13 +25,13 @@ apply plugin: 'maven'
 apply plugin: 'signing'
 
 android {
-    compileSdkVersion 24
-    buildToolsVersion '23.0.3'
+    compileSdkVersion versions.sdk.compile
+    buildToolsVersion versions.sdk.buildTools
     defaultConfig {
-        minSdkVersion 8
-        targetSdkVersion 24
-        versionCode 26
-        versionName '0.7.5'
+        minSdkVersion versions.sdk.min
+        targetSdkVersion versions.sdk.target
+        versionCode versions.code
+        versionName versions.name
     }
     buildTypes {
         release {
@@ -44,8 +44,8 @@ android {
 
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
-    compile 'com.android.support:support-v4:24.1.0'
-    compile ('ch.acra:acra:4.7.0-RC.1') {
+    compile "com.android.support:support-v4:${versions.libs.support}"
+    compile ('ch.acra:acra:4.9.0') {
         exclude group: 'org.json'
     }
     compile project(':lib')
