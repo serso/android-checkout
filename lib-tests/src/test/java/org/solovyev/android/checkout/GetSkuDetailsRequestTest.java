@@ -22,13 +22,30 @@
 
 package org.solovyev.android.checkout;
 
-import org.junit.Test;
+import android.os.Bundle;
 
+import com.android.vending.billing.IInAppBillingService;
+
+import org.json.JSONObject;
+import org.junit.Test;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
+
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import javax.annotation.Nonnull;
+
 import static java.util.Arrays.asList;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyInt;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class GetSkuDetailsRequestTest extends RequestTestBase {
 
@@ -52,5 +69,58 @@ public class GetSkuDetailsRequestTest extends RequestTestBase {
 		final GetSkuDetailsRequest request = new GetSkuDetailsRequest("test", asList("1", "2", "3"));
 
 		assertEquals("test_[1,2,3]", request.getCacheKey());
+	}
+
+	@Test
+	public void testShouldHandleBigLists() throws Exception {
+		final List<String> skus = new ArrayList<>();
+		for (int i = 0; i < 97; i++) {
+			skus.add("sku_" + i);
+		}
+		final IInAppBillingService service = mock(IInAppBillingService.class);
+		final GetSkuDetailsRequest request = new GetSkuDetailsRequest("test", skus);
+		final RequestListenerSpy l = new RequestListenerSpy();
+		request.setListener(l);
+		when(service.getSkuDetails(anyInt(), anyString(), anyString(), any(Bundle.class))).thenAnswer(new Answer<Bundle>() {
+			@Override
+			public Bundle answer(InvocationOnMock invocation) throws Throwable {
+				final Bundle bundle = (Bundle) invocation.getArguments()[3];
+				final ArrayList<String> ids = bundle.getStringArrayList("ITEM_ID_LIST");
+				final ArrayList<String> details = new ArrayList<String>();
+				for (int i = 0; i < ids.size(); i++) {
+					final String id = ids.get(i);
+					final JSONObject skuDetail = new JSONObject();
+					skuDetail.put("productId", id);
+					skuDetail.put("price", String.valueOf(i));
+					skuDetail.put("title", id);
+					skuDetail.put("description", id);
+					details.add(skuDetail.toString());
+				}
+				final Bundle skuDetails = new Bundle();
+				skuDetails.putStringArrayList("DETAILS_LIST", details);
+				return skuDetails;
+			}
+		});
+
+		request.start(service, 3, "");
+
+		assertNotNull(l.skus);
+		for (String sku : skus) {
+			assertTrue(l.skus.hasSku(sku));
+		}
+		assertTrue(l.skus.list.size() == 97);
+	}
+
+	private static class RequestListenerSpy implements RequestListener<Skus> {
+		private Skus skus;
+
+		@Override
+		public void onSuccess(@Nonnull Skus skus) {
+			this.skus = skus;
+		}
+
+		@Override
+		public void onError(int response, @Nonnull Exception e) {
+		}
 	}
 }

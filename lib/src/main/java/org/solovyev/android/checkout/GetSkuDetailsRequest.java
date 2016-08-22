@@ -24,15 +24,22 @@ package org.solovyev.android.checkout;
 
 import android.os.Bundle;
 import android.os.RemoteException;
+
 import com.android.vending.billing.IInAppBillingService;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
 final class GetSkuDetailsRequest extends Request<Skus> {
+
+	// unfortunately, Android has an undocumented limit on the size of the list in this request.
+	// 20 is a number used in one of the Google samples, namely "Trivial Drive", source code of which
+	// can be found here https://github.com/googlesamples/android-play-billing/blob/master/TrivialDrive/app/src/main/java/com/example/android/trivialdrivesample/util/IabHelper.java
+	private static final int MAX_SIZE_PER_REQUEST = 20;
 
 	@Nonnull
 	private final String product;
@@ -43,18 +50,37 @@ final class GetSkuDetailsRequest extends Request<Skus> {
 	GetSkuDetailsRequest(@Nonnull String product, @Nonnull List<String> skus) {
 		super(RequestType.GET_SKU_DETAILS);
 		this.product = product;
-		this.skus = new ArrayList<String>(skus);
+		this.skus = new ArrayList<>(skus);
 		Collections.sort(this.skus);
 	}
 
 	@Override
 	void start(@Nonnull IInAppBillingService service, int apiVersion, @Nonnull String packageName) throws RemoteException, RequestException {
+		final List<Sku> allSkuDetails = new ArrayList<>();
+		for (int start = 0; start < skus.size(); start += MAX_SIZE_PER_REQUEST) {
+			final int end = Math.min(skus.size(), start + MAX_SIZE_PER_REQUEST);
+			final ArrayList<String> skuBatch = new ArrayList<>(skus.subList(start, end));
+			final Skus skuDetails = getSkuDetails(service, apiVersion, packageName, skuBatch);
+			if (skuDetails != null) {
+				allSkuDetails.addAll(skuDetails.list);
+			} else {
+				// error during the request, already handled
+				return;
+			}
+		}
+		onSuccess(new Skus(product, allSkuDetails));
+	}
+
+	@Nullable
+	private Skus getSkuDetails(@Nonnull IInAppBillingService service, int apiVersion, @Nonnull String packageName, ArrayList<String> skuBatch) throws RemoteException, RequestException {
+		Check.isTrue(skuBatch.size() <= MAX_SIZE_PER_REQUEST, "SKU list is too big");
 		final Bundle skusBundle = new Bundle();
-		skusBundle.putStringArrayList("ITEM_ID_LIST", skus);
+		skusBundle.putStringArrayList("ITEM_ID_LIST", skuBatch);
 		final Bundle bundle = service.getSkuDetails(apiVersion, packageName, product, skusBundle);
 		if (!handleError(bundle)) {
-			onSuccess(Skus.fromBundle(bundle, product));
+			return Skus.fromBundle(bundle, product);
 		}
+		return null;
 	}
 
 	@Nullable

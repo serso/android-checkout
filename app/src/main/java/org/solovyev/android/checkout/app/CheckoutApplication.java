@@ -39,13 +39,15 @@ import org.solovyev.android.checkout.Products;
 import org.solovyev.android.checkout.RobotmediaDatabase;
 import org.solovyev.android.checkout.RobotmediaInventory;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.Executor;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import static android.content.Intent.ACTION_VIEW;
-import static java.util.Arrays.asList;
 import static org.solovyev.android.checkout.ProductTypes.IN_APP;
 
 @ReportsCrashes(mailTo = CheckoutApplication.MAIL,
@@ -56,7 +58,16 @@ public class CheckoutApplication extends Application {
 	static final String MAIL = "se.solovyev@gmail.com";
 
 	@Nonnull
-	private static final Products products = Products.create().add(IN_APP, asList("coffee", "beer", "cake", "hamburger"));
+	private static final Products products;
+
+	static {
+		final List<String> skus = new ArrayList<>();
+		skus.addAll(Arrays.asList("coffee", "beer", "cake", "hamburger"));
+		for (int i = 0; i < 20; i++) {
+			skus.add("item_" + (i + 1));
+		}
+		products = Products.create().add(IN_APP, skus);
+	}
 
 	/**
 	 * For better performance billing class should be used as singleton
