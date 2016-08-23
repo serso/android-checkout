@@ -29,6 +29,7 @@ enum RequestType {
 	GET_PURCHASES("purchases", 20L * Billing.MINUTE),
 	GET_SKU_DETAILS("skus", Billing.DAY),
 	PURCHASE("purchase", 0L),
+	CHANGE_PURCHASE("change", 0L),
 	CONSUME_PURCHASE("consume", 0L);
 
 	@Nonnull

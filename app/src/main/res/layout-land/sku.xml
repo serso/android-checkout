@@ -56,4 +56,13 @@
 		android:layout_width="wrap_content"
 		style="@style/SkuPrice" />
 
+	<ImageView
+		android:id="@+id/sku_change_sub"
+		android:contentDescription="@string/change_subscription"
+		android:layout_gravity="center_vertical|left"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:src="@drawable/ic_arrow_upward_black_24dp"
+		android:visibility="gone"/>
+
 </LinearLayout>

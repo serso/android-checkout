@@ -69,7 +69,7 @@ final class GetPurchasesRequest extends Request<Purchases> {
 	}
 
 	@Override
-	void start(@Nonnull IInAppBillingService service, int apiVersion, @Nonnull String packageName) throws RemoteException {
+	void start(@Nonnull IInAppBillingService service, @Nonnull String packageName) throws RemoteException {
 		final Bundle bundle = service.getPurchases(apiVersion, packageName, product, continuationToken);
 		if (!handleError(bundle)) {
 			try {

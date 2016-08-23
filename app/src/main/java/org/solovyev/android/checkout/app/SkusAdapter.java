@@ -32,13 +32,27 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 class SkusAdapter extends ArrayAdapter<SkuUi> {
 
-	private static final class ViewHolder {
+	@Nonnull
+	private final SkusAdapter.OnChangeSubClickListener onChangeSubClickListener;
+
+	interface OnChangeSubClickListener {
+		void onClick(@Nonnull SkuUi skuUi);
+	}
+
+	private static final class ViewHolder implements View.OnClickListener {
+
+		@Nonnull
+		private final SkusAdapter.OnChangeSubClickListener onChangeSubClickListener;
 
 		@Nonnull
 		private ImageView icon;
+
+		@Nonnull
+		private ImageView changeSub;
 
 		@Nonnull
 		private TextView title;
@@ -49,10 +63,18 @@ class SkusAdapter extends ArrayAdapter<SkuUi> {
 		@Nonnull
 		private TextView price;
 
+		@Nullable
+		private SkuUi skuUi;
+
+		public ViewHolder(@Nonnull OnChangeSubClickListener onChangeSubClickListener) {
+			this.onChangeSubClickListener = onChangeSubClickListener;
+		}
+
 		@Nonnull
-		private static ViewHolder from(@Nonnull View view) {
-			final ViewHolder vh = new ViewHolder();
+		private static ViewHolder from(@Nonnull View view, @Nonnull  OnChangeSubClickListener onChangeSubClickListener) {
+			final ViewHolder vh = new ViewHolder(onChangeSubClickListener);
 			vh.icon = (ImageView) view.findViewById(R.id.sku_icon);
+			vh.changeSub = (ImageView) view.findViewById(R.id.sku_change_sub);
 			vh.title = (TextView) view.findViewById(R.id.sku_title);
 			vh.description = (TextView) view.findViewById(R.id.sku_description);
 			vh.price = (TextView) view.findViewById(R.id.sku_price);
@@ -60,6 +82,7 @@ class SkusAdapter extends ArrayAdapter<SkuUi> {
 		}
 
 		public void fill(@Nonnull SkuUi skuUi) {
+			this.skuUi = skuUi;
 			final int iconResId = SkuUi.getIconResId(skuUi.sku.id);
 			icon.setImageResource(iconResId);
 			title.setText(SkuUi.getTitle(skuUi.sku));
@@ -69,6 +92,15 @@ class SkusAdapter extends ArrayAdapter<SkuUi> {
 			lineThrough(title, skuUi.isPurchased());
 			lineThrough(description, skuUi.isPurchased());
 			lineThrough(price, skuUi.isPurchased());
+
+			if (skuUi.sku.isSubscription() && skuUi.isPurchased() && skuUi.canChangeSubs) {
+				changeSub.setVisibility(View.VISIBLE);
+				changeSub.setImageResource(skuUi.sku.id.equals("sub_01") ? R.drawable.ic_arrow_downward_black_24dp : R.drawable.ic_arrow_upward_black_24dp);
+				changeSub.setOnClickListener(this);
+			} else {
+				changeSub.setVisibility(View.GONE);
+				changeSub.setOnClickListener(null);
+			}
 		}
 
 		private void lineThrough(TextView view, boolean lineThrough) {
@@ -81,10 +113,18 @@ class SkusAdapter extends ArrayAdapter<SkuUi> {
 			view.setPaintFlags(flags);
 		}
 
+		@Override
+		public void onClick(View view) {
+			if (skuUi == null) {
+				return;
+			}
+			onChangeSubClickListener.onClick(skuUi);
+		}
 	}
 
-	public SkusAdapter(@Nonnull Context context) {
+	public SkusAdapter(@Nonnull Context context, @Nonnull OnChangeSubClickListener onChangeSubClickListener) {
 		super(context, 0);
+		this.onChangeSubClickListener = onChangeSubClickListener;
 	}
 
 	@Override
@@ -94,7 +134,7 @@ class SkusAdapter extends ArrayAdapter<SkuUi> {
 		if (convertView == null) {
 			final LayoutInflater inflater = LayoutInflater.from(getContext());
 			view = inflater.inflate(R.layout.sku, parent, false);
-			vh = ViewHolder.from(view);
+			vh = ViewHolder.from(view, onChangeSubClickListener);
 			view.setTag(vh);
 		} else {
 			view = convertView;

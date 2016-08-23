@@ -46,6 +46,7 @@ abstract class Request<R> {
 	private static final AtomicInteger counter = new AtomicInteger(0);
 
 	private final int id;
+	protected final int apiVersion;
 
 	@Nonnull
 	private final RequestType type;
@@ -61,13 +62,19 @@ abstract class Request<R> {
 	private boolean listenerCalled;
 
 	Request(@Nonnull RequestType type) {
+		this(type, Billing.V3);
+	}
+
+	Request(@Nonnull RequestType type, int apiVersion) {
 		this.type = type;
+		this.apiVersion = apiVersion;
 		this.id = counter.getAndIncrement();
 	}
 
 	Request(@Nonnull RequestType type, @Nonnull Request<R> request) {
 		this.type = type;
 		this.id = request.id;
+		this.apiVersion = request.apiVersion;
 		synchronized (request) {
 			this.listener = request.listener;
 		}
@@ -80,7 +87,8 @@ abstract class Request<R> {
 		return id;
 	}
 
-	abstract void start(@Nonnull IInAppBillingService service, int apiVersion, @Nonnull String packageName) throws RemoteException, RequestException;
+	abstract void start(@Nonnull IInAppBillingService service, @Nonnull String packageName)
+			throws RemoteException, RequestException;
 
 	/**
 	 * @return request tag, object which is associated with this request

@@ -51,7 +51,8 @@ import static org.solovyev.android.checkout.ResponseCodes.ITEM_NOT_OWNED;
 
 public final class Billing {
 
-	private static final int API_VERSION = 3;
+	static final int V3 = 3;
+	static final int V5 = 5;
 
 	@Nonnull
 	private static final String TAG = "Checkout";
@@ -599,7 +600,7 @@ public final class Billing {
 				Check.isNotNull(localService);
 				// service is connected, let's start request
 				try {
-					localRequest.start(localService, API_VERSION, context.getPackageName());
+					localRequest.start(localService, context.getPackageName());
 				} catch (RemoteException e) {
 					localRequest.onError(e);
 				} catch (RequestException e) {
@@ -734,9 +735,20 @@ public final class Billing {
 		}
 
 		@Override
-		public int isBillingSupported(@Nonnull final String product, @Nonnull RequestListener<Object> listener) {
+		public int isBillingSupported(@Nonnull String product, int apiVersion) {
+			return isBillingSupported(product, apiVersion, emptyListener());
+		}
+
+		@Override
+		public int isBillingSupported(@Nonnull String product, int apiVersion,
+				@Nonnull RequestListener<Object> listener) {
 			Check.isNotEmpty(product);
-			return runWhenConnected(new BillingSupportedRequest(product), wrapListener(listener), tag);
+			return runWhenConnected(new BillingSupportedRequest(product, apiVersion), wrapListener(listener), tag);
+		}
+
+		@Override
+		public int isBillingSupported(@Nonnull final String product, @Nonnull RequestListener<Object> listener) {
+			return isBillingSupported(product, V3, listener);
 		}
 
 		@Nonnull
@@ -785,6 +797,34 @@ public final class Billing {
 			Check.isNotEmpty(product);
 			Check.isNotEmpty(sku);
 			return runWhenConnected(new PurchaseRequest(product, sku, payload), wrapListener(purchaseFlow), tag);
+		}
+
+		@Override
+		public int changeSubscription(@Nonnull List<String> oldSkus,
+				@Nonnull String newSku, @Nullable String payload,
+				@Nonnull PurchaseFlow purchaseFlow) {
+			Check.isNotEmpty(oldSkus);
+			Check.isNotEmpty(newSku);
+			return runWhenConnected(
+					new ChangePurchaseRequest(ProductTypes.SUBSCRIPTION, oldSkus, newSku, payload),
+					wrapListener(purchaseFlow), tag);
+		}
+
+		@Override
+		public int changeSubscription(@Nonnull List<Sku> oldSkus, @Nonnull Sku newSku,
+				@Nullable String payload, @Nonnull PurchaseFlow purchaseFlow) {
+			Check.isTrue(ProductTypes.SUBSCRIPTION.equals(newSku.product), "Only subscriptions can be downgraded/upgraded");
+			final List<String> oldSkuIds = new ArrayList<>(oldSkus.size());
+			for (Sku oldSku : oldSkus) {
+				Check.isTrue(oldSku.product.equals(newSku.product), "Product type can't be changed");
+				oldSkuIds.add(oldSku.id);
+			}
+			return changeSubscription(oldSkuIds, newSku.id, payload, purchaseFlow);
+		}
+
+		@Override
+		public int isChangeSubscriptionSupported(RequestListener<Object> listener) {
+			return isBillingSupported(ProductTypes.SUBSCRIPTION, Billing.V5, listener);
 		}
 
 		@Override
@@ -912,6 +952,7 @@ public final class Billing {
 			}
 			switch (type) {
 				case PURCHASE:
+				case CHANGE_PURCHASE:
 				case CONSUME_PURCHASE:
 					// these requests might affect the state of purchases => we need to invalidate caches.
 					// see Billing#onPurchaseFinished() also
@@ -928,6 +969,7 @@ public final class Billing {
 			// clear caches if such situation occurred
 			switch (type) {
 				case PURCHASE:
+				case CHANGE_PURCHASE:
 					if (response == ITEM_ALREADY_OWNED) {
 						cache.removeAll(RequestType.GET_PURCHASES.getCacheKeyType());
 					}

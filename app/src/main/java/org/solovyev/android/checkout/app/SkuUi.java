@@ -34,14 +34,17 @@ public class SkuUi {
 	@Nullable
 	final String token;
 
-	private SkuUi(Sku sku, @Nullable String token) {
+	final boolean canChangeSubs;
+
+	private SkuUi(Sku sku, @Nullable String token, boolean canChangeSubs) {
 		this.sku = sku;
 		this.token = token;
+		this.canChangeSubs = canChangeSubs;
 	}
 
 	@Nonnull
-	public static SkuUi create(Sku sku, @Nullable String token) {
-		return new SkuUi(sku, token);
+	public static SkuUi create(Sku sku, @Nullable String token, boolean canChangeSubs) {
+		return new SkuUi(sku, token, canChangeSubs);
 	}
 
 	static int getIconResId(@Nonnull String skuId) {
@@ -55,13 +58,16 @@ public class SkuUi {
 		} else if (skuId.equals("coffee")) {
 			iconResId = R.drawable.ic_coffee;
 		} else {
-			iconResId = 0;
+			iconResId = R.drawable.ic_shoppping_cart;
 		}
 		return iconResId;
 	}
 
 	@Nonnull
 	static String getTitle(@Nonnull Sku sku) {
+		if (sku.isSubscription()) {
+			return sku.title;
+		}
 		final int i = sku.title.indexOf("(");
 		if (i > 0) {
 			if (sku.title.charAt(i - 1) == ' ') {
