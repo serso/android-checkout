@@ -22,11 +22,12 @@
 
 package org.solovyev.android.checkout;
 
-import javax.annotation.Nonnull;
-import javax.annotation.concurrent.GuardedBy;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
+
+import javax.annotation.Nonnull;
+import javax.annotation.concurrent.GuardedBy;
 
 /**
  * Default Billing v.3 {@link Inventory}. Loads its contents from the {@link Checkout}.
@@ -41,21 +42,24 @@ final class CheckoutInventory extends BaseInventory {
 		super(checkout);
 	}
 
-	@Override
 	@Nonnull
-	public final Inventory load() {
+	@Override
+	public Inventory load(@Nonnull SkuIds skus) {
 		Check.isMainThread();
 
 		synchronized (lock) {
+			if (!setSkus(skus)) {
+				return this;
+			}
 			// for each product we wait for:
 			// 1. onReady to be called
 			// 2. loadPurchased to be finished
 			// 3. loadSkus to be finished
-			final int size = checkout.getProducts().size();
+			final int size = skus.getProductsCount();
 			final long id = counter.newAttempt(size * 3);
 
 			// clear all previously loaded data
-			products = new Products();
+			this.products = new Products();
 
 			checkout.whenReady(new CheckoutListener(id));
 		}
@@ -122,7 +126,7 @@ final class CheckoutInventory extends BaseInventory {
 	}
 
 	private void loadSkus(@Nonnull BillingRequests requests, @Nonnull final Product product, long id) {
-		final List<String> skuIds = checkout.getProducts().getSkuIds(product.id);
+		final List<String> skuIds = getSkus().getSkus(product.id);
 		if (!skuIds.isEmpty()) {
 			requests.getSkus(product.id, skuIds, new ProductRequestListener<Skus>(product, id) {
 				@Override

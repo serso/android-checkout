@@ -39,12 +39,33 @@ public abstract class BaseInventory implements Inventory {
 
 	@GuardedBy("lock")
 	@Nonnull
+	private SkuIds skus;
+
+	@GuardedBy("lock")
+	@Nonnull
 	protected final InventoryListeners listeners;
 
 	protected BaseInventory(@Nonnull Checkout checkout) {
 		this.checkout = checkout;
 		this.lock = checkout.lock;
 		this.listeners = new InventoryListeners(this.lock);
+		this.skus = SkuIds.create();
+	}
+
+	protected final boolean setSkus(@Nonnull SkuIds skus) {
+		Check.isTrue(Thread.holdsLock(lock), "Must be locked");
+		Check.isTrue(!skus.isEmpty(), "Skus must not be empty");
+		if (this.skus.equals(skus)) {
+			return false;
+		}
+		this.skus = skus;
+		return true;
+	}
+
+	@Nonnull
+	protected final SkuIds getSkus() {
+		Check.isTrue(Thread.holdsLock(lock), "Must be locked");
+		return skus;
 	}
 
 	@Override

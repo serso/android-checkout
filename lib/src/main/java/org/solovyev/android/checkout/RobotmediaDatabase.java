@@ -22,19 +22,20 @@
 
 package org.solovyev.android.checkout;
 
+import static android.database.sqlite.SQLiteDatabase.OPEN_READONLY;
+import static android.database.sqlite.SQLiteDatabase.openDatabase;
+
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-
-import static android.database.sqlite.SQLiteDatabase.OPEN_READONLY;
-import static android.database.sqlite.SQLiteDatabase.openDatabase;
 
 public final class RobotmediaDatabase {
 
@@ -64,12 +65,12 @@ public final class RobotmediaDatabase {
 	}
 
 	@Nonnull
-	Inventory.Products load(@Nonnull Products products) {
+	Inventory.Products load(@Nonnull SkuIds skus) {
 		SQLiteDatabase db = null;
 		try {
 			final String databasePath = RobotmediaDatabase.getDatabasePath(context);
 			db = openDatabase(databasePath, null, OPEN_READONLY);
-			return loadProducts(products, db);
+			return loadProducts(skus, db);
 		} catch (RuntimeException e) {
 			Billing.error(e);
 		} finally {
@@ -77,25 +78,25 @@ public final class RobotmediaDatabase {
 				db.close();
 			}
 		}
-		return toInventoryProducts(products);
+		return toInventoryProducts(skus.getProducts());
 	}
 
 	@Nonnull
-	static Inventory.Products toInventoryProducts(@Nonnull Products products) {
+	static Inventory.Products toInventoryProducts(@Nonnull Collection<String> products) {
 		final Inventory.Products result = new Inventory.Products();
-		for (String productId : products.getIds()) {
+		for (String productId : products) {
 			result.add(new Inventory.Product(productId, true));
 		}
 		return result;
 	}
 
 	@Nonnull
-	private Inventory.Products loadProducts(@Nonnull Products products, @Nonnull SQLiteDatabase db) {
+	private Inventory.Products loadProducts(@Nonnull SkuIds skuDefs, @Nonnull SQLiteDatabase db) {
 		final Inventory.Products result = new Inventory.Products();
-		for (String productId : products.getIds()) {
+		for (String productId : skuDefs.getProducts()) {
 			final Inventory.Product product = new Inventory.Product(productId, true);
 
-			final List<String> skus = products.getSkuIds(productId);
+			final List<String> skus = skuDefs.getSkus(productId);
 			if (!skus.isEmpty()) {
 				product.setPurchases(loadPurchases(skus, db));
 			} else {

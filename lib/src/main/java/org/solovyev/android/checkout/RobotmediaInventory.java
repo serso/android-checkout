@@ -24,10 +24,11 @@ package org.solovyev.android.checkout;
 
 import android.content.Context;
 
-import javax.annotation.Nonnull;
-import javax.annotation.concurrent.GuardedBy;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
+
+import javax.annotation.Nonnull;
+import javax.annotation.concurrent.GuardedBy;
 
 public final class RobotmediaInventory extends BaseInventory {
 
@@ -48,16 +49,16 @@ public final class RobotmediaInventory extends BaseInventory {
 
 	@Nonnull
 	@Override
-	public Inventory load() {
+	public Inventory load(@Nonnull SkuIds skus) {
 		synchronized (lock) {
-			if (state != State.INITIAL) {
+			if (!setSkus(skus)) {
 				return this;
 			}
 			state = State.LOADING;
 			if (RobotmediaDatabase.exists(checkout.getContext())) {
-				background.execute(new Loader());
+				background.execute(new Loader(skus));
 			} else {
-				onLoaded(RobotmediaDatabase.toInventoryProducts(checkout.getProducts()));
+				onLoaded(RobotmediaDatabase.toInventoryProducts(skus.getProducts()));
 			}
 		}
 
@@ -98,12 +99,22 @@ public final class RobotmediaInventory extends BaseInventory {
 	}
 
 	private class Loader implements Runnable {
+		private final SkuIds skus;
+		public Loader(SkuIds skus) {
+			this.skus = skus;
+		}
+
 		@Override
 		public void run() {
 			final Context context = checkout.getContext();
 			final RobotmediaDatabase database = new RobotmediaDatabase(context);
-			final Products products = database.load(checkout.getProducts());
-			onLoaded(products);
+			final Products products = database.load(skus);
+			synchronized (lock) {
+				if (!getSkus().equals(skus)) {
+					return;
+				}
+				onLoaded(products);
+			}
 		}
 	}
 }

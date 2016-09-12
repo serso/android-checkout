@@ -50,9 +50,14 @@ class FallingBackInventory extends BaseInventory {
 
 	@Nonnull
 	@Override
-	public Inventory load() {
-		mainListener.onLoad();
-		mainInventory.load().whenLoaded(mainListener);
+	public Inventory load(@Nonnull SkuIds skus) {
+		synchronized (lock) {
+			if(!setSkus(skus)) {
+				return this;
+			}
+			mainListener.onLoad();
+			mainInventory.load(skus).whenLoaded(mainListener);
+		}
 		return this;
 	}
 
@@ -73,8 +78,12 @@ class FallingBackInventory extends BaseInventory {
 				return;
 			}
 			if (existsUnsupported(products)) {
+				final SkuIds skus;
+				synchronized (lock) {
+					skus = getSkus();
+				}
 				fallbackListener.products = products;
-				fallbackInventory.load().whenLoaded(fallbackListener);
+				fallbackInventory.load(skus).whenLoaded(fallbackListener);
 			} else {
 				onProductsLoaded(products);
 			}

@@ -22,18 +22,23 @@
 
 package org.solovyev.android.checkout;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import javax.annotation.concurrent.Immutable;
-import java.util.*;
-
 import static java.util.Collections.sort;
 import static java.util.Collections.unmodifiableCollection;
 import static java.util.Collections.unmodifiableList;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import javax.annotation.concurrent.Immutable;
+
 /**
  * Class which contains information about products, SKUs and purchases. This class can't be instantiated manually but only
- * through {@link Checkout#loadInventory()} method call.
+ * through {@link Checkout#loadInventory(SkuIds)} method call.
  * Note that this class doesn't reflect real time billing information. It is not updated or notified if item was purchased
  * or cancelled.
  * This class lifecycle is bound to the lifecycle of {@link Checkout} in which it was created. If {@link Checkout}
@@ -42,7 +47,7 @@ import static java.util.Collections.unmodifiableList;
 public interface Inventory {
 
 	@Nonnull
-	Inventory load();
+	Inventory load(@Nonnull SkuIds skus);
 
 	void whenLoaded(@Nonnull Listener listener);
 
@@ -114,7 +119,7 @@ public interface Inventory {
 
 	/**
 	 * One product in the inventory. Contains list of purchases and optionally list of SKUs (if
-	 * {@link org.solovyev.android.checkout.Products} contains information about SKUs)
+	 * {@link SkuIds} contains information about SKUs)
 	 */
 	@Immutable
 	final class Product {

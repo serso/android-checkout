@@ -26,6 +26,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.util.SparseArray;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -64,7 +65,7 @@ public final class ActivityCheckout extends Checkout {
 	@Nonnull
 	private final Set<Integer> oneShotPurchaseFlows = new HashSet<Integer>();
 
-	ActivityCheckout(@Nonnull final Activity activity, @Nonnull Billing billing, @Nonnull Products products) {
+	ActivityCheckout(@Nonnull final Activity activity, @Nonnull Billing billing, @Nonnull Collection<String> products) {
 		super(activity, billing, products);
 	}
 

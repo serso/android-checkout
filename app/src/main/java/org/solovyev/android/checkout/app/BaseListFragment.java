@@ -22,6 +22,8 @@
 
 package org.solovyev.android.checkout.app;
 
+import static android.view.animation.AnimationUtils.loadAnimation;
+
 import android.app.Activity;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -32,12 +34,12 @@ import android.view.ViewGroup;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+
 import org.solovyev.android.checkout.ActivityCheckout;
 import org.solovyev.android.checkout.Inventory;
+import org.solovyev.android.checkout.SkuIds;
 
 import javax.annotation.Nonnull;
-
-import static android.view.animation.AnimationUtils.loadAnimation;
 
 public class BaseListFragment extends Fragment {
 
@@ -70,7 +72,7 @@ public class BaseListFragment extends Fragment {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		inventory = checkout.loadInventory();
+		inventory = checkout.loadInventory(SkuIds.create());
 	}
 
 	@Override

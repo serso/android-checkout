@@ -26,14 +26,16 @@ import android.app.Activity;
 import android.app.Service;
 import android.content.Context;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import javax.annotation.concurrent.GuardedBy;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executor;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import javax.annotation.concurrent.GuardedBy;
 
 /**
  * <p/>
@@ -100,7 +102,7 @@ public class Checkout {
 	 * activity method.
 	 */
 	@Nonnull
-	public static ActivityCheckout forActivity(@Nonnull Activity activity, @Nonnull Billing billing, @Nonnull Products products) {
+	public static ActivityCheckout forActivity(@Nonnull Activity activity, @Nonnull Billing billing, @Nonnull Collection<String> products) {
 		return new ActivityCheckout(activity, billing, products);
 	}
 
@@ -110,12 +112,12 @@ public class Checkout {
 	}
 
 	@Nonnull
-	public static Checkout forService(@Nonnull Service service, @Nonnull Billing billing, @Nonnull Products products) {
+	public static Checkout forService(@Nonnull Service service, @Nonnull Billing billing, @Nonnull Collection<String> products) {
 		return new Checkout(service, billing, products);
 	}
 
 	@Nonnull
-	public static Checkout forApplication(@Nonnull Billing billing, @Nonnull Products products) {
+	public static Checkout forApplication(@Nonnull Billing billing, @Nonnull Collection<String> products) {
 		return new Checkout(null, billing, products);
 	}
 
@@ -168,7 +170,7 @@ public class Checkout {
 	protected final Billing billing;
 
 	@Nonnull
-	private final Products products;
+	private final List<String> products;
 
 	@Nonnull
 	final Object lock = new Object();
@@ -191,15 +193,15 @@ public class Checkout {
 	@Nonnull
 	private final OnLoadExecutor onLoadExecutor = new OnLoadExecutor();
 
-	Checkout(@Nullable Context context, @Nonnull Billing billing, @Nonnull Products products) {
+	Checkout(@Nullable Context context, @Nonnull Billing billing, @Nonnull Collection<String> products) {
 		this.billing = billing;
-		Check.isNotEmpty(products.getIds());
+		Check.isNotEmpty(products);
 		this.context = context;
-		this.products = products.copy();
+		this.products = new ArrayList<>(products);
 	}
 
 	@Nonnull
-	Products getProducts() {
+	List<String> getProducts() {
 		return products;
 	}
 
@@ -219,7 +221,7 @@ public class Checkout {
 			if (listener != null) {
 				listeners.add(listener);
 			}
-			for (final String product : products.getIds()) {
+			for (final String product : products) {
 				requests.isBillingSupported(product, new RequestListener<Object>() {
 					@Override
 					public void onSuccess(@Nonnull Object result) {
@@ -275,7 +277,7 @@ public class Checkout {
 	}
 
 	@Nonnull
-	public Inventory loadInventory() {
+	public Inventory loadInventory(@Nonnull SkuIds skus) {
 		Check.isMainThread();
 
 		synchronized (lock) {
@@ -289,7 +291,7 @@ public class Checkout {
 		} else {
 			inventory = new FallingBackInventory(this, fallbackInventory);
 		}
-		inventory.load();
+		inventory.load(skus);
 		return inventory;
 	}
 
@@ -317,7 +319,7 @@ public class Checkout {
 	}
 
 	public boolean isBillingSupported(@Nonnull String product) {
-		Check.isTrue(products.getIds().contains(product), "Product should be added to the products list");
+		Check.isTrue(products.contains(product), "Product should be added to the products list");
 		Check.isTrue(supportedProducts.containsKey(product), "Billing information is not ready yet");
 		return supportedProducts.get(product);
 	}

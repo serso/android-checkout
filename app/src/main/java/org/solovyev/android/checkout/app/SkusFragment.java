@@ -103,7 +103,7 @@ public class SkusFragment extends BaseListFragment {
 
 		private void onPurchased() {
 			// let's update purchase information in local inventory
-			inventory.load().whenLoaded(new InventoryLoadedListener());
+			inventory.load(CheckoutApplication.skus).whenLoaded(new InventoryLoadedListener());
 			Toast.makeText(getActivity(), R.string.msg_thank_you_for_purchase, Toast.LENGTH_SHORT).show();
 		}
 
@@ -225,7 +225,7 @@ public class SkusFragment extends BaseListFragment {
 		}
 
 		private void onConsumed() {
-			inventory.load().whenLoaded(new InventoryLoadedListener());
+			inventory.load(CheckoutApplication.skus).whenLoaded(new InventoryLoadedListener());
 			Toast.makeText(getActivity(), R.string.msg_item_consumed, Toast.LENGTH_SHORT).show();
 		}
 

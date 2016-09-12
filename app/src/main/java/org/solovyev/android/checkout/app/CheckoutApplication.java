@@ -22,6 +22,9 @@
 
 package org.solovyev.android.checkout.app;
 
+import static android.content.Intent.ACTION_VIEW;
+import static org.solovyev.android.checkout.ProductTypes.IN_APP;
+
 import android.app.Activity;
 import android.app.Application;
 import android.content.ActivityNotFoundException;
@@ -35,9 +38,9 @@ import org.acra.annotation.ReportsCrashes;
 import org.solovyev.android.checkout.Billing;
 import org.solovyev.android.checkout.Checkout;
 import org.solovyev.android.checkout.Inventory;
-import org.solovyev.android.checkout.Products;
 import org.solovyev.android.checkout.RobotmediaDatabase;
 import org.solovyev.android.checkout.RobotmediaInventory;
+import org.solovyev.android.checkout.SkuIds;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -59,7 +62,7 @@ public class CheckoutApplication extends Application {
 	static final String MAIL = "se.solovyev@gmail.com";
 
 	@Nonnull
-	private static final Products products;
+	public static final SkuIds skus;
 
 	static {
 		final List<String> inApps = new ArrayList<>();
@@ -72,7 +75,7 @@ public class CheckoutApplication extends Application {
 		final List<String> subs = new ArrayList<>();
 		subs.add("sub_01");
 		subs.add("sub_02");
-		products = Products.create().add(IN_APP, inApps).add(SUBSCRIPTION, subs);
+		skus = SkuIds.create().add(IN_APP, inApps).add(SUBSCRIPTION, subs);
 	}
 
 	/**
@@ -160,7 +163,7 @@ public class CheckoutApplication extends Application {
 	 * This instance contains all available products in the app.
 	 */
 	@Nonnull
-	private final Checkout checkout = Checkout.forApplication(billing, products);
+	private final Checkout checkout = Checkout.forApplication(billing, skus.getProducts());
 
 	@Nonnull
 	private static CheckoutApplication instance;
