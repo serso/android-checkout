@@ -25,6 +25,8 @@ package org.solovyev.android.checkout;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.RobolectricTestRunner;
+import org.robolectric.annotation.Config;
 
 import java.util.List;
 
@@ -46,7 +48,8 @@ import static org.solovyev.android.checkout.Purchase.State.PURCHASED;
 import static org.solovyev.android.checkout.Purchase.State.REFUNDED;
 import static org.solovyev.android.checkout.PurchaseTest.verifyPurchase;
 
-@RunWith(CheckoutTestRunner.class)
+@RunWith(RobolectricTestRunner.class)
+@Config(manifest = Config.NONE)
 public abstract class InventoryTestBase {
 
 	@Nonnull
@@ -58,13 +61,16 @@ public abstract class InventoryTestBase {
 	@Nonnull
 	private Inventory inventory;
 
+	@Nonnull
+	private SkuIds skuIds;
+
 	@Before
 	public void setUp() throws Exception {
 		billing = newBilling();
-		final Products products = Products.create()
+		skuIds = SkuIds.create()
 				.add(IN_APP, asList("1", "2", "3", "4", "6"))
 				.add(SUBSCRIPTION, asList("sub1", "sub2", "sub3", "sub4"));
-		checkout = Checkout.forApplication(billing, products);
+		checkout = Checkout.forApplication(billing, skuIds.getProducts());
 		inventory = newInventory(checkout);
 	}
 
@@ -82,7 +88,7 @@ public abstract class InventoryTestBase {
 
 		final TestListener listener = new TestListener();
 		checkout.start();
-		inventory.load().whenLoaded(listener);
+		inventory.load(skuIds).whenLoaded(listener);
 
 		waitWhileLoading(inventory);
 
@@ -140,7 +146,7 @@ public abstract class InventoryTestBase {
 		inventory.whenLoaded(l1);
 		inventory.whenLoaded(l2);
 		checkout.start();
-		inventory.load();
+		inventory.load(skuIds);
 		waitWhileLoading(inventory);
 		inventory.whenLoaded(l3);
 
@@ -162,7 +168,7 @@ public abstract class InventoryTestBase {
 		inventory.whenLoaded(l);
 		inventory.whenLoaded(l);
 		checkout.start();
-		inventory.load();
+		inventory.load(skuIds);
 		waitWhileLoading(inventory);
 
 		verify(l, times(1)).onLoaded(anyProducts());
@@ -173,7 +179,7 @@ public abstract class InventoryTestBase {
 		final Inventory.Listener l = mock(Inventory.Listener.class);
 
 		checkout.start();
-		inventory.load();
+		inventory.load(skuIds);
 		waitWhileLoading(inventory);
 		inventory.whenLoaded(l);
 		inventory.whenLoaded(l);
@@ -187,12 +193,12 @@ public abstract class InventoryTestBase {
 		final Inventory.Listener l = mock(Inventory.Listener.class);
 		checkout.start();
 		inventory.whenLoaded(l);
-		inventory.load();
-		inventory.load();
-		inventory.load();
+		inventory.load(skuIds);
+		inventory.load(skuIds);
+		inventory.load(skuIds);
 		waitWhileLoading(inventory);
-		inventory.load();
-		inventory.load();
+		inventory.load(skuIds);
+		inventory.load(skuIds);
 		verify(l, times(1)).onLoaded(anyProducts());
 	}
 

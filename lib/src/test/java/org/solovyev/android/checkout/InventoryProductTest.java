@@ -25,20 +25,21 @@ package org.solovyev.android.checkout;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
+import org.robolectric.annotation.Config;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.solovyev.android.checkout.Purchase.State.CANCELLED;
-import static org.solovyev.android.checkout.Purchase.State.PURCHASED;
 import static org.solovyev.android.checkout.Purchase.State.REFUNDED;
 
 @RunWith(RobolectricTestRunner.class)
+@Config(manifest = Config.NONE)
 public class InventoryProductTest {
 
 	@Test
 	public void testShouldAddPurchases() throws Exception {
 		final Inventory.Product product = new Inventory.Product("test", true);
-		product.purchases.add(Purchase.fromJson(PurchaseTest.newJson(0, PURCHASED), null));
+		product.purchases.add(Purchase.fromJson(PurchaseTest.newJson(0, Purchase.State.PURCHASED), null));
 		product.purchases.add(Purchase.fromJson(PurchaseTest.newJson(1, CANCELLED), null));
 
 		assertTrue(product.isPurchased("0"));

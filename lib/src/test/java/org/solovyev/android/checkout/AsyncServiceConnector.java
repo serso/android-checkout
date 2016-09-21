@@ -24,9 +24,10 @@ package org.solovyev.android.checkout;
 
 import com.android.vending.billing.IInAppBillingService;
 
-import javax.annotation.Nonnull;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
+
+import javax.annotation.Nonnull;
 
 import static org.mockito.Mockito.mock;
 

@@ -3,7 +3,9 @@ package org.solovyev.android.checkout;
 
 import android.os.Bundle;
 import android.os.RemoteException;
+
 import com.android.vending.billing.IInAppBillingService;
+
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 import org.json.JSONException;
@@ -12,26 +14,41 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
+import org.robolectric.RobolectricTestRunner;
+import org.robolectric.annotation.Config;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
 import static java.lang.System.currentTimeMillis;
 import static java.util.Arrays.asList;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyInt;
+import static org.mockito.Mockito.anyObject;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.argThat;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.isNull;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static org.solovyev.android.checkout.RequestTestBase.newBundle;
 import static org.solovyev.android.checkout.ResponseCodes.OK;
 
 @SuppressWarnings("unchecked")
-@RunWith(CheckoutTestRunner.class)
+@RunWith(RobolectricTestRunner.class)
+@Config(manifest = Config.NONE)
 public class BillingTest {
 
 	@Nonnull
@@ -356,7 +373,7 @@ public class BillingTest {
 		}
 
 		@Override
-		void start(@Nonnull IInAppBillingService service, int apiVersion, @Nonnull String packageName) throws RemoteException, RequestException {
+		void start(@Nonnull IInAppBillingService service, @Nonnull String packageName) throws RemoteException, RequestException {
 			try {
 				Thread.sleep(sleep);
 				onSuccess(new Object());

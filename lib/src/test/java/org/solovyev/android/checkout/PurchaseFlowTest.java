@@ -24,9 +24,12 @@ package org.solovyev.android.checkout;
 
 import android.app.Activity;
 import android.content.Intent;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.RobolectricTestRunner;
+import org.robolectric.annotation.Config;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -35,11 +38,15 @@ import static android.app.Activity.RESULT_OK;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyObject;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.anyInt;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.solovyev.android.checkout.ResponseCodes.ACCOUNT_ERROR;
 import static org.solovyev.android.checkout.ResponseCodes.OK;
 
-@RunWith(CheckoutTestRunner.class)
+@RunWith(RobolectricTestRunner.class)
+@Config(manifest = Config.NONE)
 public class PurchaseFlowTest {
 
 	@Nonnull

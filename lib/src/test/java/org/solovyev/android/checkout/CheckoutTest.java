@@ -23,26 +23,35 @@
 package org.solovyev.android.checkout;
 
 import com.android.vending.billing.IInAppBillingService;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
+import org.robolectric.annotation.Config;
 
-import javax.annotation.Nonnull;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+
+import javax.annotation.Nonnull;
 
 import static java.util.Arrays.asList;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static org.solovyev.android.checkout.ProductTypes.IN_APP;
 import static org.solovyev.android.checkout.ProductTypes.SUBSCRIPTION;
 import static org.solovyev.android.checkout.ResponseCodes.OK;
 import static org.solovyev.android.checkout.Tests.newBilling;
 
 @RunWith(RobolectricTestRunner.class)
+@Config(manifest = Config.NONE)
 public class CheckoutTest {
 
 	@Nonnull
@@ -58,10 +67,10 @@ public class CheckoutTest {
 		final IInAppBillingService service = ((TestServiceConnector) billing.getConnector()).service;
 		when(service.isBillingSupported(eq(3), anyString(), eq(IN_APP))).thenReturn(OK);
 		when(service.isBillingSupported(eq(3), anyString(), eq(SUBSCRIPTION))).thenReturn(OK);
-		final Products products = Products.create()
+		final SkuIds skuIds = SkuIds.create()
 				.add(IN_APP, asList("1", "2", "3", "4", "6"))
 				.add(SUBSCRIPTION, asList("sub1", "sub2", "sub3", "sub4"));
-		checkout = Checkout.forApplication(billing, products);
+		checkout = Checkout.forApplication(billing, skuIds.getProducts());
 	}
 
 	@Test

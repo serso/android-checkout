@@ -27,12 +27,14 @@ import org.json.JSONObject;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
+import org.robolectric.annotation.Config;
 
 import javax.annotation.Nonnull;
 
 import static org.junit.Assert.*;
 
 @RunWith(RobolectricTestRunner.class)
+@Config(manifest = Config.NONE)
 public class SkuTest {
 	@Test
 	public void testShouldBeCreatedFromJson() throws Exception {

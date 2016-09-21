@@ -23,12 +23,12 @@
 package org.solovyev.android.checkout;
 
 import android.os.Bundle;
-import android.support.annotation.Nullable;
+
 import com.android.vending.billing.IInAppBillingService;
+
 import org.json.JSONException;
 import org.junit.Test;
 
-import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -36,10 +36,25 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-import static org.junit.Assert.*;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyList;
+import static org.mockito.Mockito.anyObject;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static org.solovyev.android.checkout.Purchase.State.PURCHASED;
 import static org.solovyev.android.checkout.ResponseCodes.EXCEPTION;
 import static org.solovyev.android.checkout.ResponseCodes.OK;
@@ -83,7 +98,7 @@ public class GetPurchasesRequestTest extends RequestTestBase {
 		bundle.putStringArrayList(Purchases.BUNDLE_DATA_LIST, datas);
 		when(service.getPurchases(anyInt(), anyString(), anyString(), anyString())).thenReturn(bundle);
 
-		request.start(service, 3, "test");
+		request.start(service, "test");
 
 		verify(l, times(1)).onError(eq(EXCEPTION), any(JSONException.class));
 	}
@@ -106,7 +121,7 @@ public class GetPurchasesRequestTest extends RequestTestBase {
 		bundle.putStringArrayList(Purchases.BUNDLE_DATA_LIST, list);
 		when(service.getPurchases(anyInt(), anyString(), anyString(), anyString())).thenReturn(bundle);
 
-		request.start(service, 3, "test");
+		request.start(service, "test");
 
 		assertNotNull(l.purchases);
 		assertTrue(l.purchases.list.size() == 4);
@@ -121,7 +136,7 @@ public class GetPurchasesRequestTest extends RequestTestBase {
 
 		final IInAppBillingService service = mock(IInAppBillingService.class);
 		when(service.getPurchases(anyInt(), anyString(), anyString(), anyString())).thenReturn(newBundle(OK));
-		request.start(service, 3, "test");
+		request.start(service, "test");
 
 		verify(verifier, never()).verify(anyList(), any(RequestListener.class));
 		verify(listener, times(1)).onSuccess(anyObject());

@@ -30,7 +30,9 @@ import com.android.vending.billing.IInAppBillingService;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.annotation.Config;
 
 import java.util.ArrayList;
 
@@ -49,7 +51,8 @@ import static org.mockito.Mockito.when;
 import static org.solovyev.android.checkout.ResponseCodes.BILLING_UNAVAILABLE;
 import static org.solovyev.android.checkout.ResponseCodes.OK;
 
-@RunWith(CheckoutTestRunner.class)
+@RunWith(RobolectricTestRunner.class)
+@Config(manifest = Config.NONE)
 abstract class RequestTestBase {
 
 	@Test
@@ -67,7 +70,7 @@ abstract class RequestTestBase {
 		when(service.getSkuDetails(anyInt(), anyString(), anyString(), any(Bundle.class))).thenReturn(bundle);
 		when(service.getBuyIntent(anyInt(), anyString(), anyString(), anyString(), anyString())).thenReturn(bundle);
 
-		request.start(service, 3, "testse");
+		request.start(service, "testse");
 
 		verify(l).onError(eq(BILLING_UNAVAILABLE), any(Exception.class));
 		verify(l, never()).onSuccess(any());
@@ -99,7 +102,7 @@ abstract class RequestTestBase {
 		buyIntent.putParcelable("BUY_INTENT", PendingIntent.getActivity(RuntimeEnvironment.application, 100, new Intent(), 0));
 		when(service.getBuyIntent(anyInt(), anyString(), anyString(), anyString(), anyString())).thenReturn(buyIntent);
 
-		r.start(service, 3, "");
+		r.start(service, "");
 
 		verify(l).onSuccess(anyObject());
 		verify(l, never()).onError(anyInt(), any(Exception.class));

@@ -42,6 +42,16 @@ android {
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     compile 'com.google.code.findbugs:jsr305:2.0.3'
+
+    testCompile 'junit:junit:4.12'
+    testCompile 'org.robolectric:robolectric:3.0'
+    testCompile "org.mockito:mockito-all:1.9.5"
+    testCompile "org.skyscreamer:jsonassert:1.2.3"
+}
+
+tasks.withType(Test) {
+    scanForTestClasses = false
+    include "**/*Test.class"
 }
 
 task androidJavadocs(type: Javadoc) {

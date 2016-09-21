@@ -28,6 +28,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
+import org.robolectric.annotation.Config;
 
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -49,6 +50,7 @@ import static org.solovyev.android.checkout.PurchaseFlowTest.newOkIntent;
 import static org.solovyev.android.checkout.ResponseCodes.NULL_INTENT;
 
 @RunWith(RobolectricTestRunner.class)
+@Config(manifest = Config.NONE)
 public class ActivityCheckoutTest {
 
 	@Nonnull
@@ -57,13 +59,16 @@ public class ActivityCheckoutTest {
 	@Nonnull
 	private ActivityCheckout checkout;
 
+	@Nonnull
+	private SkuIds skuIds;
+
 	@Before
 	public void setUp() throws Exception {
-		final Products products = Products.create().
+		skuIds = SkuIds.create().
 				add("product", asList("sku1", "sku2", "sku3")).
 				add("subscription", asList("sku1", "sku2", "sku3"));
 		billing = Tests.newBilling();
-		checkout = Checkout.forActivity(new Activity(), billing, products);
+		checkout = Checkout.forActivity(new Activity(), billing, skuIds.getProducts());
 	}
 
 	@Test

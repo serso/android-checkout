@@ -31,6 +31,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
+import org.robolectric.annotation.Config;
 import org.skyscreamer.jsonassert.JSONAssert;
 
 import java.util.ArrayList;
@@ -56,6 +57,7 @@ import static org.solovyev.android.checkout.Purchase.State.REFUNDED;
 import static org.solovyev.android.checkout.PurchaseTest.verifyPurchase;
 
 @RunWith(RobolectricTestRunner.class)
+@Config(manifest = Config.NONE)
 public class PurchasesTest {
 
 	@Test
@@ -80,7 +82,7 @@ public class PurchasesTest {
 		assertEquals(3, purchases.list.size());
 		verifyPurchase(purchases.list.get(0), 1, Purchase.State.REFUNDED);
 		verifyPurchase(purchases.list.get(1), 2, Purchase.State.CANCELLED);
-		verifyPurchase(purchases.list.get(2), 3, PURCHASED);
+		verifyPurchase(purchases.list.get(2), 3, Purchase.State.PURCHASED);
 	}
 
 	@Nonnull

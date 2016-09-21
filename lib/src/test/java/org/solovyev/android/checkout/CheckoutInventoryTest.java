@@ -81,15 +81,15 @@ public class CheckoutInventoryTest extends InventoryTestBase {
 	public void testIsLoadedWithEmptySkusList() throws Exception {
 		populatePurchases();
 
-		final Products products = Products.create()
-				.add(IN_APP)
-				.add(SUBSCRIPTION);
-		final Checkout checkout = Checkout.forApplication(billing, products);
+		final SkuIds skuIds = SkuIds.create()
+				.add(IN_APP, "in_app_01")
+				.add(SUBSCRIPTION, "sub_01");
+		final Checkout checkout = Checkout.forApplication(billing, skuIds.getProducts());
 
 		final CheckoutInventory inventory = new CheckoutInventory(checkout);
 		final TestListener listener = new TestListener();
 		checkout.start();
-		inventory.load().whenLoaded(listener);
+		inventory.load(skuIds).whenLoaded(listener);
 
 		waitWhileLoading(inventory);
 
@@ -105,15 +105,15 @@ public class CheckoutInventoryTest extends InventoryTestBase {
 	public void testShouldContinueAfterListenerException() throws Exception {
 		populatePurchases();
 
-		final Products products = Products.create()
-				.add(IN_APP)
-				.add(SUBSCRIPTION);
-		final Checkout checkout = Checkout.forApplication(billing, products);
+		final SkuIds skuIds = SkuIds.create()
+				.add(IN_APP, "in_app_01")
+				.add(SUBSCRIPTION, "sub_01");
+		final Checkout checkout = Checkout.forApplication(billing, skuIds.getProducts());
 
 		final CrashingListener listener = new CrashingListener();
 		final CheckoutInventory inventory = new CheckoutInventory(checkout);
 		checkout.start();
-		inventory.load().whenLoaded(listener);
+		inventory.load(skuIds).whenLoaded(listener);
 
 		waitWhileLoading(inventory);
 

@@ -25,6 +25,8 @@ package org.solovyev.android.checkout;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.RobolectricTestRunner;
+import org.robolectric.annotation.Config;
 
 import java.util.List;
 import java.util.concurrent.Executor;
@@ -42,7 +44,8 @@ import static org.solovyev.android.checkout.Purchase.State.EXPIRED;
 import static org.solovyev.android.checkout.Purchase.State.PURCHASED;
 import static org.solovyev.android.checkout.Purchase.State.REFUNDED;
 
-@RunWith(CheckoutTestRunner.class)
+@RunWith(RobolectricTestRunner.class)
+@Config(manifest = Config.NONE)
 public class FailingCacheCheckoutInventoryTest {
 	@Nonnull
 	protected FailingCache failingCache;
@@ -52,15 +55,17 @@ public class FailingCacheCheckoutInventoryTest {
 	private Checkout checkout;
 	@Nonnull
 	private Inventory inventory;
+	@Nonnull
+	private SkuIds skuIds;
 
 	@Before
 	public void setUp() throws Exception {
 		failingCache = new FailingCache();
 		billing = newBilling();
-		final Products products = Products.create()
+		skuIds = SkuIds.create()
 				.add(IN_APP, asList("1", "2", "3", "4", "6"))
 				.add(SUBSCRIPTION, asList("sub1", "sub2", "sub3", "sub4"));
-		checkout = Checkout.forApplication(billing, products);
+		checkout = Checkout.forApplication(billing, skuIds.getProducts());
 		inventory = new CheckoutInventory(checkout);
 	}
 
@@ -89,7 +94,7 @@ public class FailingCacheCheckoutInventoryTest {
 		final CheckoutInventory inventory = new CheckoutInventory(checkout);
 		final InventoryTestBase.TestListener listener = new InventoryTestBase.TestListener();
 		checkout.start();
-		inventory.load().whenLoaded(listener);
+		inventory.load(skuIds).whenLoaded(listener);
 
 		waitWhileLoading(inventory);
 

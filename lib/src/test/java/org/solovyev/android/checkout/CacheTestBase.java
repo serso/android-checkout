@@ -23,14 +23,18 @@
 package org.solovyev.android.checkout;
 
 import org.junit.runner.RunWith;
+import org.robolectric.RobolectricTestRunner;
+import org.robolectric.annotation.Config;
+
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.annotation.Nonnull;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import static java.lang.System.currentTimeMillis;
 import static org.solovyev.android.checkout.Billing.DAY;
 
-@RunWith(CheckoutTestRunner.class)
+@RunWith(RobolectricTestRunner.class)
+@Config(manifest = Config.NONE)
 abstract class CacheTestBase {
 
 	@Nonnull

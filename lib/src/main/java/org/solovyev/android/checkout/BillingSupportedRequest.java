@@ -37,6 +37,10 @@ final class BillingSupportedRequest extends Request<Object> {
 	private final String product;
 	private final int apiVersion;
 
+	BillingSupportedRequest(@Nonnull String product) {
+		this(product, Billing.V3);
+	}
+
 	BillingSupportedRequest(@Nonnull String product, int apiVersion) {
 		super(BILLING_SUPPORTED, apiVersion);
 		this.product = product;

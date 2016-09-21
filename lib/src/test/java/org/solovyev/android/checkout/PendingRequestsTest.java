@@ -25,9 +25,9 @@ package org.solovyev.android.checkout;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.RobolectricTestRunner;
+import org.robolectric.annotation.Config;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -38,7 +38,11 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-@RunWith(CheckoutTestRunner.class)
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
+@RunWith(RobolectricTestRunner.class)
+@Config(manifest = Config.NONE)
 public class PendingRequestsTest {
 
 	@Test

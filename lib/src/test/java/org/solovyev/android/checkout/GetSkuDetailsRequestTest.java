@@ -102,7 +102,7 @@ public class GetSkuDetailsRequestTest extends RequestTestBase {
 			}
 		});
 
-		request.start(service, 3, "");
+		request.start(service, "");
 
 		assertNotNull(l.skus);
 		for (String sku : skus) {

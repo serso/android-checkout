@@ -27,6 +27,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.annotation.Config;
 
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -44,6 +45,7 @@ import static org.solovyev.android.checkout.RobotmediaDatabase.makeInClause;
 import static org.solovyev.android.checkout.Tests.sameThreadExecutor;
 
 @RunWith(RobolectricTestRunner.class)
+@Config(manifest = Config.NONE)
 public class RobotmediaDatabaseTest {
 
 	@Nonnull
@@ -52,12 +54,15 @@ public class RobotmediaDatabaseTest {
 	@Nonnull
 	private BillingDB db;
 
+	@Nonnull
+	private SkuIds skuIds;
+
 	@Before
 	public void setUp() throws Exception {
 		final Billing billing = Tests.newBilling();
 		billing.setMainThread(sameThreadExecutor());
-		final Products products = Products.create().add(IN_APP, asList("sku_0", "sku_1", "sku_2", "sku_3", "sku_4", "sku_6"));
-		checkout = Checkout.forApplication(billing, products);
+		skuIds = SkuIds.create().add(IN_APP, asList("sku_0", "sku_1", "sku_2", "sku_3", "sku_4", "sku_6"));
+		checkout = Checkout.forApplication(billing, skuIds.getProducts());
 		db = new BillingDB(RuntimeEnvironment.application);
 	}
 
@@ -68,7 +73,7 @@ public class RobotmediaDatabaseTest {
 
 		final RobotmediaInventory inventory = new RobotmediaInventory(checkout, sameThreadExecutor());
 		final CountDownListener l = new CountDownListener();
-		inventory.load().whenLoaded(l);
+		inventory.load(skuIds).whenLoaded(l);
 
 		final Inventory.Products products = l.waitProducts();
 		final Inventory.Product product = products.get(IN_APP);
@@ -87,7 +92,7 @@ public class RobotmediaDatabaseTest {
 
 		final RobotmediaInventory inventory = new RobotmediaInventory(checkout, sameThreadExecutor());
 		final CountDownListener l = new CountDownListener();
-		inventory.load().whenLoaded(l);
+		inventory.load(skuIds).whenLoaded(l);
 
 		final Inventory.Products products = l.waitProducts();
 		final Inventory.Product product = products.get(IN_APP);
@@ -105,7 +110,7 @@ public class RobotmediaDatabaseTest {
 	public void testShouldReadEmptyList() throws Exception {
 		final RobotmediaInventory inventory = new RobotmediaInventory(checkout, sameThreadExecutor());
 		final CountDownListener l = new CountDownListener();
-		inventory.load().whenLoaded(l);
+		inventory.load(skuIds).whenLoaded(l);
 
 		final Inventory.Products products = l.waitProducts();
 		final Inventory.Product product = products.get(IN_APP);
