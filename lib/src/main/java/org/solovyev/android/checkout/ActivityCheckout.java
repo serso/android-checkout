@@ -71,7 +71,7 @@ public final class ActivityCheckout extends Checkout {
     static final int DEFAULT_REQUEST_CODE = 0XCAFE;// mm, coffee
 
     @Nonnull
-    private final SparseArray<PurchaseFlow> mFlows = new SparseArray<PurchaseFlow>();
+    private final SparseArray<PurchaseFlow> mFlows = new SparseArray<>();
 
     ActivityCheckout(@Nonnull final Activity activity, @Nonnull Billing billing, @Nonnull Collection<String> products) {
         super(activity, billing, products);
