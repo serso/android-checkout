@@ -22,9 +22,6 @@
 
 package org.solovyev.android.checkout;
 
-import static android.database.sqlite.SQLiteDatabase.OPEN_READONLY;
-import static android.database.sqlite.SQLiteDatabase.openDatabase;
-
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -37,116 +34,119 @@ import java.util.List;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+import static android.database.sqlite.SQLiteDatabase.OPEN_READONLY;
+import static android.database.sqlite.SQLiteDatabase.openDatabase;
+
 public final class RobotmediaDatabase {
 
-	static final String NAME = "billing.db";
+    static final String NAME = "billing.db";
 
-	@Nonnull
-	private final Context context;
+    @Nonnull
+    private final Context context;
 
-	public RobotmediaDatabase(@Nonnull Context context) {
-		this.context = context;
-	}
+    public RobotmediaDatabase(@Nonnull Context context) {
+        this.context = context;
+    }
 
-	public static boolean exists(@Nonnull Context context) {
-		final File file = getDatabaseFile(context);
-		return file != null && file.exists();
-	}
+    public static boolean exists(@Nonnull Context context) {
+        final File file = getDatabaseFile(context);
+        return file != null && file.exists();
+    }
 
-	@Nullable
-	private static File getDatabaseFile(@Nonnull Context context) {
-		return context.getDatabasePath(NAME);
-	}
+    @Nullable
+    private static File getDatabaseFile(@Nonnull Context context) {
+        return context.getDatabasePath(NAME);
+    }
 
-	@Nullable
-	static String getDatabasePath(@Nonnull Context context) {
-		final File file = getDatabaseFile(context);
-		return file != null ? file.getPath() : null;
-	}
+    @Nullable
+    static String getDatabasePath(@Nonnull Context context) {
+        final File file = getDatabaseFile(context);
+        return file != null ? file.getPath() : null;
+    }
 
-	@Nonnull
-	Inventory.Products load(@Nonnull SkuIds skus) {
-		SQLiteDatabase db = null;
-		try {
-			final String databasePath = RobotmediaDatabase.getDatabasePath(context);
-			db = openDatabase(databasePath, null, OPEN_READONLY);
-			return loadProducts(skus, db);
-		} catch (RuntimeException e) {
-			Billing.error(e);
-		} finally {
-			if (db != null) {
-				db.close();
-			}
-		}
-		return toInventoryProducts(skus.getProducts());
-	}
+    @Nonnull
+    static Inventory.Products toInventoryProducts(@Nonnull Collection<String> products) {
+        final Inventory.Products result = new Inventory.Products();
+        for (String productId : products) {
+            result.add(new Inventory.Product(productId, true));
+        }
+        return result;
+    }
 
-	@Nonnull
-	static Inventory.Products toInventoryProducts(@Nonnull Collection<String> products) {
-		final Inventory.Products result = new Inventory.Products();
-		for (String productId : products) {
-			result.add(new Inventory.Product(productId, true));
-		}
-		return result;
-	}
+    @Nonnull
+    static String makeInClause(int count) {
+        Check.isTrue(count > 0, "Should be positive");
+        final StringBuilder sb = new StringBuilder(count * 2 + 1);
+        sb.append("(");
+        sb.append("?");
+        for (int i = 1; i < count; i++) {
+            sb.append(",?");
+        }
+        sb.append(")");
+        return sb.toString();
+    }
 
-	@Nonnull
-	private Inventory.Products loadProducts(@Nonnull SkuIds skuDefs, @Nonnull SQLiteDatabase db) {
-		final Inventory.Products result = new Inventory.Products();
-		for (String productId : skuDefs.getProducts()) {
-			final Inventory.Product product = new Inventory.Product(productId, true);
+    @Nonnull
+    Inventory.Products load(@Nonnull SkuIds skus) {
+        SQLiteDatabase db = null;
+        try {
+            final String databasePath = RobotmediaDatabase.getDatabasePath(context);
+            db = openDatabase(databasePath, null, OPEN_READONLY);
+            return loadProducts(skus, db);
+        } catch (RuntimeException e) {
+            Billing.error(e);
+        } finally {
+            if (db != null) {
+                db.close();
+            }
+        }
+        return toInventoryProducts(skus.getProducts());
+    }
 
-			final List<String> skus = skuDefs.getSkus(productId);
-			if (!skus.isEmpty()) {
-				product.setPurchases(loadPurchases(skus, db));
-			} else {
-				Billing.warning("There are no SKUs for \"" + product.id + "\" product. No purchase information will be loaded");
-			}
+    @Nonnull
+    private Inventory.Products loadProducts(@Nonnull SkuIds skuDefs, @Nonnull SQLiteDatabase db) {
+        final Inventory.Products result = new Inventory.Products();
+        for (String productId : skuDefs.getProducts()) {
+            final Inventory.Product product = new Inventory.Product(productId, true);
 
-			result.add(product);
-		}
-		return result;
-	}
+            final List<String> skus = skuDefs.getSkus(productId);
+            if (!skus.isEmpty()) {
+                product.setPurchases(loadPurchases(skus, db));
+            } else {
+                Billing.warning("There are no SKUs for \"" + product.id + "\" product. No purchase information will be loaded");
+            }
 
-	@Nonnull
-	private List<Purchase> loadPurchases(@Nonnull List<String> skus, @Nonnull SQLiteDatabase db) {
-		Check.isNotEmpty(skus);
-		final List<Purchase> purchases = new ArrayList<Purchase>(skus.size());
-		final String[] columns = {"_id", "state", "productId", "purchaseTime", "developerPayload"};
-		final String packageName = context.getPackageName();
+            result.add(product);
+        }
+        return result;
+    }
 
-		Cursor c = null;
-		try {
-			c = db.query("purchases", columns, "productId in " + makeInClause(skus.size()), skus.toArray(new String[skus.size()]), null, null, null);
-			if (c.moveToFirst()) {
-				do {
-					final String orderId = c.getString(0);
-					final int state = c.getInt(1);
-					final String sku = c.getString(2);
-					final long time = c.getLong(3);
-					final String payload = c.getString(4);
-					final Purchase p = new Purchase(sku, orderId, packageName, time, state, payload, "", false, "", "");
-					purchases.add(p);
-				} while (c.moveToNext());
-			}
-		} finally {
-			if (c != null) {
-				c.close();
-			}
-		}
-		return purchases;
-	}
+    @Nonnull
+    private List<Purchase> loadPurchases(@Nonnull List<String> skus, @Nonnull SQLiteDatabase db) {
+        Check.isNotEmpty(skus);
+        final List<Purchase> purchases = new ArrayList<Purchase>(skus.size());
+        final String[] columns = {"_id", "state", "productId", "purchaseTime", "developerPayload"};
+        final String packageName = context.getPackageName();
 
-	@Nonnull
-	static String makeInClause(int count) {
-		Check.isTrue(count > 0, "Should be positive");
-		final StringBuilder sb = new StringBuilder(count * 2 + 1);
-		sb.append("(");
-		sb.append("?");
-		for (int i = 1; i < count; i++) {
-			sb.append(",?");
-		}
-		sb.append(")");
-		return sb.toString();
-	}
+        Cursor c = null;
+        try {
+            c = db.query("purchases", columns, "productId in " + makeInClause(skus.size()), skus.toArray(new String[skus.size()]), null, null, null);
+            if (c.moveToFirst()) {
+                do {
+                    final String orderId = c.getString(0);
+                    final int state = c.getInt(1);
+                    final String sku = c.getString(2);
+                    final long time = c.getLong(3);
+                    final String payload = c.getString(4);
+                    final Purchase p = new Purchase(sku, orderId, packageName, time, state, payload, "", false, "", "");
+                    purchases.add(p);
+                } while (c.moveToNext());
+            }
+        } finally {
+            if (c != null) {
+                c.close();
+            }
+        }
+        return purchases;
+    }
 }

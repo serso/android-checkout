@@ -22,9 +22,10 @@
 
 package org.solovyev.android.checkout;
 
-import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.annotation.Nonnull;
 
 import static android.text.TextUtils.isEmpty;
 
@@ -33,27 +34,27 @@ import static android.text.TextUtils.isEmpty;
  */
 class DefaultPurchaseVerifier implements PurchaseVerifier {
 
-	@Nonnull
-	private final String publicKey;
+    @Nonnull
+    private final String publicKey;
 
-	public DefaultPurchaseVerifier(@Nonnull String publicKey) {
-		this.publicKey = publicKey;
-	}
+    public DefaultPurchaseVerifier(@Nonnull String publicKey) {
+        this.publicKey = publicKey;
+    }
 
-	@Override
-	public void verify(@Nonnull List<Purchase> purchases, @Nonnull RequestListener<List<Purchase>> listener) {
-		final List<Purchase> verifiedPurchases = new ArrayList<Purchase>(purchases.size());
-		for (Purchase purchase : purchases) {
-			if (Security.verifyPurchase(publicKey, purchase.data, purchase.signature)) {
-				verifiedPurchases.add(purchase);
-			} else {
-				if (isEmpty(purchase.signature)) {
-					Billing.error("Cannot verify purchase: " + purchase + ". Signature is empty");
-				} else {
-					Billing.error("Cannot verify purchase: " + purchase + ". Wrong signature");
-				}
-			}
-		}
-		listener.onSuccess(verifiedPurchases);
-	}
+    @Override
+    public void verify(@Nonnull List<Purchase> purchases, @Nonnull RequestListener<List<Purchase>> listener) {
+        final List<Purchase> verifiedPurchases = new ArrayList<Purchase>(purchases.size());
+        for (Purchase purchase : purchases) {
+            if (Security.verifyPurchase(publicKey, purchase.data, purchase.signature)) {
+                verifiedPurchases.add(purchase);
+            } else {
+                if (isEmpty(purchase.signature)) {
+                    Billing.error("Cannot verify purchase: " + purchase + ". Signature is empty");
+                } else {
+                    Billing.error("Cannot verify purchase: " + purchase + ". Wrong signature");
+                }
+            }
+        }
+        listener.onSuccess(verifiedPurchases);
+    }
 }

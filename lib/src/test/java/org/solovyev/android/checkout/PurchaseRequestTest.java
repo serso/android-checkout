@@ -24,8 +24,8 @@ package org.solovyev.android.checkout;
 
 public class PurchaseRequestTest extends RequestTestBase {
 
-	@Override
-	protected Request newRequest() {
-		return new PurchaseRequest("test", "sku", null);
-	}
+    @Override
+    protected Request newRequest() {
+        return new PurchaseRequest("test", "sku", null);
+    }
 }

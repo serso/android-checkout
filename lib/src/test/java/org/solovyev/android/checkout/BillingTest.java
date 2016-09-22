@@ -1,8 +1,4 @@
-
 package org.solovyev.android.checkout;
-
-import android.os.Bundle;
-import android.os.RemoteException;
 
 import com.android.vending.billing.IInAppBillingService;
 
@@ -16,6 +12,9 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
+
+import android.os.Bundle;
+import android.os.RemoteException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -51,341 +50,341 @@ import static org.solovyev.android.checkout.ResponseCodes.OK;
 @Config(manifest = Config.NONE)
 public class BillingTest {
 
-	@Nonnull
-	private Billing billing;
+    @Nonnull
+    private Billing billing;
 
-	@Nonnull
-	private Random random;
+    @Nonnull
+    private Random random;
 
-	@Before
-	public void setUp() throws Exception {
-		billing = Tests.newSynchronousBilling();
-		random = new Random(currentTimeMillis());
-	}
+    @Nonnull
+    static Bundle newPurchasesBundle(long id, boolean withContinuationToken) throws JSONException {
+        final Bundle bundle = newBundle(OK);
+        final ArrayList<String> list = new ArrayList<String>();
+        list.add(PurchaseTest.newJson(id, Purchase.State.PURCHASED));
+        bundle.putStringArrayList(Purchases.BUNDLE_DATA_LIST, list);
+        if (withContinuationToken) {
+            bundle.putString(Purchases.BUNDLE_CONTINUATION_TOKEN, String.valueOf(id + 1));
+        }
+        return bundle;
+    }
 
-	@Test
-	public void testShouldNotifyErrorIfCantConnect() throws Exception {
-		final Billing.ServiceConnector connector = mock(Billing.ServiceConnector.class);
-		when(connector.connect()).thenReturn(false);
+    @Before
+    public void setUp() throws Exception {
+        billing = Tests.newSynchronousBilling();
+        random = new Random(currentTimeMillis());
+    }
 
-		billing.setConnector(connector);
-		final RequestListener<Object> l = mock(RequestListener.class);
-		billing.getRequests().isBillingSupported("p", l);
-		verify(l, times(1)).onError(eq(ResponseCodes.SERVICE_NOT_CONNECTED), any(BillingException.class));
-		verify(l, times(0)).onSuccess(any());
-	}
+    @Test
+    public void testShouldNotifyErrorIfCantConnect() throws Exception {
+        final Billing.ServiceConnector connector = mock(Billing.ServiceConnector.class);
+        when(connector.connect()).thenReturn(false);
 
-	@Test
-	public void testShouldNotifyErrorIfConnectorReturnedNull() throws Exception {
-		final Billing.ServiceConnector connector = mock(Billing.ServiceConnector.class);
-		when(connector.connect()).then(new Answer<Object>() {
-			@Override
-			public Object answer(InvocationOnMock invocation) throws Throwable {
-				billing.setService(null, true);
-				return true;
-			}
-		});
+        billing.setConnector(connector);
+        final RequestListener<Object> l = mock(RequestListener.class);
+        billing.getRequests().isBillingSupported("p", l);
+        verify(l, times(1)).onError(eq(ResponseCodes.SERVICE_NOT_CONNECTED), any(BillingException.class));
+        verify(l, times(0)).onSuccess(any());
+    }
 
-		billing.setConnector(connector);
-		final RequestListener<Object> l = mock(RequestListener.class);
-		billing.getRequests().isBillingSupported("p", l);
-		verify(l, times(1)).onError(eq(ResponseCodes.SERVICE_NOT_CONNECTED), any(BillingException.class));
-		verify(l, times(0)).onSuccess(any());
-	}
+    @Test
+    public void testShouldNotifyErrorIfConnectorReturnedNull() throws Exception {
+        final Billing.ServiceConnector connector = mock(Billing.ServiceConnector.class);
+        when(connector.connect()).then(new Answer<Object>() {
+            @Override
+            public Object answer(InvocationOnMock invocation) throws Throwable {
+                billing.setService(null, true);
+                return true;
+            }
+        });
 
-	@Test
-	public void testShouldExecuteRequestIfConnected() throws Exception {
-		final Billing.ServiceConnector connector = mock(Billing.ServiceConnector.class);
-		final IInAppBillingService service = mock(IInAppBillingService.class);
-		when(service.isBillingSupported(anyInt(), anyString(), anyString())).thenReturn(OK);
-		when(connector.connect()).then(new Answer<Object>() {
-			@Override
-			public Object answer(InvocationOnMock invocation) throws Throwable {
-				billing.setService(service, true);
-				return true;
-			}
-		});
+        billing.setConnector(connector);
+        final RequestListener<Object> l = mock(RequestListener.class);
+        billing.getRequests().isBillingSupported("p", l);
+        verify(l, times(1)).onError(eq(ResponseCodes.SERVICE_NOT_CONNECTED), any(BillingException.class));
+        verify(l, times(0)).onSuccess(any());
+    }
 
-		billing.setConnector(connector);
-		final RequestListener<Object> l = mock(RequestListener.class);
-		billing.getRequests().isBillingSupported("p", l);
-		verify(l, times(0)).onError(anyInt(), any(BillingException.class));
-		verify(l, times(1)).onSuccess(any());
-	}
+    @Test
+    public void testShouldExecuteRequestIfConnected() throws Exception {
+        final Billing.ServiceConnector connector = mock(Billing.ServiceConnector.class);
+        final IInAppBillingService service = mock(IInAppBillingService.class);
+        when(service.isBillingSupported(anyInt(), anyString(), anyString())).thenReturn(OK);
+        when(connector.connect()).then(new Answer<Object>() {
+            @Override
+            public Object answer(InvocationOnMock invocation) throws Throwable {
+                billing.setService(service, true);
+                return true;
+            }
+        });
 
-	@Test
-	public void testStates() throws Exception {
-		final Billing.ServiceConnector connector = mock(Billing.ServiceConnector.class);
-		when(connector.connect()).thenReturn(true);
-		billing.setConnector(connector);
-		billing.connect();
+        billing.setConnector(connector);
+        final RequestListener<Object> l = mock(RequestListener.class);
+        billing.getRequests().isBillingSupported("p", l);
+        verify(l, times(0)).onError(anyInt(), any(BillingException.class));
+        verify(l, times(1)).onSuccess(any());
+    }
 
-		assertEquals(Billing.State.CONNECTING, billing.getState());
-		billing.setService(mock(IInAppBillingService.class), true);
-		assertEquals(Billing.State.CONNECTED, billing.getState());
-		billing.disconnect();
-		assertEquals(Billing.State.DISCONNECTING, billing.getState());
-		billing.setService(null, false);
-		assertEquals(Billing.State.DISCONNECTED, billing.getState());
-	}
+    @Test
+    public void testStates() throws Exception {
+        final Billing.ServiceConnector connector = mock(Billing.ServiceConnector.class);
+        when(connector.connect()).thenReturn(true);
+        billing.setConnector(connector);
+        billing.connect();
 
-	@Test
-	public void testShouldDisconnectOnlyIfNotInInitialState() throws Exception {
-		billing.setState(Billing.State.INITIAL);
-		billing.setService(null, false);
+        assertEquals(Billing.State.CONNECTING, billing.getState());
+        billing.setService(mock(IInAppBillingService.class), true);
+        assertEquals(Billing.State.CONNECTED, billing.getState());
+        billing.disconnect();
+        assertEquals(Billing.State.DISCONNECTING, billing.getState());
+        billing.setService(null, false);
+        assertEquals(Billing.State.DISCONNECTED, billing.getState());
+    }
 
-		assertEquals(Billing.State.INITIAL, billing.getState());
+    @Test
+    public void testShouldDisconnectOnlyIfNotInInitialState() throws Exception {
+        billing.setState(Billing.State.INITIAL);
+        billing.setService(null, false);
 
-		billing.setState(Billing.State.DISCONNECTING);
-		billing.setService(null, false);
+        assertEquals(Billing.State.INITIAL, billing.getState());
 
-		assertEquals(Billing.State.DISCONNECTED, billing.getState());
+        billing.setState(Billing.State.DISCONNECTING);
+        billing.setService(null, false);
 
-		billing.setState(Billing.State.CONNECTED);
-		billing.setService(null, false);
+        assertEquals(Billing.State.DISCONNECTED, billing.getState());
 
-		assertEquals(Billing.State.DISCONNECTED, billing.getState());
-	}
+        billing.setState(Billing.State.CONNECTED);
+        billing.setService(null, false);
 
-	@Test
-	public void testShouldConnectOnlyIfConnecting() throws Exception {
-		billing.setState(Billing.State.FAILED);
-		billing.setService(mock(IInAppBillingService.class), true);
+        assertEquals(Billing.State.DISCONNECTED, billing.getState());
+    }
 
-		assertEquals(Billing.State.FAILED, billing.getState());
+    @Test
+    public void testShouldConnectOnlyIfConnecting() throws Exception {
+        billing.setState(Billing.State.FAILED);
+        billing.setService(mock(IInAppBillingService.class), true);
 
-		billing.setState(Billing.State.CONNECTING);
-		billing.setService(mock(IInAppBillingService.class), true);
+        assertEquals(Billing.State.FAILED, billing.getState());
 
-		assertEquals(Billing.State.CONNECTED, billing.getState());
-	}
+        billing.setState(Billing.State.CONNECTING);
+        billing.setService(mock(IInAppBillingService.class), true);
 
-	@Test
-	public void testShouldRunAllRequests() throws Exception {
-		final int REQUESTS = 100;
-		final int SLEEP = 10;
+        assertEquals(Billing.State.CONNECTED, billing.getState());
+    }
 
-		final Billing b = Tests.newBilling(false);
-		b.setMainThread(Tests.sameThreadExecutor());
-		final AsyncServiceConnector c = new AsyncServiceConnector(b);
-		b.setConnector(c);
-		final CountDownLatch latch = new CountDownLatch(REQUESTS);
-		final RequestListener l = new CountDownListener(latch);
-		for (int i = 0; i < REQUESTS; i++) {
-			if (i % 10 == 0) {
-				if (random.nextBoolean()) {
-					b.connect();
-				} else {
-					c.disconnect();
-				}
-			}
-			b.runWhenConnected(new SleepingRequest(random.nextInt(SLEEP)), l, null);
-		}
-		b.connect();
-		assertTrue(latch.await(SLEEP * REQUESTS, TimeUnit.MILLISECONDS));
-	}
+    @Test
+    public void testShouldRunAllRequests() throws Exception {
+        final int REQUESTS = 100;
+        final int SLEEP = 10;
 
-	@Test
-	public void testShouldCancelRequests() throws Exception {
-		final int REQUESTS = 10;
+        final Billing b = Tests.newBilling(false);
+        b.setMainThread(Tests.sameThreadExecutor());
+        final AsyncServiceConnector c = new AsyncServiceConnector(b);
+        b.setConnector(c);
+        final CountDownLatch latch = new CountDownLatch(REQUESTS);
+        final RequestListener l = new CountDownListener(latch);
+        for (int i = 0; i < REQUESTS; i++) {
+            if (i % 10 == 0) {
+                if (random.nextBoolean()) {
+                    b.connect();
+                } else {
+                    c.disconnect();
+                }
+            }
+            b.runWhenConnected(new SleepingRequest(random.nextInt(SLEEP)), l, null);
+        }
+        b.connect();
+        assertTrue(latch.await(SLEEP * REQUESTS, TimeUnit.MILLISECONDS));
+    }
 
-		final Billing b = Tests.newBilling(false);
-		final CountDownLatch latch = new CountDownLatch(REQUESTS / 2);
-		final RequestListener l = new CountDownListener(latch);
-		final List<Integer> requestIds = new ArrayList<Integer>();
-		for (int i = 0; i < REQUESTS; i++) {
-			requestIds.add(b.runWhenConnected(new SleepingRequest(100), l, null));
-		}
-		Thread.sleep(100 * (REQUESTS / 2 - 1));
-		for (int i = REQUESTS / 2; i < REQUESTS; i++) {
-			b.cancel(requestIds.get(i));
-		}
-		assertTrue(latch.await(1, SECONDS));
-	}
+    @Test
+    public void testShouldCancelRequests() throws Exception {
+        final int REQUESTS = 10;
 
-	@Test
-	public void testIsPurchasedShouldCollectAllThePurchases() throws Exception {
-		checkIsPurchased("0", true);
-		checkIsPurchased("1", true);
-		checkIsPurchased("2", true);
-		checkIsPurchased("3", true);
-		checkIsPurchased("4", true);
-		checkIsPurchased("-1", false);
-		checkIsPurchased("5", false);
-	}
+        final Billing b = Tests.newBilling(false);
+        final CountDownLatch latch = new CountDownLatch(REQUESTS / 2);
+        final RequestListener l = new CountDownListener(latch);
+        final List<Integer> requestIds = new ArrayList<Integer>();
+        for (int i = 0; i < REQUESTS; i++) {
+            requestIds.add(b.runWhenConnected(new SleepingRequest(100), l, null));
+        }
+        Thread.sleep(100 * (REQUESTS / 2 - 1));
+        for (int i = REQUESTS / 2; i < REQUESTS; i++) {
+            b.cancel(requestIds.get(i));
+        }
+        assertTrue(latch.await(1, SECONDS));
+    }
 
-	@Test
-	public void testShouldReturnAllPurchases() throws Exception {
-		final Billing billing = prepareMultiPurchasesBilling();
+    @Test
+    public void testIsPurchasedShouldCollectAllThePurchases() throws Exception {
+        checkIsPurchased("0", true);
+        checkIsPurchased("1", true);
+        checkIsPurchased("2", true);
+        checkIsPurchased("3", true);
+        checkIsPurchased("4", true);
+        checkIsPurchased("-1", false);
+        checkIsPurchased("5", false);
+    }
 
-		final CountDownLatch latch = new CountDownLatch(1);
-		final CountDownListener l = new CountDownListener(latch);
-		billing.getRequests().getAllPurchases(ProductTypes.IN_APP, l);
+    @Test
+    public void testShouldReturnAllPurchases() throws Exception {
+        final Billing billing = prepareMultiPurchasesBilling();
 
-		assertTrue(latch.await(1, SECONDS));
-		verify(l.listener).onSuccess(argThat(new BaseMatcher<Purchases>() {
-			@Override
-			public boolean matches(Object item) {
-				if (!(item instanceof Purchases)) {
-					return false;
-				}
-				final Purchases purchases = (Purchases) item;
-				for (Integer id : asList(0, 1, 2, 3, 4)) {
-					if (!purchases.hasPurchaseInState(String.valueOf(id), Purchase.State.PURCHASED)) {
-						return false;
-					}
-				}
-				return true;
-			}
+        final CountDownLatch latch = new CountDownLatch(1);
+        final CountDownListener l = new CountDownListener(latch);
+        billing.getRequests().getAllPurchases(ProductTypes.IN_APP, l);
 
-			@Override
-			public void describeTo(Description description) {
-			}
-		}));
-	}
+        assertTrue(latch.await(1, SECONDS));
+        verify(l.listener).onSuccess(argThat(new BaseMatcher<Purchases>() {
+            @Override
+            public boolean matches(Object item) {
+                if (!(item instanceof Purchases)) {
+                    return false;
+                }
+                final Purchases purchases = (Purchases) item;
+                for (Integer id : asList(0, 1, 2, 3, 4)) {
+                    if (!purchases.hasPurchaseInState(String.valueOf(id), Purchase.State.PURCHASED)) {
+                        return false;
+                    }
+                }
+                return true;
+            }
 
-	@Test
-	public void testShouldCancelIsPurchasedListener() throws Exception {
-		final Billing billing = Tests.newBilling(true);
+            @Override
+            public void describeTo(Description description) {
+            }
+        }));
+    }
 
-		final CountDownLatch requestWaiter = new CountDownLatch(1);
-		final CountDownLatch cancelWaiter = new CountDownLatch(1);
+    @Test
+    public void testShouldCancelIsPurchasedListener() throws Exception {
+        final Billing billing = Tests.newBilling(true);
 
-		final IInAppBillingService service = mock(IInAppBillingService.class);
-		when(service.getPurchases(anyInt(), anyString(), anyString(), isNull(String.class))).thenAnswer(new Answer<Object>() {
-			@Override
-			public Object answer(InvocationOnMock invocation) throws Throwable {
-				requestWaiter.countDown();
-				return newPurchasesBundle(0, true);
-			}
-		});
-		when(service.getPurchases(anyInt(), anyString(), anyString(), eq("1"))).thenAnswer(new Answer<Bundle>() {
-			@Override
-			public Bundle answer(InvocationOnMock invocation) throws Throwable {
-				cancelWaiter.await(1, SECONDS);
-				return newPurchasesBundle(1, false);
-			}
-		});
-		Tests.setService(billing, service);
+        final CountDownLatch requestWaiter = new CountDownLatch(1);
+        final CountDownLatch cancelWaiter = new CountDownLatch(1);
 
-		final RequestListener l = mock(RequestListener.class);
-		final BillingRequests requests = billing.getRequests();
-		requests.isPurchased(ProductTypes.IN_APP, "1", l);
+        final IInAppBillingService service = mock(IInAppBillingService.class);
+        when(service.getPurchases(anyInt(), anyString(), anyString(), isNull(String.class))).thenAnswer(new Answer<Object>() {
+            @Override
+            public Object answer(InvocationOnMock invocation) throws Throwable {
+                requestWaiter.countDown();
+                return newPurchasesBundle(0, true);
+            }
+        });
+        when(service.getPurchases(anyInt(), anyString(), anyString(), eq("1"))).thenAnswer(new Answer<Bundle>() {
+            @Override
+            public Bundle answer(InvocationOnMock invocation) throws Throwable {
+                cancelWaiter.await(1, SECONDS);
+                return newPurchasesBundle(1, false);
+            }
+        });
+        Tests.setService(billing, service);
 
-		requestWaiter.await(1, SECONDS);
-		requests.cancelAll();
-		cancelWaiter.countDown();
+        final RequestListener l = mock(RequestListener.class);
+        final BillingRequests requests = billing.getRequests();
+        requests.isPurchased(ProductTypes.IN_APP, "1", l);
 
-		verify(l, never()).onSuccess(anyObject());
-		verify(l, never()).onError(anyInt(), any(Exception.class));
-	}
+        requestWaiter.await(1, SECONDS);
+        requests.cancelAll();
+        cancelWaiter.countDown();
 
-	private void checkIsPurchased(@Nonnull String id, boolean purchased) throws RemoteException, JSONException, InterruptedException {
-		final Billing billing = prepareMultiPurchasesBilling();
+        verify(l, never()).onSuccess(anyObject());
+        verify(l, never()).onError(anyInt(), any(Exception.class));
+    }
 
-		final CountDownLatch latch = new CountDownLatch(1);
-		final CountDownListener l = new CountDownListener(latch);
+    private void checkIsPurchased(@Nonnull String id, boolean purchased) throws RemoteException, JSONException, InterruptedException {
+        final Billing billing = prepareMultiPurchasesBilling();
 
-		billing.getRequests().isPurchased(ProductTypes.IN_APP, id, l);
+        final CountDownLatch latch = new CountDownLatch(1);
+        final CountDownListener l = new CountDownListener(latch);
 
-		assertTrue(latch.await(1, SECONDS));
-		verify(l.listener).onSuccess(eq(purchased));
-		verify(l.listener, never()).onSuccess(eq(!purchased));
-	}
+        billing.getRequests().isPurchased(ProductTypes.IN_APP, id, l);
 
-	@Nonnull
-	private Billing prepareMultiPurchasesBilling() throws RemoteException, JSONException {
-		final Billing billing = Tests.newBilling(true);
-		prepareMultiPurchasesService(billing);
-		return billing;
-	}
+        assertTrue(latch.await(1, SECONDS));
+        verify(l.listener).onSuccess(eq(purchased));
+        verify(l.listener, never()).onSuccess(eq(!purchased));
+    }
 
-	private void prepareMultiPurchasesService(@Nonnull Billing billing) throws RemoteException, JSONException {
-		final IInAppBillingService service = mock(IInAppBillingService.class);
-		when(service.getPurchases(anyInt(), anyString(), anyString(), isNull(String.class))).thenReturn(newPurchasesBundle(0, true));
-		when(service.getPurchases(anyInt(), anyString(), anyString(), eq("1"))).thenReturn(newPurchasesBundle(1, true));
-		when(service.getPurchases(anyInt(), anyString(), anyString(), eq("2"))).thenReturn(newPurchasesBundle(2, true));
-		when(service.getPurchases(anyInt(), anyString(), anyString(), eq("3"))).thenReturn(newPurchasesBundle(3, true));
-		when(service.getPurchases(anyInt(), anyString(), anyString(), eq("4"))).thenReturn(newPurchasesBundle(4, false));
-		Tests.setService(billing, service);
-	}
+    @Nonnull
+    private Billing prepareMultiPurchasesBilling() throws RemoteException, JSONException {
+        final Billing billing = Tests.newBilling(true);
+        prepareMultiPurchasesService(billing);
+        return billing;
+    }
 
-	@Nonnull
-	static Bundle newPurchasesBundle(long id, boolean withContinuationToken) throws JSONException {
-		final Bundle bundle = newBundle(OK);
-		final ArrayList<String> list = new ArrayList<String>();
-		list.add(PurchaseTest.newJson(id, Purchase.State.PURCHASED));
-		bundle.putStringArrayList(Purchases.BUNDLE_DATA_LIST, list);
-		if (withContinuationToken) {
-			bundle.putString(Purchases.BUNDLE_CONTINUATION_TOKEN, String.valueOf(id + 1));
-		}
-		return bundle;
-	}
+    private void prepareMultiPurchasesService(@Nonnull Billing billing) throws RemoteException, JSONException {
+        final IInAppBillingService service = mock(IInAppBillingService.class);
+        when(service.getPurchases(anyInt(), anyString(), anyString(), isNull(String.class))).thenReturn(newPurchasesBundle(0, true));
+        when(service.getPurchases(anyInt(), anyString(), anyString(), eq("1"))).thenReturn(newPurchasesBundle(1, true));
+        when(service.getPurchases(anyInt(), anyString(), anyString(), eq("2"))).thenReturn(newPurchasesBundle(2, true));
+        when(service.getPurchases(anyInt(), anyString(), anyString(), eq("3"))).thenReturn(newPurchasesBundle(3, true));
+        when(service.getPurchases(anyInt(), anyString(), anyString(), eq("4"))).thenReturn(newPurchasesBundle(4, false));
+        Tests.setService(billing, service);
+    }
 
-	@Test
-	public void testShouldAutoDisconnect() throws Exception {
-		final Billing billing = Tests.newBilling(true, true);
-		assertTrue(billing.getState() == Billing.State.INITIAL);
-		billing.onCheckoutStarted();
-		assertTrue(billing.getState() == Billing.State.CONNECTED);
-		billing.onCheckoutStarted();
-		assertTrue(billing.getState() == Billing.State.CONNECTED);
-		billing.onCheckoutStopped();
-		assertTrue(billing.getState() == Billing.State.CONNECTED);
-		billing.onCheckoutStopped();
-		assertTrue(billing.getState() == Billing.State.DISCONNECTED);
-	}
+    @Test
+    public void testShouldAutoDisconnect() throws Exception {
+        final Billing billing = Tests.newBilling(true, true);
+        assertTrue(billing.getState() == Billing.State.INITIAL);
+        billing.onCheckoutStarted();
+        assertTrue(billing.getState() == Billing.State.CONNECTED);
+        billing.onCheckoutStarted();
+        assertTrue(billing.getState() == Billing.State.CONNECTED);
+        billing.onCheckoutStopped();
+        assertTrue(billing.getState() == Billing.State.CONNECTED);
+        billing.onCheckoutStopped();
+        assertTrue(billing.getState() == Billing.State.DISCONNECTED);
+    }
 
-	private static class CountDownListener<R> implements RequestListener<R> {
+    private static class CountDownListener<R> implements RequestListener<R> {
 
-		private final CountDownLatch latch;
-		private final RequestListener<R> listener;
+        private final CountDownLatch latch;
+        private final RequestListener<R> listener;
 
-		public CountDownListener(CountDownLatch latch) {
-			this.latch = latch;
-			this.listener = mock(RequestListener.class);
-		}
+        public CountDownListener(CountDownLatch latch) {
+            this.latch = latch;
+            this.listener = mock(RequestListener.class);
+        }
 
-		@Override
-		public void onSuccess(@Nonnull R result) {
-			listener.onSuccess(result);
-			onEnd();
-		}
+        @Override
+        public void onSuccess(@Nonnull R result) {
+            listener.onSuccess(result);
+            onEnd();
+        }
 
-		private void onEnd() {
-			latch.countDown();
-		}
+        private void onEnd() {
+            latch.countDown();
+        }
 
-		@Override
-		public void onError(int response, @Nonnull Exception e) {
-			listener.onError(response, e);
-			onEnd();
-		}
-	}
+        @Override
+        public void onError(int response, @Nonnull Exception e) {
+            listener.onError(response, e);
+            onEnd();
+        }
+    }
 
-	private final class SleepingRequest extends Request {
+    private final class SleepingRequest extends Request {
 
-		private final long sleep;
+        private final long sleep;
 
-		private SleepingRequest(long sleep) {
-			super(RequestType.BILLING_SUPPORTED);
-			this.sleep = sleep;
-		}
+        private SleepingRequest(long sleep) {
+            super(RequestType.BILLING_SUPPORTED);
+            this.sleep = sleep;
+        }
 
-		@Override
-		void start(@Nonnull IInAppBillingService service, @Nonnull String packageName) throws RemoteException, RequestException {
-			try {
-				Thread.sleep(sleep);
-				onSuccess(new Object());
-			} catch (InterruptedException e) {
-				throw new RequestException(e);
-			}
-		}
+        @Override
+        void start(@Nonnull IInAppBillingService service, @Nonnull String packageName) throws RemoteException, RequestException {
+            try {
+                Thread.sleep(sleep);
+                onSuccess(new Object());
+            } catch (InterruptedException e) {
+                throw new RequestException(e);
+            }
+        }
 
-		@Nullable
-		@Override
-		String getCacheKey() {
-			return null;
-		}
-	}
+        @Nullable
+        @Override
+        String getCacheKey() {
+            return null;
+        }
+    }
 }

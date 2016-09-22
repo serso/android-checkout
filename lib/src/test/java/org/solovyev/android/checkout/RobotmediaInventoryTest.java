@@ -33,55 +33,55 @@ import static org.solovyev.android.checkout.Tests.sameThreadExecutor;
 
 public class RobotmediaInventoryTest extends InventoryTestBase {
 
-	@Nonnull
-	private BillingDB db;
+    @Nonnull
+    private BillingDB db;
 
-	@Override
-	@Before
-	public void setUp() throws Exception {
-		db = new BillingDB(RuntimeEnvironment.application);
-		super.setUp();
-	}
+    static void insertPurchases(@Nonnull BillingDB db, @Nonnull List<Purchase> purchases) {
+        for (Purchase purchase : purchases) {
+            db.insert(toTransaction(purchase));
+        }
+    }
 
-	@Nonnull
-	@Override
-	protected Billing newBilling() {
-		final Billing billing = super.newBilling();
-		billing.setMainThread(sameThreadExecutor());
-		return billing;
-	}
+    @Nonnull
+    private static Transaction toTransaction(@Nonnull Purchase purchase) {
+        Transaction.PurchaseState[] states = Transaction.PurchaseState.values();
+        Transaction.PurchaseState state = states[purchase.state.id];
+        return new Transaction(purchase.orderId, purchase.sku, purchase.packageName, state, null, purchase.time, purchase.payload);
+    }
 
-	@Nonnull
-	@Override
-	protected Inventory newInventory(@Nonnull Checkout checkout) {
-		return new RobotmediaInventory(checkout, sameThreadExecutor());
-	}
+    @Override
+    @Before
+    public void setUp() throws Exception {
+        db = new BillingDB(RuntimeEnvironment.application);
+        super.setUp();
+    }
 
-	@Override
-	protected boolean shouldVerifyPurchaseCompletely() {
-		return false;
-	}
+    @Nonnull
+    @Override
+    protected Billing newBilling() {
+        final Billing billing = super.newBilling();
+        billing.setMainThread(sameThreadExecutor());
+        return billing;
+    }
 
-	@Override
-	protected void insertPurchases(@Nonnull String product, @Nonnull List<Purchase> purchases) throws Exception {
-		insertPurchases(db, purchases);
-	}
+    @Nonnull
+    @Override
+    protected Inventory newInventory(@Nonnull Checkout checkout) {
+        return new RobotmediaInventory(checkout, sameThreadExecutor());
+    }
 
-	static void insertPurchases(@Nonnull BillingDB db, @Nonnull List<Purchase> purchases) {
-		for (Purchase purchase : purchases) {
-			db.insert(toTransaction(purchase));
-		}
-	}
+    @Override
+    protected boolean shouldVerifyPurchaseCompletely() {
+        return false;
+    }
 
-	@Nonnull
-	private static Transaction toTransaction(@Nonnull Purchase purchase) {
-		Transaction.PurchaseState[] states = Transaction.PurchaseState.values();
-		Transaction.PurchaseState state = states[purchase.state.id];
-		return new Transaction(purchase.orderId, purchase.sku, purchase.packageName, state, null, purchase.time, purchase.payload);
-	}
+    @Override
+    protected void insertPurchases(@Nonnull String product, @Nonnull List<Purchase> purchases) throws Exception {
+        insertPurchases(db, purchases);
+    }
 
-	@Override
-	protected boolean isLoaded(Inventory inventory) {
-		return ((RobotmediaInventory) inventory).isLoaded();
-	}
+    @Override
+    protected boolean isLoaded(Inventory inventory) {
+        return ((RobotmediaInventory) inventory).isLoaded();
+    }
 }

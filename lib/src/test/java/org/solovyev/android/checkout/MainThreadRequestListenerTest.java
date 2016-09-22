@@ -35,64 +35,64 @@ import static org.mockito.Mockito.verify;
 
 public class MainThreadRequestListenerTest {
 
-	@Test
-	public void testShouldCallOnSuccess() throws Exception {
-		final RequestListener l = mock(RequestListener.class);
-		final MainThreadRequestListener mtl = new MainThreadRequestListener(Tests.sameThreadExecutor(), l);
+    @Test
+    public void testShouldCallOnSuccess() throws Exception {
+        final RequestListener l = mock(RequestListener.class);
+        final MainThreadRequestListener mtl = new MainThreadRequestListener(Tests.sameThreadExecutor(), l);
 
-		final Object o = new Object();
-		mtl.onSuccess(o);
+        final Object o = new Object();
+        mtl.onSuccess(o);
 
-		verify(l).onSuccess(eq(o));
-	}
+        verify(l).onSuccess(eq(o));
+    }
 
-	@Test
-	public void testShouldCallOnError() throws Exception {
-		final RequestListener l = mock(RequestListener.class);
-		final MainThreadRequestListener mtl = new MainThreadRequestListener(Tests.sameThreadExecutor(), l);
+    @Test
+    public void testShouldCallOnError() throws Exception {
+        final RequestListener l = mock(RequestListener.class);
+        final MainThreadRequestListener mtl = new MainThreadRequestListener(Tests.sameThreadExecutor(), l);
 
-		final Exception e = new Exception();
-		mtl.onError(3, e);
+        final Exception e = new Exception();
+        mtl.onError(3, e);
 
-		verify(l).onError(eq(3), eq(e));
-	}
+        verify(l).onError(eq(3), eq(e));
+    }
 
-	@Test
-	public void testShouldCancelSuccessRunnable() throws Exception {
-		final RequestListener l = mock(RequestListener.class);
-		final CancellableExecutor executor = new TestExecutor();
-		final MainThreadRequestListener mtl = new MainThreadRequestListener(executor, l);
+    @Test
+    public void testShouldCancelSuccessRunnable() throws Exception {
+        final RequestListener l = mock(RequestListener.class);
+        final CancellableExecutor executor = new TestExecutor();
+        final MainThreadRequestListener mtl = new MainThreadRequestListener(executor, l);
 
-		mtl.onSuccess(new Object());
+        mtl.onSuccess(new Object());
 
-		mtl.cancel();
-	}
+        mtl.cancel();
+    }
 
-	@Test
-	public void testShouldCancelErrorRunnable() throws Exception {
-		final RequestListener l = mock(RequestListener.class);
-		final CancellableExecutor executor = new TestExecutor();
-		final MainThreadRequestListener mtl = new MainThreadRequestListener(executor, l);
+    @Test
+    public void testShouldCancelErrorRunnable() throws Exception {
+        final RequestListener l = mock(RequestListener.class);
+        final CancellableExecutor executor = new TestExecutor();
+        final MainThreadRequestListener mtl = new MainThreadRequestListener(executor, l);
 
-		mtl.onError(3, new Exception());
+        mtl.onError(3, new Exception());
 
-		mtl.cancel();
-	}
+        mtl.cancel();
+    }
 
-	private static class TestExecutor implements CancellableExecutor {
+    private static class TestExecutor implements CancellableExecutor {
 
-		private Runnable executing;
+        private Runnable executing;
 
-		@Override
-		public void execute(@Nonnull Runnable runnable) {
-			assertNull(executing);
-			executing = runnable;
-		}
+        @Override
+        public void execute(@Nonnull Runnable runnable) {
+            assertNull(executing);
+            executing = runnable;
+        }
 
-		@Override
-		public void cancel(@Nonnull Runnable runnable) {
-			assertNotNull(executing);
-			assertSame(executing, runnable);
-		}
-	}
+        @Override
+        public void cancel(@Nonnull Runnable runnable) {
+            assertNotNull(executing);
+            assertSame(executing, runnable);
+        }
+    }
 }

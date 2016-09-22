@@ -22,10 +22,6 @@
 
 package org.solovyev.android.checkout;
 
-import android.app.PendingIntent;
-import android.content.Intent;
-import android.os.Bundle;
-
 import com.android.vending.billing.IInAppBillingService;
 
 import org.junit.Test;
@@ -33,6 +29,10 @@ import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
+
+import android.app.PendingIntent;
+import android.content.Intent;
+import android.os.Bundle;
 
 import java.util.ArrayList;
 
@@ -55,66 +55,66 @@ import static org.solovyev.android.checkout.ResponseCodes.OK;
 @Config(manifest = Config.NONE)
 abstract class RequestTestBase {
 
-	@Test
-	public void testShouldError() throws Exception {
-		final Request request = newRequest();
-		final RequestListener l = mock(RequestListener.class);
-		request.setListener(l);
+    @Nonnull
+    static Bundle newBundle(int response) {
+        final Bundle bundle = new Bundle();
+        bundle.putInt("RESPONSE_CODE", response);
+        return bundle;
+    }
 
-		final Bundle bundle = newBundle(BILLING_UNAVAILABLE);
+    @Test
+    public void testShouldError() throws Exception {
+        final Request request = newRequest();
+        final RequestListener l = mock(RequestListener.class);
+        request.setListener(l);
 
-		final IInAppBillingService service = mock(IInAppBillingService.class);
-		when(service.isBillingSupported(anyInt(), anyString(), anyString())).thenReturn(BILLING_UNAVAILABLE);
-		when(service.consumePurchase(anyInt(), anyString(), anyString())).thenReturn(BILLING_UNAVAILABLE);
-		when(service.getPurchases(anyInt(), anyString(), anyString(), anyString())).thenReturn(bundle);
-		when(service.getSkuDetails(anyInt(), anyString(), anyString(), any(Bundle.class))).thenReturn(bundle);
-		when(service.getBuyIntent(anyInt(), anyString(), anyString(), anyString(), anyString())).thenReturn(bundle);
+        final Bundle bundle = newBundle(BILLING_UNAVAILABLE);
 
-		request.start(service, "testse");
+        final IInAppBillingService service = mock(IInAppBillingService.class);
+        when(service.isBillingSupported(anyInt(), anyString(), anyString())).thenReturn(BILLING_UNAVAILABLE);
+        when(service.consumePurchase(anyInt(), anyString(), anyString())).thenReturn(BILLING_UNAVAILABLE);
+        when(service.getPurchases(anyInt(), anyString(), anyString(), anyString())).thenReturn(bundle);
+        when(service.getSkuDetails(anyInt(), anyString(), anyString(), any(Bundle.class))).thenReturn(bundle);
+        when(service.getBuyIntent(anyInt(), anyString(), anyString(), anyString(), anyString())).thenReturn(bundle);
 
-		verify(l).onError(eq(BILLING_UNAVAILABLE), any(Exception.class));
-		verify(l, never()).onSuccess(any());
-	}
+        request.start(service, "testse");
 
-	@Nonnull
-	static Bundle newBundle(int response) {
-		final Bundle bundle = new Bundle();
-		bundle.putInt("RESPONSE_CODE", response);
-		return bundle;
-	}
+        verify(l).onError(eq(BILLING_UNAVAILABLE), any(Exception.class));
+        verify(l, never()).onSuccess(any());
+    }
 
-	@Test
-	public void testShouldSuccess() throws Exception {
-		final Request r = newRequest();
-		final RequestListener l = mock(RequestListener.class);
-		r.setListener(l);
-		final IInAppBillingService service = mock(IInAppBillingService.class);
+    @Test
+    public void testShouldSuccess() throws Exception {
+        final Request r = newRequest();
+        final RequestListener l = mock(RequestListener.class);
+        r.setListener(l);
+        final IInAppBillingService service = mock(IInAppBillingService.class);
 
-		when(service.isBillingSupported(anyInt(), anyString(), anyString())).thenReturn(OK);
-		when(service.consumePurchase(anyInt(), anyString(), anyString())).thenReturn(OK);
-		final Bundle purchases = new Bundle();
-		purchases.putStringArrayList("INAPP_PURCHASE_DATA_LIST", new ArrayList<String>());
-		when(service.getPurchases(anyInt(), anyString(), anyString(), anyString())).thenReturn(purchases);
-		final Bundle skuDetails = new Bundle();
-		skuDetails.putStringArrayList("DETAILS_LIST", new ArrayList<String>());
-		when(service.getSkuDetails(anyInt(), anyString(), anyString(), any(Bundle.class))).thenReturn(skuDetails);
-		final Bundle buyIntent = new Bundle();
-		buyIntent.putParcelable("BUY_INTENT", PendingIntent.getActivity(RuntimeEnvironment.application, 100, new Intent(), 0));
-		when(service.getBuyIntent(anyInt(), anyString(), anyString(), anyString(), anyString())).thenReturn(buyIntent);
+        when(service.isBillingSupported(anyInt(), anyString(), anyString())).thenReturn(OK);
+        when(service.consumePurchase(anyInt(), anyString(), anyString())).thenReturn(OK);
+        final Bundle purchases = new Bundle();
+        purchases.putStringArrayList("INAPP_PURCHASE_DATA_LIST", new ArrayList<String>());
+        when(service.getPurchases(anyInt(), anyString(), anyString(), anyString())).thenReturn(purchases);
+        final Bundle skuDetails = new Bundle();
+        skuDetails.putStringArrayList("DETAILS_LIST", new ArrayList<String>());
+        when(service.getSkuDetails(anyInt(), anyString(), anyString(), any(Bundle.class))).thenReturn(skuDetails);
+        final Bundle buyIntent = new Bundle();
+        buyIntent.putParcelable("BUY_INTENT", PendingIntent.getActivity(RuntimeEnvironment.application, 100, new Intent(), 0));
+        when(service.getBuyIntent(anyInt(), anyString(), anyString(), anyString(), anyString())).thenReturn(buyIntent);
 
-		r.start(service, "");
+        r.start(service, "");
 
-		verify(l).onSuccess(anyObject());
-		verify(l, never()).onError(anyInt(), any(Exception.class));
-	}
+        verify(l).onSuccess(anyObject());
+        verify(l, never()).onError(anyInt(), any(Exception.class));
+    }
 
-	@Test
-	public void testShouldHaveSameCacheKeys() throws Exception {
-		final Request r1 = newRequest();
-		final Request r2 = newRequest();
+    @Test
+    public void testShouldHaveSameCacheKeys() throws Exception {
+        final Request r1 = newRequest();
+        final Request r2 = newRequest();
 
-		assertEquals(r1.getCacheKey(), r2.getCacheKey());
-	}
+        assertEquals(r1.getCacheKey(), r2.getCacheKey());
+    }
 
-	protected abstract Request newRequest();
+    protected abstract Request newRequest();
 }

@@ -26,101 +26,102 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 /**
- * Inventory which falls back to fallback {@link Inventory} if one of the products is not supported.
+ * Inventory which falls back to fallback {@link Inventory} if one of the products is not
+ * supported.
  */
 class FallingBackInventory extends BaseInventory {
 
-	@Nonnull
-	private final CheckoutInventory mainInventory;
+    @Nonnull
+    private final CheckoutInventory mainInventory;
 
-	@Nonnull
-	private final Inventory fallbackInventory;
+    @Nonnull
+    private final Inventory fallbackInventory;
 
-	@Nonnull
-	private final MainListener mainListener = new MainListener();
+    @Nonnull
+    private final MainListener mainListener = new MainListener();
 
-	@Nonnull
-	private final FallbackListener fallbackListener = new FallbackListener();
+    @Nonnull
+    private final FallbackListener fallbackListener = new FallbackListener();
 
-	public FallingBackInventory(@Nonnull Checkout checkout, @Nonnull Inventory fallbackInventory) {
-		super(checkout);
-		this.mainInventory = new CheckoutInventory(checkout);
-		this.fallbackInventory = fallbackInventory;
-	}
+    public FallingBackInventory(@Nonnull Checkout checkout, @Nonnull Inventory fallbackInventory) {
+        super(checkout);
+        this.mainInventory = new CheckoutInventory(checkout);
+        this.fallbackInventory = fallbackInventory;
+    }
 
-	@Nonnull
-	@Override
-	public Inventory load(@Nonnull SkuIds skus) {
-		synchronized (lock) {
-			if(!setSkus(skus)) {
-				return this;
-			}
-			mainListener.onLoad();
-			mainInventory.load(skus).whenLoaded(mainListener);
-		}
-		return this;
-	}
+    @Nonnull
+    @Override
+    public Inventory load(@Nonnull SkuIds skus) {
+        synchronized (lock) {
+            if (!setSkus(skus)) {
+                return this;
+            }
+            mainListener.onLoad();
+            mainInventory.load(skus).whenLoaded(mainListener);
+        }
+        return this;
+    }
 
-	boolean isLoaded() {
-		synchronized (lock) {
-			return products == mainListener.myProducts;
-		}
-	}
+    boolean isLoaded() {
+        synchronized (lock) {
+            return products == mainListener.myProducts;
+        }
+    }
 
-	private class MainListener implements Listener {
+    private void onProductsLoaded(@Nonnull Products products) {
+        synchronized (lock) {
+            this.mainListener.myProducts = products;
+            this.products = products;
+            listeners.onLoaded(products);
+        }
+    }
 
-		@Nullable
-		private volatile Products myProducts;
+    private class MainListener implements Listener {
 
-		@Override
-		public void onLoaded(@Nonnull Products products) {
-			if (myProducts != null) {
-				return;
-			}
-			if (existsUnsupported(products)) {
-				final SkuIds skus;
-				synchronized (lock) {
-					skus = getSkus();
-				}
-				fallbackListener.products = products;
-				fallbackInventory.load(skus).whenLoaded(fallbackListener);
-			} else {
-				onProductsLoaded(products);
-			}
-		}
+        @Nullable
+        private volatile Products myProducts;
 
-		private boolean existsUnsupported(@Nonnull Products products) {
-			for (Product product : products) {
-				if (!product.supported) {
-					return true;
-				}
-			}
+        @Override
+        public void onLoaded(@Nonnull Products products) {
+            if (myProducts != null) {
+                return;
+            }
+            if (existsUnsupported(products)) {
+                final SkuIds skus;
+                synchronized (lock) {
+                    skus = getSkus();
+                }
+                fallbackListener.products = products;
+                fallbackInventory.load(skus).whenLoaded(fallbackListener);
+            } else {
+                onProductsLoaded(products);
+            }
+        }
 
-			return false;
-		}
+        private boolean existsUnsupported(@Nonnull Products products) {
+            for (Product product : products) {
+                if (!product.supported) {
+                    return true;
+                }
+            }
 
-		public void onLoad() {
-			myProducts = null;
-		}
-	}
+            return false;
+        }
 
-	private class FallbackListener implements Listener {
+        public void onLoad() {
+            myProducts = null;
+        }
+    }
 
-		@Nonnull
-		private volatile Products products;
+    private class FallbackListener implements Listener {
 
-		@Override
-		public void onLoaded(@Nonnull Products products) {
-			this.products.merge(products);
-			onProductsLoaded(this.products);
-		}
-	}
+        @Nonnull
+        private volatile Products products;
 
-	private void onProductsLoaded(@Nonnull Products products) {
-		synchronized (lock) {
-			this.mainListener.myProducts = products;
-			this.products = products;
-			listeners.onLoaded(products);
-		}
-	}
+        @Override
+        public void onLoaded(@Nonnull Products products) {
+            this.products.merge(products);
+            onProductsLoaded(this.products);
+        }
+    }
 }

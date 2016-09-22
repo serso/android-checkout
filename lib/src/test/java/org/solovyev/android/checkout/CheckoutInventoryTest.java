@@ -22,13 +22,13 @@
 
 package org.solovyev.android.checkout;
 
-import android.os.Bundle;
-import android.os.RemoteException;
-
 import com.android.vending.billing.IInAppBillingService;
 
 import org.junit.Assert;
 import org.junit.Test;
+
+import android.os.Bundle;
+import android.os.RemoteException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -47,87 +47,87 @@ import static org.solovyev.android.checkout.ResponseCodes.OK;
 
 public class CheckoutInventoryTest extends InventoryTestBase {
 
-	@Nonnull
-	protected CheckoutInventory newInventory(@Nonnull Checkout checkout) {
-		return new CheckoutInventory(checkout);
-	}
+    static void insertPurchases(@Nonnull Billing billing, @Nonnull String product, @Nonnull List<Purchase> purchases) throws RemoteException {
+        final Bundle bundle = newBundle(OK);
+        final ArrayList<String> list = new ArrayList<String>();
+        for (Purchase purchase : purchases) {
+            list.add(purchase.toJson());
+        }
+        bundle.putStringArrayList(Purchases.BUNDLE_DATA_LIST, list);
+        final IInAppBillingService service = ((TestServiceConnector) billing.getConnector()).service;
+        when(service.getPurchases(anyInt(), anyString(), eq(product), isNull(String.class))).thenReturn(bundle);
+    }
 
-	@Override
-	protected boolean shouldVerifyPurchaseCompletely() {
-		return true;
-	}
+    @Nonnull
+    protected CheckoutInventory newInventory(@Nonnull Checkout checkout) {
+        return new CheckoutInventory(checkout);
+    }
 
-	@Override
-	protected void insertPurchases(@Nonnull String product, @Nonnull List<Purchase> purchases) throws RemoteException {
-		insertPurchases(billing, product, purchases);
-	}
+    @Override
+    protected boolean shouldVerifyPurchaseCompletely() {
+        return true;
+    }
 
-	static void insertPurchases(@Nonnull Billing billing, @Nonnull String product, @Nonnull List<Purchase> purchases) throws RemoteException {
-		final Bundle bundle = newBundle(OK);
-		final ArrayList<String> list = new ArrayList<String>();
-		for (Purchase purchase : purchases) {
-			list.add(purchase.toJson());
-		}
-		bundle.putStringArrayList(Purchases.BUNDLE_DATA_LIST, list);
-		final IInAppBillingService service = ((TestServiceConnector) billing.getConnector()).service;
-		when(service.getPurchases(anyInt(), anyString(), eq(product), isNull(String.class))).thenReturn(bundle);
-	}
+    @Override
+    protected void insertPurchases(@Nonnull String product, @Nonnull List<Purchase> purchases) throws RemoteException {
+        insertPurchases(billing, product, purchases);
+    }
 
-	protected boolean isLoaded(@Nonnull Inventory inventory) {
-		return ((BaseInventory) inventory).isLoaded();
-	}
+    protected boolean isLoaded(@Nonnull Inventory inventory) {
+        return ((BaseInventory) inventory).isLoaded();
+    }
 
-	@Test
-	public void testIsLoadedWithEmptySkusList() throws Exception {
-		populatePurchases();
+    @Test
+    public void testIsLoadedWithEmptySkusList() throws Exception {
+        populatePurchases();
 
-		final SkuIds skuIds = SkuIds.create()
-				.add(IN_APP, "in_app_01")
-				.add(SUBSCRIPTION, "sub_01");
-		final Checkout checkout = Checkout.forApplication(billing, skuIds.getProducts());
+        final SkuIds skuIds = SkuIds.create()
+                .add(IN_APP, "in_app_01")
+                .add(SUBSCRIPTION, "sub_01");
+        final Checkout checkout = Checkout.forApplication(billing, skuIds.getProducts());
 
-		final CheckoutInventory inventory = new CheckoutInventory(checkout);
-		final TestListener listener = new TestListener();
-		checkout.start();
-		inventory.load(skuIds).whenLoaded(listener);
+        final CheckoutInventory inventory = new CheckoutInventory(checkout);
+        final TestListener listener = new TestListener();
+        checkout.start();
+        inventory.load(skuIds).whenLoaded(listener);
 
-		waitWhileLoading(inventory);
+        waitWhileLoading(inventory);
 
-		final Inventory.Product app = listener.products.get(IN_APP);
-		Assert.assertTrue(app.getSkus().isEmpty());
-		Assert.assertFalse(app.getPurchases().isEmpty());
-		final Inventory.Product sub = listener.products.get(SUBSCRIPTION);
-		Assert.assertTrue(sub.getSkus().isEmpty());
-		Assert.assertFalse(sub.getPurchases().isEmpty());
-	}
+        final Inventory.Product app = listener.products.get(IN_APP);
+        Assert.assertTrue(app.getSkus().isEmpty());
+        Assert.assertFalse(app.getPurchases().isEmpty());
+        final Inventory.Product sub = listener.products.get(SUBSCRIPTION);
+        Assert.assertTrue(sub.getSkus().isEmpty());
+        Assert.assertFalse(sub.getPurchases().isEmpty());
+    }
 
-	@Test
-	public void testShouldContinueAfterListenerException() throws Exception {
-		populatePurchases();
+    @Test
+    public void testShouldContinueAfterListenerException() throws Exception {
+        populatePurchases();
 
-		final SkuIds skuIds = SkuIds.create()
-				.add(IN_APP, "in_app_01")
-				.add(SUBSCRIPTION, "sub_01");
-		final Checkout checkout = Checkout.forApplication(billing, skuIds.getProducts());
+        final SkuIds skuIds = SkuIds.create()
+                .add(IN_APP, "in_app_01")
+                .add(SUBSCRIPTION, "sub_01");
+        final Checkout checkout = Checkout.forApplication(billing, skuIds.getProducts());
 
-		final CrashingListener listener = new CrashingListener();
-		final CheckoutInventory inventory = new CheckoutInventory(checkout);
-		checkout.start();
-		inventory.load(skuIds).whenLoaded(listener);
+        final CrashingListener listener = new CrashingListener();
+        final CheckoutInventory inventory = new CheckoutInventory(checkout);
+        checkout.start();
+        inventory.load(skuIds).whenLoaded(listener);
 
-		waitWhileLoading(inventory);
+        waitWhileLoading(inventory);
 
-		Assert.assertTrue(listener.exceptionThrown);
-	}
+        Assert.assertTrue(listener.exceptionThrown);
+    }
 
-	private static final class CrashingListener implements Inventory.Listener {
+    private static final class CrashingListener implements Inventory.Listener {
 
-		private volatile boolean exceptionThrown;
+        private volatile boolean exceptionThrown;
 
-		@Override
-		public void onLoaded(@Nonnull Inventory.Products products) {
-			exceptionThrown = true;
-			throw new RuntimeException("Hello there!");
-		}
-	}
+        @Override
+        public void onLoaded(@Nonnull Inventory.Products products) {
+            exceptionThrown = true;
+            throw new RuntimeException("Hello there!");
+        }
+    }
 }

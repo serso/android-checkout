@@ -21,15 +21,15 @@
   -->
 
 <resources>
-	<string name="app_name">Checkout Lib</string>
-	<string name="skus_empty">There are no items for purchase</string>
-	<string name="billing_not_supported">In-App billing is not supported.\n\nProbable reasons:\n1. Google Play is not installed or is not updated\n2. The app is running in emulator\n3. Bug in the library</string>
-	<string name="msg_thank_you_for_purchase">Thank you for purchase! Click again to consume purchased item.</string>
-	<string name="msg_item_consumed">Item has been successfully consumed. Now you can buy it again.</string>
-	<string name="items_for_purchase">Items for purchase</string>
-	<string name="msg_info">Join the Alpha Testers community on Google+ to make test purchases. Don\'t forget to support the project with real money!</string>
-	<string name="cd_info">Information</string>
-	<string name="join">Join</string>
-	<string name="cd_sku_icon">Item icon</string>
-	<string name="change_subscription">Change subscription</string>
+    <string name="app_name">Checkout Lib</string>
+    <string name="skus_empty">There are no items for purchase</string>
+    <string name="billing_not_supported">In-App billing is not supported.\n\nProbable reasons:\n1. Google Play is not installed or is not updated\n2. The app is running in emulator\n3. Bug in the library</string>
+    <string name="msg_thank_you_for_purchase">Thank you for purchase! Click again to consume purchased item.</string>
+    <string name="msg_item_consumed">Item has been successfully consumed. Now you can buy it again.</string>
+    <string name="items_for_purchase">Items for purchase</string>
+    <string name="msg_info">Join the Alpha Testers community on Google+ to make test purchases. Don\'t forget to support the project with real money!</string>
+    <string name="cd_info">Information</string>
+    <string name="join">Join</string>
+    <string name="cd_sku_icon">Item icon</string>
+    <string name="change_subscription">Change subscription</string>
 </resources>

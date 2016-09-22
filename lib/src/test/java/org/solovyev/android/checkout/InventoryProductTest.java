@@ -36,15 +36,15 @@ import static org.solovyev.android.checkout.Purchase.State.REFUNDED;
 @Config(manifest = Config.NONE)
 public class InventoryProductTest {
 
-	@Test
-	public void testShouldAddPurchases() throws Exception {
-		final Inventory.Product product = new Inventory.Product("test", true);
-		product.purchases.add(Purchase.fromJson(PurchaseTest.newJson(0, Purchase.State.PURCHASED), null));
-		product.purchases.add(Purchase.fromJson(PurchaseTest.newJson(1, CANCELLED), null));
+    @Test
+    public void testShouldAddPurchases() throws Exception {
+        final Inventory.Product product = new Inventory.Product("test", true);
+        product.purchases.add(Purchase.fromJson(PurchaseTest.newJson(0, Purchase.State.PURCHASED), null));
+        product.purchases.add(Purchase.fromJson(PurchaseTest.newJson(1, CANCELLED), null));
 
-		assertTrue(product.isPurchased("0"));
-		assertTrue(product.hasPurchaseInState("1", CANCELLED));
-		assertFalse(product.hasPurchaseInState("0", REFUNDED));
-		assertFalse(product.hasPurchaseInState("1", REFUNDED));
-	}
+        assertTrue(product.isPurchased("0"));
+        assertTrue(product.hasPurchaseInState("1", CANCELLED));
+        assertFalse(product.hasPurchaseInState("0", REFUNDED));
+        assertFalse(product.hasPurchaseInState("1", REFUNDED));
+    }
 }

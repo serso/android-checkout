@@ -22,8 +22,13 @@
 
 package org.solovyev.android.checkout.app;
 
-import static org.solovyev.android.checkout.ProductTypes.IN_APP;
-import static org.solovyev.android.checkout.ProductTypes.SUBSCRIPTION;
+import org.solovyev.android.checkout.BillingRequests;
+import org.solovyev.android.checkout.Checkout;
+import org.solovyev.android.checkout.Inventory;
+import org.solovyev.android.checkout.Purchase;
+import org.solovyev.android.checkout.RequestListener;
+import org.solovyev.android.checkout.ResponseCodes;
+import org.solovyev.android.checkout.Sku;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -36,207 +41,202 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Toast;
 
-import org.solovyev.android.checkout.BillingRequests;
-import org.solovyev.android.checkout.Checkout;
-import org.solovyev.android.checkout.Inventory;
-import org.solovyev.android.checkout.Purchase;
-import org.solovyev.android.checkout.RequestListener;
-import org.solovyev.android.checkout.ResponseCodes;
-import org.solovyev.android.checkout.Sku;
-
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
 import javax.annotation.Nonnull;
 
+import static org.solovyev.android.checkout.ProductTypes.IN_APP;
+import static org.solovyev.android.checkout.ProductTypes.SUBSCRIPTION;
+
 public class SkusFragment extends BaseListFragment {
 
-	@Nonnull
-	private ArrayAdapter<SkuUi> adapter;
+    @Nonnull
+    private ArrayAdapter<SkuUi> adapter;
 
-	@Override
-	public void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-		checkout.createPurchaseFlow(new PurchaseListener());
-	}
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        checkout.createPurchaseFlow(new PurchaseListener());
+    }
 
-	@Override
-	public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-		final View view = super.onCreateView(inflater, container, savedInstanceState);
-		adapter = new SkusAdapter(inflater.getContext(), new OnChangeSubClickListener());
-		listView.setAdapter(adapter);
-		listView.setOnItemClickListener(new OnSkuClickListener());
-		titleView.setText(R.string.items_for_purchase);
-		emptyView.setText(R.string.skus_empty);
+    @Override
+    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        final View view = super.onCreateView(inflater, container, savedInstanceState);
+        adapter = new SkusAdapter(inflater.getContext(), new OnChangeSubClickListener());
+        listView.setAdapter(adapter);
+        listView.setOnItemClickListener(new OnSkuClickListener());
+        titleView.setText(R.string.items_for_purchase);
+        emptyView.setText(R.string.skus_empty);
 
-		inventory.whenLoaded(new InventoryLoadedListener());
+        inventory.whenLoaded(new InventoryLoadedListener());
 
-		return view;
-	}
+        return view;
+    }
 
-	@Override
-	public void onDestroy() {
-		checkout.destroyPurchaseFlow();
-		super.onDestroy();
-	}
+    @Override
+    public void onDestroy() {
+        checkout.destroyPurchaseFlow();
+        super.onDestroy();
+    }
 
-	private class OnChangeSubClickListener implements SkusAdapter.OnChangeSubClickListener {
-		@Override
-		public void onClick(@Nonnull final SkuUi skuUi) {
-			checkout.whenReady(new Checkout.ListenerAdapter() {
-				@Override
-				public void onReady(@Nonnull BillingRequests requests) {
-					final List<String> oldSkus = Collections.singletonList(skuUi.sku.id);
-					final String newSku = skuUi.sku.product.equals("sub_01") ? "sub_02" : "sub_01";
-					requests.changeSubscription(oldSkus, newSku, null, checkout.getPurchaseFlow());
-				}
-			});
-		}
-	}
+    private void purchase(@Nonnull final SkuUi skuUi) {
+        if (!skuUi.isPurchased()) {
+            purchase(skuUi.sku);
+        } else {
+            consume(skuUi.token, new ConsumeListener());
+        }
+    }
 
-	private class PurchaseListener extends BaseRequestListener<Purchase> {
-		@Override
-		public void onSuccess(@Nonnull Purchase purchase) {
-			onPurchased();
-		}
+    private void consume(@Nonnull final String token, @Nonnull final RequestListener<Object> onConsumed) {
+        checkout.whenReady(new Checkout.ListenerAdapter() {
+            @Override
+            public void onReady(@Nonnull BillingRequests requests) {
+                requests.consume(token, onConsumed);
+            }
+        });
+    }
 
-		private void onPurchased() {
-			// let's update purchase information in local inventory
-			inventory.load(CheckoutApplication.skus).whenLoaded(new InventoryLoadedListener());
-			Toast.makeText(getActivity(), R.string.msg_thank_you_for_purchase, Toast.LENGTH_SHORT).show();
-		}
+    private void purchase(@Nonnull final Sku sku) {
+        checkout.whenReady(new Checkout.ListenerAdapter() {
+            @Override
+            public void onReady(@Nonnull BillingRequests requests) {
+                requests.purchase(sku, null, checkout.getPurchaseFlow());
+            }
+        });
+    }
 
-		@Override
-		public void onError(int response, @Nonnull Exception e) {
-			// it is possible that our data is not synchronized with data on Google Play => need to handle some errors
-			if (response == ResponseCodes.ITEM_ALREADY_OWNED) {
-				onPurchased();
-			} else {
-				super.onError(response, e);
-			}
-		}
-	}
+    private static class SkuComparator implements Comparator<SkuUi> {
+        @Override
+        public int compare(@Nonnull SkuUi l, @Nonnull SkuUi r) {
+            return l.sku.title.compareTo(r.sku.title);
+        }
+    }
 
-	private class OnSkuClickListener implements AdapterView.OnItemClickListener {
-		@Override
-		public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-			final SkuUi sku = adapter.getItem(position);
-			purchase(sku);
-		}
-	}
+    private class OnChangeSubClickListener implements SkusAdapter.OnChangeSubClickListener {
+        @Override
+        public void onClick(@Nonnull final SkuUi skuUi) {
+            checkout.whenReady(new Checkout.ListenerAdapter() {
+                @Override
+                public void onReady(@Nonnull BillingRequests requests) {
+                    final List<String> oldSkus = Collections.singletonList(skuUi.sku.id);
+                    final String newSku = skuUi.sku.product.equals("sub_01") ? "sub_02" : "sub_01";
+                    requests.changeSubscription(oldSkus, newSku, null, checkout.getPurchaseFlow());
+                }
+            });
+        }
+    }
 
-	private void purchase(@Nonnull final SkuUi skuUi) {
-		if (!skuUi.isPurchased()) {
-			purchase(skuUi.sku);
-		} else {
-			consume(skuUi.token, new ConsumeListener());
-		}
-	}
+    private class PurchaseListener extends BaseRequestListener<Purchase> {
+        @Override
+        public void onSuccess(@Nonnull Purchase purchase) {
+            onPurchased();
+        }
 
-	private void consume(@Nonnull final String token, @Nonnull final RequestListener<Object> onConsumed) {
-		checkout.whenReady(new Checkout.ListenerAdapter() {
-			@Override
-			public void onReady(@Nonnull BillingRequests requests) {
-				requests.consume(token, onConsumed);
-			}
-		});
-	}
+        private void onPurchased() {
+            // let's update purchase information in local inventory
+            inventory.load(CheckoutApplication.skus).whenLoaded(new InventoryLoadedListener());
+            Toast.makeText(getActivity(), R.string.msg_thank_you_for_purchase, Toast.LENGTH_SHORT).show();
+        }
 
-	private void purchase(@Nonnull final Sku sku) {
-		checkout.whenReady(new Checkout.ListenerAdapter() {
-			@Override
-			public void onReady(@Nonnull BillingRequests requests) {
-				requests.purchase(sku, null, checkout.getPurchaseFlow());
-			}
-		});
-	}
+        @Override
+        public void onError(int response, @Nonnull Exception e) {
+            // it is possible that our data is not synchronized with data on Google Play => need to handle some errors
+            if (response == ResponseCodes.ITEM_ALREADY_OWNED) {
+                onPurchased();
+            } else {
+                super.onError(response, e);
+            }
+        }
+    }
 
-	private static class SkuComparator implements Comparator<SkuUi> {
-		@Override
-		public int compare(@Nonnull SkuUi l, @Nonnull SkuUi r) {
-			return l.sku.title.compareTo(r.sku.title);
-		}
-	}
+    private class OnSkuClickListener implements AdapterView.OnItemClickListener {
+        @Override
+        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+            final SkuUi sku = adapter.getItem(position);
+            purchase(sku);
+        }
+    }
 
-	private class InventoryLoadedListener implements Inventory.Listener {
-		@Override
-		public void onLoaded(@Nonnull final Inventory.Products products) {
-			checkout.whenReady(new Checkout.ListenerAdapter() {
-				@Override
-				public void onReady(@Nonnull BillingRequests requests) {
-					requests.isChangeSubscriptionSupported(new RequestListener<Object>() {
-						@Override
-						public void onSuccess(@Nonnull Object result) {
-							onProductsReady(products, true);
-						}
+    private class InventoryLoadedListener implements Inventory.Listener {
+        @Override
+        public void onLoaded(@Nonnull final Inventory.Products products) {
+            checkout.whenReady(new Checkout.ListenerAdapter() {
+                @Override
+                public void onReady(@Nonnull BillingRequests requests) {
+                    requests.isChangeSubscriptionSupported(new RequestListener<Object>() {
+                        @Override
+                        public void onSuccess(@Nonnull Object result) {
+                            onProductsReady(products, true);
+                        }
 
-						@Override
-						public void onError(int response, @Nonnull Exception e) {
-							onProductsReady(products, false);
-						}
-					});
-				}
-			});
-		}
+                        @Override
+                        public void onError(int response, @Nonnull Exception e) {
+                            onProductsReady(products, false);
+                        }
+                    });
+                }
+            });
+        }
 
-		private void onProductsReady(@Nonnull Inventory.Products products, boolean canChangeSubs) {
-			adapter.setNotifyOnChange(false);
-			adapter.clear();
-			final Inventory.Product inApp = products.get(IN_APP);
-			final Inventory.Product sub = products.get(SUBSCRIPTION);
-			if (inApp.supported || sub.supported) {
-				if (inApp.supported) {
-					addSkus(inApp, canChangeSubs);
-				}
-				if (sub.supported) {
-					addSkus(sub, canChangeSubs);
-				}
-				adapter.sort(new SkuComparator());
-			} else {
-				emptyView.setText(R.string.billing_not_supported);
-			}
-			adapter.notifyDataSetChanged();
-			setListShown(true);
-		}
+        private void onProductsReady(@Nonnull Inventory.Products products, boolean canChangeSubs) {
+            adapter.setNotifyOnChange(false);
+            adapter.clear();
+            final Inventory.Product inApp = products.get(IN_APP);
+            final Inventory.Product sub = products.get(SUBSCRIPTION);
+            if (inApp.supported || sub.supported) {
+                if (inApp.supported) {
+                    addSkus(inApp, canChangeSubs);
+                }
+                if (sub.supported) {
+                    addSkus(sub, canChangeSubs);
+                }
+                adapter.sort(new SkuComparator());
+            } else {
+                emptyView.setText(R.string.billing_not_supported);
+            }
+            adapter.notifyDataSetChanged();
+            setListShown(true);
+        }
 
-		private void addSkus(Inventory.Product product, boolean canChangeSubs) {
-			for (Sku sku : product.getSkus()) {
-				final Purchase purchase = product.getPurchaseInState(sku, Purchase.State.PURCHASED);
-				adapter.add(SkuUi.create(sku, purchase != null ? purchase.token : null, canChangeSubs));
-			}
-		}
-	}
+        private void addSkus(Inventory.Product product, boolean canChangeSubs) {
+            for (Sku sku : product.getSkus()) {
+                final Purchase purchase = product.getPurchaseInState(sku, Purchase.State.PURCHASED);
+                adapter.add(SkuUi.create(sku, purchase != null ? purchase.token : null, canChangeSubs));
+            }
+        }
+    }
 
-	private abstract class BaseRequestListener<R> implements RequestListener<R> {
+    private abstract class BaseRequestListener<R> implements RequestListener<R> {
 
-		@Override
-		public void onError(int response, @Nonnull Exception e) {
-			Log.e("Checkout", "onError: response=" + response, e);
-			final String message = e.getMessage();
-			Toast.makeText(getActivity(), "Error (" + response + ")" + (TextUtils.isEmpty(message) ? "" : ": " + message), Toast.LENGTH_LONG).show();
-		}
- 	}
+        @Override
+        public void onError(int response, @Nonnull Exception e) {
+            Log.e("Checkout", "onError: response=" + response, e);
+            final String message = e.getMessage();
+            Toast.makeText(getActivity(), "Error (" + response + ")" + (TextUtils.isEmpty(message) ? "" : ": " + message), Toast.LENGTH_LONG).show();
+        }
+    }
 
-	private class ConsumeListener extends BaseRequestListener<Object> {
-		@Override
-		public void onSuccess(@Nonnull Object result) {
-			onConsumed();
-		}
+    private class ConsumeListener extends BaseRequestListener<Object> {
+        @Override
+        public void onSuccess(@Nonnull Object result) {
+            onConsumed();
+        }
 
-		private void onConsumed() {
-			inventory.load(CheckoutApplication.skus).whenLoaded(new InventoryLoadedListener());
-			Toast.makeText(getActivity(), R.string.msg_item_consumed, Toast.LENGTH_SHORT).show();
-		}
+        private void onConsumed() {
+            inventory.load(CheckoutApplication.skus).whenLoaded(new InventoryLoadedListener());
+            Toast.makeText(getActivity(), R.string.msg_item_consumed, Toast.LENGTH_SHORT).show();
+        }
 
-		@Override
-		public void onError(int response, @Nonnull Exception e) {
-			// it is possible that our data is not synchronized with data on Google Play => need to handle some errors
-			if (response == ResponseCodes.ITEM_NOT_OWNED) {
-				onConsumed();
-			} else {
-				super.onError(response, e);
-			}
-		}
-	}
+        @Override
+        public void onError(int response, @Nonnull Exception e) {
+            // it is possible that our data is not synchronized with data on Google Play => need to handle some errors
+            if (response == ResponseCodes.ITEM_NOT_OWNED) {
+                onConsumed();
+            } else {
+                super.onError(response, e);
+            }
+        }
+    }
 }

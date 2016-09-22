@@ -26,56 +26,58 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 /**
- * Class dispatches all <var>listener</var> method calls on the main thread and allows to cancel them.
+ * Class dispatches all <var>listener</var> method calls on the main thread and allows to cancel
+ * them.
+ *
  * @param <R> type of the result
  */
 final class MainThreadRequestListener<R> extends RequestListenerWrapper<R> {
 
-	@Nonnull
-	private final CancellableExecutor mainThread;
+    @Nonnull
+    private final CancellableExecutor mainThread;
 
-	@Nullable
-	private Runnable successRunnable;
+    @Nullable
+    private Runnable successRunnable;
 
-	@Nullable
-	private Runnable errorRunnable;
+    @Nullable
+    private Runnable errorRunnable;
 
-	MainThreadRequestListener(@Nonnull CancellableExecutor mainThread, @Nonnull RequestListener<R> listener) {
-		super(listener);
-		this.mainThread = mainThread;
-	}
+    MainThreadRequestListener(@Nonnull CancellableExecutor mainThread, @Nonnull RequestListener<R> listener) {
+        super(listener);
+        this.mainThread = mainThread;
+    }
 
-	@Override
-	public void onSuccess(@Nonnull final R result) {
-		successRunnable = new Runnable() {
-			@Override
-			public void run() {
-				listener.onSuccess(result);
-			}
-		};
-		mainThread.execute(successRunnable);
-	}
+    @Override
+    public void onSuccess(@Nonnull final R result) {
+        successRunnable = new Runnable() {
+            @Override
+            public void run() {
+                listener.onSuccess(result);
+            }
+        };
+        mainThread.execute(successRunnable);
+    }
 
-	@Override
-	public void onError(final int response, @Nonnull final Exception e) {
-		errorRunnable = new Runnable() {
-			@Override
-			public void run() {
-				listener.onError(response, e);
-			}
-		};
-		mainThread.execute(errorRunnable);
-	}
+    @Override
+    public void onError(final int response, @Nonnull final Exception e) {
+        errorRunnable = new Runnable() {
+            @Override
+            public void run() {
+                listener.onError(response, e);
+            }
+        };
+        mainThread.execute(errorRunnable);
+    }
 
-	public void onCancel() {
-		if (successRunnable != null) {
-			mainThread.cancel(successRunnable);
-			successRunnable = null;
-		}
+    public void onCancel() {
+        if (successRunnable != null) {
+            mainThread.cancel(successRunnable);
+            successRunnable = null;
+        }
 
-		if (errorRunnable != null) {
-			mainThread.cancel(errorRunnable);
-			errorRunnable = null;
-		}
-	}
+        if (errorRunnable != null) {
+            mainThread.cancel(errorRunnable);
+            errorRunnable = null;
+        }
+    }
 }

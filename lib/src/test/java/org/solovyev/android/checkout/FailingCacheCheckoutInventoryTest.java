@@ -47,145 +47,145 @@ import static org.solovyev.android.checkout.Purchase.State.REFUNDED;
 @RunWith(RobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class FailingCacheCheckoutInventoryTest {
-	@Nonnull
-	protected FailingCache failingCache;
-	@Nonnull
-	protected Billing billing;
-	@Nonnull
-	private Checkout checkout;
-	@Nonnull
-	private Inventory inventory;
-	@Nonnull
-	private SkuIds skuIds;
+    @Nonnull
+    protected FailingCache failingCache;
+    @Nonnull
+    protected Billing billing;
+    @Nonnull
+    private Checkout checkout;
+    @Nonnull
+    private Inventory inventory;
+    @Nonnull
+    private SkuIds skuIds;
 
-	@Before
-	public void setUp() throws Exception {
-		failingCache = new FailingCache();
-		billing = newBilling();
-		skuIds = SkuIds.create()
-				.add(IN_APP, asList("1", "2", "3", "4", "6"))
-				.add(SUBSCRIPTION, asList("sub1", "sub2", "sub3", "sub4"));
-		checkout = Checkout.forApplication(billing, skuIds.getProducts());
-		inventory = new CheckoutInventory(checkout);
-	}
+    @Before
+    public void setUp() throws Exception {
+        failingCache = new FailingCache();
+        billing = newBilling();
+        skuIds = SkuIds.create()
+                .add(IN_APP, asList("1", "2", "3", "4", "6"))
+                .add(SUBSCRIPTION, asList("sub1", "sub2", "sub3", "sub4"));
+        checkout = Checkout.forApplication(billing, skuIds.getProducts());
+        inventory = new CheckoutInventory(checkout);
+    }
 
-	protected void populatePurchases() throws Exception {
-		final List<Purchase> expectedInApps = asList(
-				Purchase.fromJson(PurchaseTest.newJson(1, PURCHASED), ""),
-				Purchase.fromJson(PurchaseTest.newJson(2, CANCELLED), ""),
-				Purchase.fromJson(PurchaseTest.newJson(3, REFUNDED), ""),
-				Purchase.fromJson(PurchaseTest.newJson(4, EXPIRED), "")
-		);
-		CheckoutInventoryTest.insertPurchases(billing, IN_APP, expectedInApps);
+    protected void populatePurchases() throws Exception {
+        final List<Purchase> expectedInApps = asList(
+                Purchase.fromJson(PurchaseTest.newJson(1, PURCHASED), ""),
+                Purchase.fromJson(PurchaseTest.newJson(2, CANCELLED), ""),
+                Purchase.fromJson(PurchaseTest.newJson(3, REFUNDED), ""),
+                Purchase.fromJson(PurchaseTest.newJson(4, EXPIRED), "")
+        );
+        CheckoutInventoryTest.insertPurchases(billing, IN_APP, expectedInApps);
 
-		final List<Purchase> expectedSubs = asList(
-				Purchase.fromJson(PurchaseTest.newJsonSubscription(1, PURCHASED), ""),
-				Purchase.fromJson(PurchaseTest.newJsonSubscription(2, CANCELLED), ""),
-				Purchase.fromJson(PurchaseTest.newJsonSubscription(3, REFUNDED), ""),
-				Purchase.fromJson(PurchaseTest.newJsonSubscription(4, EXPIRED), "")
-		);
-		CheckoutInventoryTest.insertPurchases(billing, SUBSCRIPTION, expectedSubs);
-	}
+        final List<Purchase> expectedSubs = asList(
+                Purchase.fromJson(PurchaseTest.newJsonSubscription(1, PURCHASED), ""),
+                Purchase.fromJson(PurchaseTest.newJsonSubscription(2, CANCELLED), ""),
+                Purchase.fromJson(PurchaseTest.newJsonSubscription(3, REFUNDED), ""),
+                Purchase.fromJson(PurchaseTest.newJsonSubscription(4, EXPIRED), "")
+        );
+        CheckoutInventoryTest.insertPurchases(billing, SUBSCRIPTION, expectedSubs);
+    }
 
-	@Test
-	public void testShouldContinueAfterCacheException() throws Exception {
-		populatePurchases();
+    @Test
+    public void testShouldContinueAfterCacheException() throws Exception {
+        populatePurchases();
 
-		final CheckoutInventory inventory = new CheckoutInventory(checkout);
-		final InventoryTestBase.TestListener listener = new InventoryTestBase.TestListener();
-		checkout.start();
-		inventory.load(skuIds).whenLoaded(listener);
+        final CheckoutInventory inventory = new CheckoutInventory(checkout);
+        final InventoryTestBase.TestListener listener = new InventoryTestBase.TestListener();
+        checkout.start();
+        inventory.load(skuIds).whenLoaded(listener);
 
-		waitWhileLoading(inventory);
+        waitWhileLoading(inventory);
 
-		assertTrue(failingCache.exceptionThrown);
-	}
+        assertTrue(failingCache.exceptionThrown);
+    }
 
-	void waitWhileLoading(@Nonnull CheckoutInventory inventory) throws InterruptedException {
-		int sleeping = 0;
-		while (!inventory.isLoaded()) {
-			Thread.sleep(50L);
-			sleeping += 50L;
-			if (sleeping > 1000L) {
-				fail("Too long wait!");
-			}
-		}
-	}
+    void waitWhileLoading(@Nonnull CheckoutInventory inventory) throws InterruptedException {
+        int sleeping = 0;
+        while (!inventory.isLoaded()) {
+            Thread.sleep(50L);
+            sleeping += 50L;
+            if (sleeping > 1000L) {
+                fail("Too long wait!");
+            }
+        }
+    }
 
-	@Nonnull
-	protected Billing newBilling() {
-		return Tests.newBilling(new Billing.Configuration() {
-			@Nonnull
-			@Override
-			public String getPublicKey() {
-				return "test";
-			}
+    @Nonnull
+    protected Billing newBilling() {
+        return Tests.newBilling(new Billing.Configuration() {
+            @Nonnull
+            @Override
+            public String getPublicKey() {
+                return "test";
+            }
 
-			@Nullable
-			@Override
-			public Cache getCache() {
-				return failingCache;
-			}
+            @Nullable
+            @Override
+            public Cache getCache() {
+                return failingCache;
+            }
 
-			@Nonnull
-			@Override
-			public PurchaseVerifier getPurchaseVerifier() {
-				return Billing.newPurchaseVerifier(this.getPublicKey());
-			}
+            @Nonnull
+            @Override
+            public PurchaseVerifier getPurchaseVerifier() {
+                return Billing.newPurchaseVerifier(this.getPublicKey());
+            }
 
-			@Nullable
-			@Override
-			public Inventory getFallbackInventory(@Nonnull Checkout checkout, @Nonnull Executor onLoadExecutor) {
-				return null;
-			}
+            @Nullable
+            @Override
+            public Inventory getFallbackInventory(@Nonnull Checkout checkout, @Nonnull Executor onLoadExecutor) {
+                return null;
+            }
 
-			@Override
-			public boolean isAutoConnect() {
-				return true;
-			}
-		});
-	}
+            @Override
+            public boolean isAutoConnect() {
+                return true;
+            }
+        });
+    }
 
-	private class FailingCache implements Cache {
+    private class FailingCache implements Cache {
 
-		boolean exceptionThrown;
+        boolean exceptionThrown;
 
-		@Nullable
-		@Override
-		public Entry get(@Nonnull Key key) {
-			return null;
-		}
+        @Nullable
+        @Override
+        public Entry get(@Nonnull Key key) {
+            return null;
+        }
 
-		@Override
-		public void put(@Nonnull Key key, @Nonnull Entry entry) {
-			if (key.toString().startsWith("purchases_")) {
-				throwException();
-			}
-		}
+        @Override
+        public void put(@Nonnull Key key, @Nonnull Entry entry) {
+            if (key.toString().startsWith("purchases_")) {
+                throwException();
+            }
+        }
 
-		private void throwException() {
-			exceptionThrown = true;
-			throw new RuntimeException("Hello there!");
-		}
+        private void throwException() {
+            exceptionThrown = true;
+            throw new RuntimeException("Hello there!");
+        }
 
-		@Override
-		public void init() {
+        @Override
+        public void init() {
 
-		}
+        }
 
-		@Override
-		public void remove(@Nonnull Key key) {
+        @Override
+        public void remove(@Nonnull Key key) {
 
-		}
+        }
 
-		@Override
-		public void removeAll(int type) {
+        @Override
+        public void removeAll(int type) {
 
-		}
+        }
 
-		@Override
-		public void clear() {
+        @Override
+        public void clear() {
 
-		}
-	}
+        }
+    }
 }

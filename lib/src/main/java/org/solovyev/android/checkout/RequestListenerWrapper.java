@@ -26,28 +26,28 @@ import javax.annotation.Nonnull;
 
 class RequestListenerWrapper<R> implements CancellableRequestListener<R> {
 
-	@Nonnull
-	protected final RequestListener<R> listener;
+    @Nonnull
+    protected final RequestListener<R> listener;
 
-	RequestListenerWrapper(@Nonnull RequestListener<R> listener) {
-		this.listener = listener;
-	}
+    RequestListenerWrapper(@Nonnull RequestListener<R> listener) {
+        this.listener = listener;
+    }
 
-	@Override
-	public void onSuccess(@Nonnull R result) {
-		listener.onSuccess(result);
-	}
+    @Override
+    public void onSuccess(@Nonnull R result) {
+        listener.onSuccess(result);
+    }
 
-	@Override
-	public void onError(int response, @Nonnull Exception e) {
-		listener.onError(response, e);
-	}
+    @Override
+    public void onError(int response, @Nonnull Exception e) {
+        listener.onError(response, e);
+    }
 
-	public final void cancel() {
-		onCancel();
-		Billing.cancel(listener);
-	}
+    public final void cancel() {
+        onCancel();
+        Billing.cancel(listener);
+    }
 
-	protected void onCancel() {
-	}
+    protected void onCancel() {
+    }
 }

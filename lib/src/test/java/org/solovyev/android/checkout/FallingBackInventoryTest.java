@@ -22,13 +22,13 @@
 
 package org.solovyev.android.checkout;
 
-import android.database.sqlite.SQLiteDatabase;
-
 import com.android.vending.billing.IInAppBillingService;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.robolectric.RuntimeEnvironment;
+
+import android.database.sqlite.SQLiteDatabase;
 
 import java.util.List;
 
@@ -44,52 +44,52 @@ import static org.solovyev.android.checkout.Tests.sameThreadExecutor;
 
 public class FallingBackInventoryTest extends InventoryTestBase {
 
-	@Override
-	@Before
-	public void setUp() throws Exception {
-		SQLiteDatabase db = RuntimeEnvironment.application.openOrCreateDatabase(RobotmediaDatabase.NAME, 0, null);
-		db.close();
+    @Override
+    @Before
+    public void setUp() throws Exception {
+        SQLiteDatabase db = RuntimeEnvironment.application.openOrCreateDatabase(RobotmediaDatabase.NAME, 0, null);
+        db.close();
 
-		super.setUp();
+        super.setUp();
 
-		final IInAppBillingService service = ((TestServiceConnector) billing.getConnector()).service;
-		when(service.isBillingSupported(anyInt(), anyString(), eq(SUBSCRIPTION))).thenReturn(ResponseCodes.ERROR);
-	}
+        final IInAppBillingService service = ((TestServiceConnector) billing.getConnector()).service;
+        when(service.isBillingSupported(anyInt(), anyString(), eq(SUBSCRIPTION))).thenReturn(ResponseCodes.ERROR);
+    }
 
-	@Nonnull
-	@Override
-	protected Billing newBilling() {
-		final Billing billing = super.newBilling();
-		billing.setMainThread(sameThreadExecutor());
-		return billing;
-	}
+    @Nonnull
+    @Override
+    protected Billing newBilling() {
+        final Billing billing = super.newBilling();
+        billing.setMainThread(sameThreadExecutor());
+        return billing;
+    }
 
-	@Nonnull
-	@Override
-	protected FallingBackInventory newInventory(@Nonnull Checkout checkout) {
-		return new FallingBackInventory(checkout, new RobotmediaInventory(checkout, sameThreadExecutor()));
-	}
+    @Nonnull
+    @Override
+    protected FallingBackInventory newInventory(@Nonnull Checkout checkout) {
+        return new FallingBackInventory(checkout, new RobotmediaInventory(checkout, sameThreadExecutor()));
+    }
 
-	@Override
-	protected boolean shouldVerifyPurchaseCompletely() {
-		return false;
-	}
+    @Override
+    protected boolean shouldVerifyPurchaseCompletely() {
+        return false;
+    }
 
-	@Override
-	protected void insertPurchases(@Nonnull String product, @Nonnull List<Purchase> purchases) throws Exception {
-		if (IN_APP.equals(product)) {
-			CheckoutInventoryTest.insertPurchases(billing, product, purchases);
-		} else {
-			RobotmediaInventoryTest.insertPurchases(new BillingDB(RuntimeEnvironment.application), purchases);
-		}
-	}
+    @Override
+    protected void insertPurchases(@Nonnull String product, @Nonnull List<Purchase> purchases) throws Exception {
+        if (IN_APP.equals(product)) {
+            CheckoutInventoryTest.insertPurchases(billing, product, purchases);
+        } else {
+            RobotmediaInventoryTest.insertPurchases(new BillingDB(RuntimeEnvironment.application), purchases);
+        }
+    }
 
-	@Override
-	protected boolean isLoaded(Inventory inventory) {
-		return ((FallingBackInventory) inventory).isLoaded();
-	}
+    @Override
+    protected boolean isLoaded(Inventory inventory) {
+        return ((FallingBackInventory) inventory).isLoaded();
+    }
 
-	@Test
-	public void testShouldFallbackIfProductIsNotSupported() throws Exception {
-	}
+    @Test
+    public void testShouldFallbackIfProductIsNotSupported() throws Exception {
+    }
 }

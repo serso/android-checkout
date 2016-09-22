@@ -31,84 +31,87 @@ import org.robolectric.annotation.Config;
 
 import javax.annotation.Nonnull;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class SkuTest {
-	@Test
-	public void testShouldBeCreatedFromJson() throws Exception {
-		final Sku sku = Sku.fromJson(newJson("1"), "test");
+    static void verifySku(@Nonnull Sku sku, @Nonnull String id) {
+        assertEquals(id, sku.id);
+        assertEquals("price_" + id, sku.price);
+        assertEquals("description_" + id, sku.description);
+        assertEquals("title_" + id, sku.title);
+    }
 
-		verifySku(sku, "1");
-	}
+    @Nonnull
+    static String newJson(@Nonnull String id) throws JSONException {
+        return newJsonObject(id).toString();
+    }
 
-	static void verifySku(@Nonnull Sku sku, @Nonnull String id) {
-		assertEquals(id, sku.id);
-		assertEquals("price_" + id, sku.price);
-		assertEquals("description_" + id, sku.description);
-		assertEquals("title_" + id, sku.title);
-	}
+    @Nonnull
+    static JSONObject newJsonObject(String id) throws JSONException {
+        final JSONObject json = new JSONObject();
+        json.put("productId", id);
+        json.put("price", "price_" + id);
+        json.put("title", "title_" + id);
+        json.put("description", "description_" + id);
+        return json;
+    }
 
-	@Test
-	public void testShouldNotCreateIfNoId() throws Exception {
-		final JSONObject json = newJsonObject("2");
-		json.remove("productId");
-		try {
-			Sku.fromJson(json.toString(), "test");
-			fail();
-		} catch (JSONException e) {
-		}
-	}
+    @Test
+    public void testShouldBeCreatedFromJson() throws Exception {
+        final Sku sku = Sku.fromJson(newJson("1"), "test");
 
-	@Test
-	public void testShouldCreateWithoutDescription() throws Exception {
-		final JSONObject json = newJsonObject("3");
-		json.remove("description");
-		final Sku sku = Sku.fromJson(json.toString(), "test");
-		assertEquals("3", sku.id);
-		assertEquals("price_3", sku.price);
-		assertEquals("", sku.description);
-		assertEquals("title_3", sku.title);
-	}
+        verifySku(sku, "1");
+    }
 
-	@Nonnull
-	static String newJson(@Nonnull String id) throws JSONException {
-		return newJsonObject(id).toString();
-	}
+    @Test
+    public void testShouldNotCreateIfNoId() throws Exception {
+        final JSONObject json = newJsonObject("2");
+        json.remove("productId");
+        try {
+            Sku.fromJson(json.toString(), "test");
+            fail();
+        } catch (JSONException e) {
+        }
+    }
 
-	@Nonnull
-	static JSONObject newJsonObject(String id) throws JSONException {
-		final JSONObject json = new JSONObject();
-		json.put("productId", id);
-		json.put("price", "price_" + id);
-		json.put("title", "title_" + id);
-		json.put("description", "description_" + id);
-		return json;
-	}
+    @Test
+    public void testShouldCreateWithoutDescription() throws Exception {
+        final JSONObject json = newJsonObject("3");
+        json.remove("description");
+        final Sku sku = Sku.fromJson(json.toString(), "test");
+        assertEquals("3", sku.id);
+        assertEquals("price_3", sku.price);
+        assertEquals("", sku.description);
+        assertEquals("title_3", sku.title);
+    }
 
-	@Test
-	public void testShouldHaveNotValidPriceIfNoDetailedDataAvailable() throws Exception {
-		final Sku sku = Sku.fromJson(newJson("1"), "test");
+    @Test
+    public void testShouldHaveNotValidPriceIfNoDetailedDataAvailable() throws Exception {
+        final Sku sku = Sku.fromJson(newJson("1"), "test");
 
-		assertFalse(sku.detailedPrice.isValid());
-	}
+        assertFalse(sku.detailedPrice.isValid());
+    }
 
-	@Test
-	public void testShouldHaveDetailedPrice() throws Exception {
-		testDetailedPrice(Long.MAX_VALUE, "USD");
-		testDetailedPrice(1, "RUB");
-		testDetailedPrice(111, "руб");
-	}
+    @Test
+    public void testShouldHaveDetailedPrice() throws Exception {
+        testDetailedPrice(Long.MAX_VALUE, "USD");
+        testDetailedPrice(1, "RUB");
+        testDetailedPrice(111, "руб");
+    }
 
-	private void testDetailedPrice(long amount, @Nonnull String currency) throws JSONException {
-		final JSONObject json = newJsonObject("1");
-		json.put("price_amount_micros", amount);
-		json.put("price_currency_code", currency);
-		final Sku sku = Sku.fromJson(json.toString(), "test");
+    private void testDetailedPrice(long amount, @Nonnull String currency) throws JSONException {
+        final JSONObject json = newJsonObject("1");
+        json.put("price_amount_micros", amount);
+        json.put("price_currency_code", currency);
+        final Sku sku = Sku.fromJson(json.toString(), "test");
 
-		assertTrue(sku.detailedPrice.isValid());
-		assertEquals(currency, sku.detailedPrice.currency);
-		assertEquals(amount, sku.detailedPrice.amount);
-	}
+        assertTrue(sku.detailedPrice.isValid());
+        assertEquals(currency, sku.detailedPrice.currency);
+        assertEquals(amount, sku.detailedPrice.amount);
+    }
 }

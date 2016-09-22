@@ -22,14 +22,14 @@
 
 package org.solovyev.android.checkout;
 
-import android.os.Bundle;
-
 import com.android.vending.billing.IInAppBillingService;
 
 import org.json.JSONObject;
 import org.junit.Test;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
+
+import android.os.Bundle;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -49,78 +49,78 @@ import static org.mockito.Mockito.when;
 
 public class GetSkuDetailsRequestTest extends RequestTestBase {
 
-	@Override
-	protected Request newRequest() {
-		return new GetSkuDetailsRequest("test", asList("sku"));
-	}
+    @Override
+    protected Request newRequest() {
+        return new GetSkuDetailsRequest("test", asList("sku"));
+    }
 
-	@Test
-	public void testShouldHaveSameCacheKey() throws Exception {
-		final List<String> skus = asList("1", "2", "3");
-		final GetSkuDetailsRequest r1 = new GetSkuDetailsRequest("test", skus);
-		Collections.reverse(skus);
-		final GetSkuDetailsRequest r2 = new GetSkuDetailsRequest("test", skus);
+    @Test
+    public void testShouldHaveSameCacheKey() throws Exception {
+        final List<String> skus = asList("1", "2", "3");
+        final GetSkuDetailsRequest r1 = new GetSkuDetailsRequest("test", skus);
+        Collections.reverse(skus);
+        final GetSkuDetailsRequest r2 = new GetSkuDetailsRequest("test", skus);
 
-		assertEquals(r1.getCacheKey(), r2.getCacheKey());
-	}
+        assertEquals(r1.getCacheKey(), r2.getCacheKey());
+    }
 
-	@Test
-	public void testShouldContainAllSkusInCacheKey() throws Exception {
-		final GetSkuDetailsRequest request = new GetSkuDetailsRequest("test", asList("1", "2", "3"));
+    @Test
+    public void testShouldContainAllSkusInCacheKey() throws Exception {
+        final GetSkuDetailsRequest request = new GetSkuDetailsRequest("test", asList("1", "2", "3"));
 
-		assertEquals("test_[1,2,3]", request.getCacheKey());
-	}
+        assertEquals("test_[1,2,3]", request.getCacheKey());
+    }
 
-	@Test
-	public void testShouldHandleBigLists() throws Exception {
-		final List<String> skus = new ArrayList<>();
-		for (int i = 0; i < 97; i++) {
-			skus.add("sku_" + i);
-		}
-		final IInAppBillingService service = mock(IInAppBillingService.class);
-		final GetSkuDetailsRequest request = new GetSkuDetailsRequest("test", skus);
-		final RequestListenerSpy l = new RequestListenerSpy();
-		request.setListener(l);
-		when(service.getSkuDetails(anyInt(), anyString(), anyString(), any(Bundle.class))).thenAnswer(new Answer<Bundle>() {
-			@Override
-			public Bundle answer(InvocationOnMock invocation) throws Throwable {
-				final Bundle bundle = (Bundle) invocation.getArguments()[3];
-				final ArrayList<String> ids = bundle.getStringArrayList("ITEM_ID_LIST");
-				final ArrayList<String> details = new ArrayList<String>();
-				for (int i = 0; i < ids.size(); i++) {
-					final String id = ids.get(i);
-					final JSONObject skuDetail = new JSONObject();
-					skuDetail.put("productId", id);
-					skuDetail.put("price", String.valueOf(i));
-					skuDetail.put("title", id);
-					skuDetail.put("description", id);
-					details.add(skuDetail.toString());
-				}
-				final Bundle skuDetails = new Bundle();
-				skuDetails.putStringArrayList("DETAILS_LIST", details);
-				return skuDetails;
-			}
-		});
+    @Test
+    public void testShouldHandleBigLists() throws Exception {
+        final List<String> skus = new ArrayList<>();
+        for (int i = 0; i < 97; i++) {
+            skus.add("sku_" + i);
+        }
+        final IInAppBillingService service = mock(IInAppBillingService.class);
+        final GetSkuDetailsRequest request = new GetSkuDetailsRequest("test", skus);
+        final RequestListenerSpy l = new RequestListenerSpy();
+        request.setListener(l);
+        when(service.getSkuDetails(anyInt(), anyString(), anyString(), any(Bundle.class))).thenAnswer(new Answer<Bundle>() {
+            @Override
+            public Bundle answer(InvocationOnMock invocation) throws Throwable {
+                final Bundle bundle = (Bundle) invocation.getArguments()[3];
+                final ArrayList<String> ids = bundle.getStringArrayList("ITEM_ID_LIST");
+                final ArrayList<String> details = new ArrayList<String>();
+                for (int i = 0; i < ids.size(); i++) {
+                    final String id = ids.get(i);
+                    final JSONObject skuDetail = new JSONObject();
+                    skuDetail.put("productId", id);
+                    skuDetail.put("price", String.valueOf(i));
+                    skuDetail.put("title", id);
+                    skuDetail.put("description", id);
+                    details.add(skuDetail.toString());
+                }
+                final Bundle skuDetails = new Bundle();
+                skuDetails.putStringArrayList("DETAILS_LIST", details);
+                return skuDetails;
+            }
+        });
 
-		request.start(service, "");
+        request.start(service, "");
 
-		assertNotNull(l.skus);
-		for (String sku : skus) {
-			assertTrue(l.skus.hasSku(sku));
-		}
-		assertTrue(l.skus.list.size() == 97);
-	}
+        assertNotNull(l.skus);
+        for (String sku : skus) {
+            assertTrue(l.skus.hasSku(sku));
+        }
+        assertTrue(l.skus.list.size() == 97);
+    }
 
-	private static class RequestListenerSpy implements RequestListener<Skus> {
-		private Skus skus;
+    private static class RequestListenerSpy implements RequestListener<Skus> {
+        private Skus skus;
 
-		@Override
-		public void onSuccess(@Nonnull Skus skus) {
-			this.skus = skus;
-		}
+        @Override
+        public void onSuccess(@Nonnull Skus skus) {
+            this.skus = skus;
+        }
 
-		@Override
-		public void onError(int response, @Nonnull Exception e) {
-		}
-	}
+        @Override
+        public void onError(int response, @Nonnull Exception e) {
+        }
+    }
 }

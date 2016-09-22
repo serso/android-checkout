@@ -30,21 +30,21 @@ import static org.junit.Assert.assertNotEquals;
 
 public class BillingSupportedRequestTest extends RequestTestBase {
 
-	@Test
-	public void testShouldHaveDifferentCacheKeys() throws Exception {
-		final BillingSupportedRequest r1 = newRequest("test1");
-		final BillingSupportedRequest r2 = newRequest("test2");
+    @Test
+    public void testShouldHaveDifferentCacheKeys() throws Exception {
+        final BillingSupportedRequest r1 = newRequest("test1");
+        final BillingSupportedRequest r2 = newRequest("test2");
 
-		assertNotEquals(r1.getCacheKey(), r2.getCacheKey());
-	}
+        assertNotEquals(r1.getCacheKey(), r2.getCacheKey());
+    }
 
-	@Override
-	protected BillingSupportedRequest newRequest() {
-		return newRequest("test");
-	}
+    @Override
+    protected BillingSupportedRequest newRequest() {
+        return newRequest("test");
+    }
 
-	@Nonnull
-	private BillingSupportedRequest newRequest(@Nonnull String product) {
-		return new BillingSupportedRequest(product);
-	}
+    @Nonnull
+    private BillingSupportedRequest newRequest(@Nonnull String product) {
+        return new BillingSupportedRequest(product);
+    }
 }

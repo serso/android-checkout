@@ -54,63 +54,63 @@ import static org.solovyev.android.checkout.Tests.newBilling;
 @Config(manifest = Config.NONE)
 public class CheckoutTest {
 
-	@Nonnull
-	private Billing billing;
+    @Nonnull
+    private Billing billing;
 
-	@Nonnull
-	private Checkout checkout;
+    @Nonnull
+    private Checkout checkout;
 
-	@Before
-	public void setUp() throws Exception {
-		billing = newBilling();
-		billing.connect();
-		final IInAppBillingService service = ((TestServiceConnector) billing.getConnector()).service;
-		when(service.isBillingSupported(eq(3), anyString(), eq(IN_APP))).thenReturn(OK);
-		when(service.isBillingSupported(eq(3), anyString(), eq(SUBSCRIPTION))).thenReturn(OK);
-		final SkuIds skuIds = SkuIds.create()
-				.add(IN_APP, asList("1", "2", "3", "4", "6"))
-				.add(SUBSCRIPTION, asList("sub1", "sub2", "sub3", "sub4"));
-		checkout = Checkout.forApplication(billing, skuIds.getProducts());
-	}
+    @Before
+    public void setUp() throws Exception {
+        billing = newBilling();
+        billing.connect();
+        final IInAppBillingService service = ((TestServiceConnector) billing.getConnector()).service;
+        when(service.isBillingSupported(eq(3), anyString(), eq(IN_APP))).thenReturn(OK);
+        when(service.isBillingSupported(eq(3), anyString(), eq(SUBSCRIPTION))).thenReturn(OK);
+        final SkuIds skuIds = SkuIds.create()
+                .add(IN_APP, asList("1", "2", "3", "4", "6"))
+                .add(SUBSCRIPTION, asList("sub1", "sub2", "sub3", "sub4"));
+        checkout = Checkout.forApplication(billing, skuIds.getProducts());
+    }
 
-	@Test
-	public void testAllProductsShouldBeSupported() throws Exception {
-		final CountDownListener l = new CountDownListener();
+    @Test
+    public void testAllProductsShouldBeSupported() throws Exception {
+        final CountDownListener l = new CountDownListener();
 
-		checkout.whenReady(l);
-		checkout.start();
+        checkout.whenReady(l);
+        checkout.start();
 
-		l.waitWhileLoading();
+        l.waitWhileLoading();
 
-		verify(l.listener, times(2)).onReady(any(BillingRequests.class), anyString(), eq(true));
-		verify(l.listener, never()).onReady(any(BillingRequests.class), anyString(), eq(false));
+        verify(l.listener, times(2)).onReady(any(BillingRequests.class), anyString(), eq(true));
+        verify(l.listener, never()).onReady(any(BillingRequests.class), anyString(), eq(false));
 
-		verify(l.listener).onReady(any(BillingRequests.class));
-	}
+        verify(l.listener).onReady(any(BillingRequests.class));
+    }
 
-	private final static class CountDownListener implements Checkout.Listener {
+    private final static class CountDownListener implements Checkout.Listener {
 
-		@Nonnull
-		private final CountDownLatch latch = new CountDownLatch(1);
+        @Nonnull
+        private final CountDownLatch latch = new CountDownLatch(1);
 
-		@Nonnull
-		private final Checkout.Listener listener = mock(Checkout.Listener.class);
+        @Nonnull
+        private final Checkout.Listener listener = mock(Checkout.Listener.class);
 
-		@Override
-		public void onReady(@Nonnull BillingRequests requests) {
-			listener.onReady(requests);
-			latch.countDown();
-		}
+        @Override
+        public void onReady(@Nonnull BillingRequests requests) {
+            listener.onReady(requests);
+            latch.countDown();
+        }
 
-		@Override
-		public void onReady(@Nonnull BillingRequests requests, @Nonnull String product, boolean billingSupported) {
-			listener.onReady(requests, product, billingSupported);
-		}
+        @Override
+        public void onReady(@Nonnull BillingRequests requests, @Nonnull String product, boolean billingSupported) {
+            listener.onReady(requests, product, billingSupported);
+        }
 
-		void waitWhileLoading() throws InterruptedException {
-			if (!latch.await(1, TimeUnit.SECONDS)) {
-				fail("Waiting too long");
-			}
-		}
-	}
+        void waitWhileLoading() throws InterruptedException {
+            if (!latch.await(1, TimeUnit.SECONDS)) {
+                fail("Waiting too long");
+            }
+        }
+    }
 }

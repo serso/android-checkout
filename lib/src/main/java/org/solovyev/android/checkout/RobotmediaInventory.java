@@ -32,89 +32,90 @@ import javax.annotation.concurrent.GuardedBy;
 
 public final class RobotmediaInventory extends BaseInventory {
 
-	@Nonnull
-	private final Executor background = Executors.newSingleThreadExecutor();
+    @Nonnull
+    private final Executor background = Executors.newSingleThreadExecutor();
 
-	@Nonnull
-	private final Executor onLoadExecutor;
+    @Nonnull
+    private final Executor onLoadExecutor;
 
-	@GuardedBy("lock")
-	@Nonnull
-	private State state = State.INITIAL;
+    @GuardedBy("lock")
+    @Nonnull
+    private State state = State.INITIAL;
 
-	public RobotmediaInventory(@Nonnull Checkout checkout, @Nonnull Executor onLoadExecutor) {
-		super(checkout);
-		this.onLoadExecutor = onLoadExecutor;
-	}
+    public RobotmediaInventory(@Nonnull Checkout checkout, @Nonnull Executor onLoadExecutor) {
+        super(checkout);
+        this.onLoadExecutor = onLoadExecutor;
+    }
 
-	@Nonnull
-	@Override
-	public Inventory load(@Nonnull SkuIds skus) {
-		synchronized (lock) {
-			if (!setSkus(skus)) {
-				return this;
-			}
-			state = State.LOADING;
-			if (RobotmediaDatabase.exists(checkout.getContext())) {
-				background.execute(new Loader(skus));
-			} else {
-				onLoaded(RobotmediaDatabase.toInventoryProducts(skus.getProducts()));
-			}
-		}
+    @Nonnull
+    @Override
+    public Inventory load(@Nonnull SkuIds skus) {
+        synchronized (lock) {
+            if (!setSkus(skus)) {
+                return this;
+            }
+            state = State.LOADING;
+            if (RobotmediaDatabase.exists(checkout.getContext())) {
+                background.execute(new Loader(skus));
+            } else {
+                onLoaded(RobotmediaDatabase.toInventoryProducts(skus.getProducts()));
+            }
+        }
 
-		return this;
-	}
+        return this;
+    }
 
-	private void onLoaded(@Nonnull final Inventory.Products products) {
-		synchronized (lock) {
-			if(this.state == State.LOADED) {
-				return;
-			}
-			this.state = State.LOADED;
-			this.products = products;
-		}
-		onLoadExecutor.execute(new Runnable() {
-			@Override
-			public void run() {
-				synchronized (lock) {
-					if(state != State.LOADED) {
-						return;
-					}
-					listeners.onLoaded(products);
-				}
-			}
-		});
-	}
+    private void onLoaded(@Nonnull final Inventory.Products products) {
+        synchronized (lock) {
+            if (this.state == State.LOADED) {
+                return;
+            }
+            this.state = State.LOADED;
+            this.products = products;
+        }
+        onLoadExecutor.execute(new Runnable() {
+            @Override
+            public void run() {
+                synchronized (lock) {
+                    if (state != State.LOADED) {
+                        return;
+                    }
+                    listeners.onLoaded(products);
+                }
+            }
+        });
+    }
 
-	boolean isLoaded() {
-		synchronized (lock) {
-			return state == State.LOADED;
-		}
-	}
+    boolean isLoaded() {
+        synchronized (lock) {
+            return state == State.LOADED;
+        }
+    }
 
-	private enum State {
-		INITIAL,
-		LOADING,
-		LOADED
-	}
+    private enum State {
+        INITIAL,
+        LOADING,
+        LOADED
+    }
 
-	private class Loader implements Runnable {
-		private final SkuIds skus;
-		public Loader(SkuIds skus) {
-			this.skus = skus;
-		}
+    private class Loader implements Runnable {
+        private final SkuIds skus;
 
-		@Override
-		public void run() {
-			final Context context = checkout.getContext();
-			final RobotmediaDatabase database = new RobotmediaDatabase(context);
-			final Products products = database.load(skus);
-			synchronized (lock) {
-				if (!getSkus().equals(skus)) {
-					return;
-				}
-				onLoaded(products);
-			}
-		}
-	}
+        public Loader(SkuIds skus) {
+            this.skus = skus;
+        }
+
+        @Override
+        public void run() {
+            final Context context = checkout.getContext();
+            final RobotmediaDatabase database = new RobotmediaDatabase(context);
+            final Products products = database.load(skus);
+            synchronized (lock) {
+                if (!getSkus().equals(skus)) {
+                    return;
+                }
+                onLoaded(products);
+            }
+        }
+    }
 }

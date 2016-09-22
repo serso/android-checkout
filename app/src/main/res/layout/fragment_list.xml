@@ -23,47 +23,47 @@
   -->
 
 <LinearLayout
-	style="@style/Tile"
-	xmlns:android="http://schemas.android.com/apk/res/android"
-	android:layout_width="match_parent"
-	android:layout_height="match_parent"
-	android:orientation="vertical">
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    style="@style/Tile"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
 
-	<TextView
-		android:id="@+id/list_title"
-		style="@style/Title"
-		android:layout_width="match_parent"
-		android:layout_height="wrap_content" />
+    <TextView
+        android:id="@+id/list_title"
+        style="@style/Title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
 
-	<!-- minHeight for loading in dialogs -->
-	<FrameLayout
-		android:layout_width="match_parent"
-		android:layout_height="match_parent"
-		android:minHeight="150dp">
+    <!-- minHeight for loading in dialogs -->
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:minHeight="150dp">
 
-		<ListView
-			android:id="@android:id/list"
-			style="@style/ListView"
-			android:layout_width="match_parent"
-			android:layout_height="match_parent"
-			android:visibility="invisible" />
+        <ListView
+            android:id="@android:id/list"
+            style="@style/ListView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="invisible" />
 
-		<ProgressBar
-			android:id="@android:id/progress"
-			android:layout_width="wrap_content"
-			android:layout_height="wrap_content"
-			android:layout_gravity="center"
-			android:indeterminate="true" />
+        <ProgressBar
+            android:id="@android:id/progress"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:indeterminate="true" />
 
-		<TextView
-			android:id="@android:id/empty"
-			android:drawableTop="@drawable/android_sad"
-			android:drawablePadding="15dp"
-			style="@style/ListItemText"
-			android:layout_gravity="center"
-			android:gravity="center"
-			android:visibility="gone" />
+        <TextView
+            android:id="@android:id/empty"
+            style="@style/ListItemText"
+            android:layout_gravity="center"
+            android:drawablePadding="15dp"
+            android:drawableTop="@drawable/android_sad"
+            android:gravity="center"
+            android:visibility="gone" />
 
-	</FrameLayout>
+    </FrameLayout>
 
 </LinearLayout>

@@ -24,13 +24,13 @@ package org.solovyev.android.checkout;
 
 public final class BillingException extends Exception {
 
-	private final int response;
+    private final int response;
 
-	BillingException(int response) {
-		this.response = response;
-	}
+    BillingException(int response) {
+        this.response = response;
+    }
 
-	public int getResponse() {
-		return response;
-	}
+    public int getResponse() {
+        return response;
+    }
 }

@@ -33,34 +33,34 @@ import static org.mockito.Mockito.mock;
 
 class AsyncServiceConnector implements Billing.ServiceConnector {
 
-	@Nonnull
-	private final Executor background;
+    @Nonnull
+    private final Executor background;
 
-	@Nonnull
-	private final Billing billing;
+    @Nonnull
+    private final Billing billing;
 
-	public AsyncServiceConnector(@Nonnull Billing billing) {
-		this.billing = billing;
-		background = Executors.newSingleThreadExecutor();
-	}
+    public AsyncServiceConnector(@Nonnull Billing billing) {
+        this.billing = billing;
+        background = Executors.newSingleThreadExecutor();
+    }
 
-	@Override
-	public boolean connect() {
-		setService(mock(IInAppBillingService.class));
-		return true;
-	}
+    @Override
+    public boolean connect() {
+        setService(mock(IInAppBillingService.class));
+        return true;
+    }
 
-	private void setService(final IInAppBillingService service) {
-		background.execute(new Runnable() {
-			@Override
-			public void run() {
-				billing.setService(service, service != null);
-			}
-		});
-	}
+    private void setService(final IInAppBillingService service) {
+        background.execute(new Runnable() {
+            @Override
+            public void run() {
+                billing.setService(service, service != null);
+            }
+        });
+    }
 
-	@Override
-	public void disconnect() {
-		setService(null);
-	}
+    @Override
+    public void disconnect() {
+        setService(null);
+    }
 }

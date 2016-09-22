@@ -29,27 +29,27 @@ import static org.junit.Assert.assertNotEquals;
 
 public class CacheKeyTest {
 
-	@Test
-	public void testHashCodeAndEquals() throws Exception {
-		final Cache.Key k1 = new Cache.Key(1, "test");
-		final Cache.Key k2 = new Cache.Key(2, "test");
-		final Cache.Key k3 = new Cache.Key(1, "test1");
-		final Cache.Key k4 = new Cache.Key(3, "test1");
-		final Cache.Key k5 = new Cache.Key(1, "test");
+    @Test
+    public void testHashCodeAndEquals() throws Exception {
+        final Cache.Key k1 = new Cache.Key(1, "test");
+        final Cache.Key k2 = new Cache.Key(2, "test");
+        final Cache.Key k3 = new Cache.Key(1, "test1");
+        final Cache.Key k4 = new Cache.Key(3, "test1");
+        final Cache.Key k5 = new Cache.Key(1, "test");
 
-		assertNotEquals(k1.hashCode(), k2.hashCode());
-		assertNotEquals(k1.hashCode(), k3.hashCode());
-		assertNotEquals(k1.hashCode(), k4.hashCode());
-		assertEquals(k1.hashCode(), k5.hashCode());
+        assertNotEquals(k1.hashCode(), k2.hashCode());
+        assertNotEquals(k1.hashCode(), k3.hashCode());
+        assertNotEquals(k1.hashCode(), k4.hashCode());
+        assertEquals(k1.hashCode(), k5.hashCode());
 
-		assertNotEquals(k1, k2);
-		assertNotEquals(k1, k3);
-		assertNotEquals(k1, k4);
-		assertEquals(k1, k5);
+        assertNotEquals(k1, k2);
+        assertNotEquals(k1, k3);
+        assertNotEquals(k1, k4);
+        assertEquals(k1, k5);
 
-		assertNotEquals(k1.toString(), k2.toString());
-		assertNotEquals(k1.toString(), k3.toString());
-		assertNotEquals(k1.toString(), k4.toString());
-		assertEquals(k1.toString(), k5.toString());
-	}
+        assertNotEquals(k1.toString(), k2.toString());
+        assertNotEquals(k1.toString(), k3.toString());
+        assertNotEquals(k1.toString(), k4.toString());
+        assertEquals(k1.toString(), k5.toString());
+    }
 }

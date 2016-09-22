@@ -32,42 +32,42 @@ import javax.annotation.concurrent.ThreadSafe;
 @ThreadSafe
 final class InventoryListeners implements Inventory.Listener {
 
-	@GuardedBy("lock")
-	@Nonnull
-	private final List<Inventory.Listener> list = new ArrayList<Inventory.Listener>();
+    @GuardedBy("lock")
+    @Nonnull
+    private final List<Inventory.Listener> list = new ArrayList<Inventory.Listener>();
 
-	@Nonnull
-	private final Object lock;
+    @Nonnull
+    private final Object lock;
 
-	InventoryListeners(@Nonnull Object lock) {
-		this.lock = lock;
-	}
+    InventoryListeners(@Nonnull Object lock) {
+        this.lock = lock;
+    }
 
-	InventoryListeners() {
-		this(new Object());
-	}
+    InventoryListeners() {
+        this(new Object());
+    }
 
-	public void add(@Nonnull Inventory.Listener l) {
-		synchronized (lock) {
-			if (!list.contains(l)) {
-				list.add(l);
-			}
-		}
-	}
+    public void add(@Nonnull Inventory.Listener l) {
+        synchronized (lock) {
+            if (!list.contains(l)) {
+                list.add(l);
+            }
+        }
+    }
 
-	@Override
-	public void onLoaded(@Nonnull Inventory.Products products) {
-		final List<Inventory.Listener> localList;
-		synchronized (lock) {
-			localList = new ArrayList<>(list);
-			list.clear();
-		}
-		for (Inventory.Listener listener : localList) {
-			try {
-				listener.onLoaded(products);
-			} catch (Exception e) {
-				Billing.error(e);
-			}
-		}
-	}
+    @Override
+    public void onLoaded(@Nonnull Inventory.Products products) {
+        final List<Inventory.Listener> localList;
+        synchronized (lock) {
+            localList = new ArrayList<>(list);
+            list.clear();
+        }
+        for (Inventory.Listener listener : localList) {
+            try {
+                listener.onLoaded(products);
+            } catch (Exception e) {
+                Billing.error(e);
+            }
+        }
+    }
 }

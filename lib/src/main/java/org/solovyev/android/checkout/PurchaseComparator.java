@@ -22,39 +22,39 @@
 
 package org.solovyev.android.checkout;
 
-import javax.annotation.Nonnull;
 import java.util.Comparator;
+
+import javax.annotation.Nonnull;
 
 final class PurchaseComparator implements Comparator<Purchase> {
 
-	@Nonnull
-	private static final Comparator<Purchase> EARLIEST_FIRST = new PurchaseComparator(true);
+    @Nonnull
+    private static final Comparator<Purchase> EARLIEST_FIRST = new PurchaseComparator(true);
 
-	@Nonnull
-	private static final Comparator<Purchase> LATEST_FIRST = new PurchaseComparator(false);
+    @Nonnull
+    private static final Comparator<Purchase> LATEST_FIRST = new PurchaseComparator(false);
+    private final int asc;
 
-	@Nonnull
-	static Comparator<Purchase> earliestFirst() {
-		return EARLIEST_FIRST;
-	}
+    private PurchaseComparator(boolean asc) {
+        this.asc = asc ? 1 : -1;
+    }
 
-	@Nonnull
-	static Comparator<Purchase> latestFirst() {
-		return LATEST_FIRST;
-	}
+    @Nonnull
+    static Comparator<Purchase> earliestFirst() {
+        return EARLIEST_FIRST;
+    }
 
-	private final int asc;
+    @Nonnull
+    static Comparator<Purchase> latestFirst() {
+        return LATEST_FIRST;
+    }
 
-	private PurchaseComparator(boolean asc) {
-		this.asc = asc ? 1 : -1;
-	}
+    public static int compare(long l, long r) {
+        return l < r ? -1 : (l == r ? 0 : 1);
+    }
 
-	@Override
-	public int compare(@Nonnull Purchase l, @Nonnull Purchase r) {
-		return asc * compare(l.time, r.time);
-	}
-
-	public static int compare(long l, long r) {
-		return l < r ? -1 : (l == r ? 0 : 1);
-	}
+    @Override
+    public int compare(@Nonnull Purchase l, @Nonnull Purchase r) {
+        return asc * compare(l.time, r.time);
+    }
 }

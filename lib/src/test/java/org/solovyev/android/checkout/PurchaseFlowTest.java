@@ -22,14 +22,14 @@
 
 package org.solovyev.android.checkout;
 
-import android.app.Activity;
-import android.content.Intent;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
+
+import android.app.Activity;
+import android.content.Intent;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -49,116 +49,116 @@ import static org.solovyev.android.checkout.ResponseCodes.OK;
 @Config(manifest = Config.NONE)
 public class PurchaseFlowTest {
 
-	@Nonnull
-	private RequestListener listener;
+    @Nonnull
+    private RequestListener listener;
 
-	@Nonnull
-	private PurchaseFlow flow;
+    @Nonnull
+    private PurchaseFlow flow;
 
-	@Nonnull
-	private PurchaseVerifier verifier;
+    @Nonnull
+    private PurchaseVerifier verifier;
 
-	@Before
-	public void setUp() throws Exception {
-		listener = mock(RequestListener.class);
-		verifier = mock(PurchaseVerifier.class);
-		Tests.mockVerifier(verifier, false);
-		flow = new PurchaseFlow(new Activity(), 1, listener, verifier);
-	}
+    @Nonnull
+    static Intent newOkIntent() {
+        return newIntent(OK, "{productId:'test', purchaseTime:1000}", "signature");
+    }
 
-	@Test
-	public void testShouldErrorIfIntentIsNull() throws Exception {
-		flow.onActivityResult(1, 1, null);
+    @Nonnull
+    static Intent newIntent(int responseCode, @Nullable String data, @Nullable String signature) {
+        final Intent intent = new Intent();
+        intent.putExtra(PurchaseFlow.EXTRA_RESPONSE, responseCode);
+        intent.putExtra(PurchaseFlow.EXTRA_PURCHASE_DATA, data);
+        intent.putExtra(PurchaseFlow.EXTRA_PURCHASE_SIGNATURE, signature);
+        return intent;
+    }
 
-		verifyError(ResponseCodes.NULL_INTENT, BillingException.class);
-	}
+    @Before
+    public void setUp() throws Exception {
+        listener = mock(RequestListener.class);
+        verifier = mock(PurchaseVerifier.class);
+        Tests.mockVerifier(verifier, false);
+        flow = new PurchaseFlow(new Activity(), 1, listener, verifier);
+    }
 
-	private void verifyError(int responseCode, Class<? extends Exception> exceptionClass) {
-		verify(listener).onError(eq(responseCode), any(exceptionClass));
-		verify(listener, never()).onSuccess(anyObject());
-	}
+    @Test
+    public void testShouldErrorIfIntentIsNull() throws Exception {
+        flow.onActivityResult(1, 1, null);
 
-	@Test
-	public void testShouldErrorIfRequestCodeIsDifferent() throws Exception {
-		flow.onActivityResult(2, 1, new Intent());
+        verifyError(ResponseCodes.NULL_INTENT, BillingException.class);
+    }
 
-		verifyError(ResponseCodes.EXCEPTION, RuntimeException.class);
-	}
+    private void verifyError(int responseCode, Class<? extends Exception> exceptionClass) {
+        verify(listener).onError(eq(responseCode), any(exceptionClass));
+        verify(listener, never()).onSuccess(anyObject());
+    }
 
-	@Test
-	public void testShouldErrorIfResultCodeItNotOk() throws Exception {
-		flow.onActivityResult(1, Activity.RESULT_CANCELED, new Intent());
+    @Test
+    public void testShouldErrorIfRequestCodeIsDifferent() throws Exception {
+        flow.onActivityResult(2, 1, new Intent());
 
-		verifyError(OK, BillingException.class);
-	}
+        verifyError(ResponseCodes.EXCEPTION, RuntimeException.class);
+    }
 
-	@Test
-	public void testShouldErrorIfResponseCodeItNotOk() throws Exception {
-		flow.onActivityResult(1, RESULT_OK, newIntent(ResponseCodes.ACCOUNT_ERROR, null, null));
+    @Test
+    public void testShouldErrorIfResultCodeItNotOk() throws Exception {
+        flow.onActivityResult(1, Activity.RESULT_CANCELED, new Intent());
 
-		verifyError(ResponseCodes.ACCOUNT_ERROR, BillingException.class);
-	}
+        verifyError(OK, BillingException.class);
+    }
 
-	@Test
-	public void testShouldErrorWithNoData() throws Exception {
-		flow.onActivityResult(1, RESULT_OK, newIntent(OK, null, "signature"));
+    @Test
+    public void testShouldErrorIfResponseCodeItNotOk() throws Exception {
+        flow.onActivityResult(1, RESULT_OK, newIntent(ResponseCodes.ACCOUNT_ERROR, null, null));
 
-		verifyError(ResponseCodes.EXCEPTION, RuntimeException.class);
-	}
+        verifyError(ResponseCodes.ACCOUNT_ERROR, BillingException.class);
+    }
 
-	@Test
-	public void testShouldErrorWithNoSignature() throws Exception {
-		flow.onActivityResult(1, RESULT_OK, newIntent(OK, "data", null));
+    @Test
+    public void testShouldErrorWithNoData() throws Exception {
+        flow.onActivityResult(1, RESULT_OK, newIntent(OK, null, "signature"));
 
-		verifyError(ResponseCodes.EXCEPTION, RuntimeException.class);
-	}
+        verifyError(ResponseCodes.EXCEPTION, RuntimeException.class);
+    }
 
-	@Test
-	public void testShouldErrorWithEmptySignature() throws Exception {
-		flow.onActivityResult(1, RESULT_OK, newIntent(OK, "{productId:'test', purchaseTime:1000}", ""));
+    @Test
+    public void testShouldErrorWithNoSignature() throws Exception {
+        flow.onActivityResult(1, RESULT_OK, newIntent(OK, "data", null));
 
-		verifyError(ResponseCodes.WRONG_SIGNATURE, RuntimeException.class);
-	}
+        verifyError(ResponseCodes.EXCEPTION, RuntimeException.class);
+    }
 
-	@Test
-	public void testShouldErrorIfVerificationFailed() throws Exception {
-		Tests.mockVerifier(verifier, false);
-		flow.onActivityResult(1, RESULT_OK, newIntent(OK, "{productId:'test', purchaseTime:1000}", "signature"));
+    @Test
+    public void testShouldErrorWithEmptySignature() throws Exception {
+        flow.onActivityResult(1, RESULT_OK, newIntent(OK, "{productId:'test', purchaseTime:1000}", ""));
 
-		verifyError(ResponseCodes.WRONG_SIGNATURE, RuntimeException.class);
+        verifyError(ResponseCodes.WRONG_SIGNATURE, RuntimeException.class);
+    }
 
-	}
+    @Test
+    public void testShouldErrorIfVerificationFailed() throws Exception {
+        Tests.mockVerifier(verifier, false);
+        flow.onActivityResult(1, RESULT_OK, newIntent(OK, "{productId:'test', purchaseTime:1000}", "signature"));
 
-	@Test
-	public void testShouldFinishSuccessfully() throws Exception {
-		Tests.mockVerifier(verifier, true);
-		flow.onActivityResult(1, RESULT_OK, newOkIntent());
+        verifyError(ResponseCodes.WRONG_SIGNATURE, RuntimeException.class);
 
-		verify(listener, never()).onError(anyInt(), any(Exception.class));
-		verify(listener).onSuccess(any(Purchase.class));
-	}
+    }
 
-	@Test
-	public void testShouldNotCallListenerIfCancelled() throws Exception {
-		Tests.mockVerifier(verifier, true);
-		flow.cancel();
-		flow.onActivityResult(1, RESULT_OK, newOkIntent());
-		flow.onActivityResult(1, RESULT_OK, newIntent(ACCOUNT_ERROR, "{productId:'test', purchaseTime:1000}", "signature"));
-		verify(listener, never()).onError(anyInt(), any(Exception.class));
-		verify(listener, never()).onSuccess(any(Purchase.class));
-	}
+    @Test
+    public void testShouldFinishSuccessfully() throws Exception {
+        Tests.mockVerifier(verifier, true);
+        flow.onActivityResult(1, RESULT_OK, newOkIntent());
 
-	@Nonnull
-	static Intent newOkIntent() {
-		return newIntent(OK, "{productId:'test', purchaseTime:1000}", "signature");
-	}
+        verify(listener, never()).onError(anyInt(), any(Exception.class));
+        verify(listener).onSuccess(any(Purchase.class));
+    }
 
-	@Nonnull
-	static Intent newIntent(int responseCode, @Nullable String data, @Nullable String signature) {
-		final Intent intent = new Intent();
-		intent.putExtra(PurchaseFlow.EXTRA_RESPONSE, responseCode);
-		intent.putExtra(PurchaseFlow.EXTRA_PURCHASE_DATA, data);
-		intent.putExtra(PurchaseFlow.EXTRA_PURCHASE_SIGNATURE, signature);
-		return intent;
-	}
+    @Test
+    public void testShouldNotCallListenerIfCancelled() throws Exception {
+        Tests.mockVerifier(verifier, true);
+        flow.cancel();
+        flow.onActivityResult(1, RESULT_OK, newOkIntent());
+        flow.onActivityResult(1, RESULT_OK, newIntent(ACCOUNT_ERROR, "{productId:'test', purchaseTime:1000}", "signature"));
+        verify(listener, never()).onError(anyInt(), any(Exception.class));
+        verify(listener, never()).onSuccess(any(Purchase.class));
+    }
 }

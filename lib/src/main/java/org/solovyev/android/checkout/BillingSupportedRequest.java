@@ -22,9 +22,9 @@
 
 package org.solovyev.android.checkout;
 
-import android.os.RemoteException;
-
 import com.android.vending.billing.IInAppBillingService;
+
+import android.os.RemoteException;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -33,31 +33,31 @@ import static org.solovyev.android.checkout.RequestType.BILLING_SUPPORTED;
 
 final class BillingSupportedRequest extends Request<Object> {
 
-	@Nonnull
-	private final String product;
-	private final int apiVersion;
+    @Nonnull
+    private final String product;
+    private final int apiVersion;
 
-	BillingSupportedRequest(@Nonnull String product) {
-		this(product, Billing.V3);
-	}
+    BillingSupportedRequest(@Nonnull String product) {
+        this(product, Billing.V3);
+    }
 
-	BillingSupportedRequest(@Nonnull String product, int apiVersion) {
-		super(BILLING_SUPPORTED, apiVersion);
-		this.product = product;
-		this.apiVersion = apiVersion;
-	}
+    BillingSupportedRequest(@Nonnull String product, int apiVersion) {
+        super(BILLING_SUPPORTED, apiVersion);
+        this.product = product;
+        this.apiVersion = apiVersion;
+    }
 
-	@Override
-	public void start(@Nonnull IInAppBillingService service, @Nonnull String packageName) throws RemoteException {
-		final int response = service.isBillingSupported(apiVersion, packageName, product);
-		if (!handleError(response)) {
-			onSuccess(new Object());
-		}
-	}
+    @Override
+    public void start(@Nonnull IInAppBillingService service, @Nonnull String packageName) throws RemoteException {
+        final int response = service.isBillingSupported(apiVersion, packageName, product);
+        if (!handleError(response)) {
+            onSuccess(new Object());
+        }
+    }
 
-	@Nullable
-	@Override
-	protected String getCacheKey() {
-		return product;
-	}
+    @Nullable
+    @Override
+    protected String getCacheKey() {
+        return product;
+    }
 }

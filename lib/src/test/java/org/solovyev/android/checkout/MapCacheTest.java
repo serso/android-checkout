@@ -27,51 +27,51 @@ import org.junit.Test;
 
 public class MapCacheTest extends CacheTestBase {
 
-	@Test
-	public void testShouldAddEntries() throws Exception {
-		final MapCache cache = new MapCache();
-		final Cache.Entry expected = newEntry();
-		final Cache.Key key = newKey();
+    @Test
+    public void testShouldAddEntries() throws Exception {
+        final MapCache cache = new MapCache();
+        final Cache.Entry expected = newEntry();
+        final Cache.Key key = newKey();
 
-		cache.put(key, expected);
+        cache.put(key, expected);
 
-		Assert.assertSame(expected, cache.get(key));
-	}
+        Assert.assertSame(expected, cache.get(key));
+    }
 
-	@Test
-	public void testShouldRemoveEntries() throws Exception {
-		final MapCache cache = new MapCache();
-		final Cache.Entry expected = newEntry();
-		final Cache.Key key = newKey();
-		cache.put(key, expected);
+    @Test
+    public void testShouldRemoveEntries() throws Exception {
+        final MapCache cache = new MapCache();
+        final Cache.Entry expected = newEntry();
+        final Cache.Key key = newKey();
+        cache.put(key, expected);
 
-		cache.remove(key);
+        cache.remove(key);
 
-		Assert.assertNull(cache.get(key));
-	}
+        Assert.assertNull(cache.get(key));
+    }
 
-	@Test
-	public void testShouldRemoveEntriesByType() throws Exception {
-		final MapCache cache = new MapCache();
-		final Cache.Key key = new Cache.Key(1, "test");
-		final Cache.Key key1 = new Cache.Key(1, "test1");
-		final Cache.Key key2 = new Cache.Key(1, "test2");
-		final Cache.Key key3 = new Cache.Key(2, "test2");
+    @Test
+    public void testShouldRemoveEntriesByType() throws Exception {
+        final MapCache cache = new MapCache();
+        final Cache.Key key = new Cache.Key(1, "test");
+        final Cache.Key key1 = new Cache.Key(1, "test1");
+        final Cache.Key key2 = new Cache.Key(1, "test2");
+        final Cache.Key key3 = new Cache.Key(2, "test2");
 
-		cache.put(key, newEntry());
-		cache.put(key1, newEntry());
-		cache.put(key2, newEntry());
-		cache.put(key3, newEntry());
+        cache.put(key, newEntry());
+        cache.put(key1, newEntry());
+        cache.put(key2, newEntry());
+        cache.put(key3, newEntry());
 
-		Assert.assertNotNull(cache.get(key));
-		Assert.assertNotNull(cache.get(key1));
-		Assert.assertNotNull(cache.get(key2));
-		Assert.assertNotNull(cache.get(key3));
+        Assert.assertNotNull(cache.get(key));
+        Assert.assertNotNull(cache.get(key1));
+        Assert.assertNotNull(cache.get(key2));
+        Assert.assertNotNull(cache.get(key3));
 
-		cache.removeAll(1);
-		Assert.assertNull(cache.get(key));
-		Assert.assertNull(cache.get(key1));
-		Assert.assertNull(cache.get(key2));
-		Assert.assertNotNull(cache.get(key3));
-	}
+        cache.removeAll(1);
+        Assert.assertNull(cache.get(key));
+        Assert.assertNull(cache.get(key1));
+        Assert.assertNull(cache.get(key2));
+        Assert.assertNotNull(cache.get(key3));
+    }
 }

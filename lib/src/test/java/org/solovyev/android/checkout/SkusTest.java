@@ -22,13 +22,13 @@
 
 package org.solovyev.android.checkout;
 
-import android.os.Bundle;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
+
+import android.os.Bundle;
 
 import java.util.ArrayList;
 
@@ -45,71 +45,71 @@ import static org.junit.Assert.assertTrue;
 @Config(manifest = Config.NONE)
 public class SkusTest {
 
-	@Nonnull
-	private Skus skus;
+    @Nonnull
+    private Skus skus;
 
-	@Before
-	public void setUp() throws Exception {
-		skus = new Skus("test", asList(newSku("1"), newSku("2"), newSku("3")));
-	}
+    @Before
+    public void setUp() throws Exception {
+        skus = new Skus("test", asList(newSku("1"), newSku("2"), newSku("3")));
+    }
 
-	@Test
-	public void testShouldReturnSkuById() throws Exception {
-		assertNotNull(skus.getSku("2"));
-	}
+    @Test
+    public void testShouldReturnSkuById() throws Exception {
+        assertNotNull(skus.getSku("2"));
+    }
 
-	@Test
-	public void testShouldNotReturnSkuById() throws Exception {
-		assertNull(skus.getSku("4"));
-	}
+    @Test
+    public void testShouldNotReturnSkuById() throws Exception {
+        assertNull(skus.getSku("4"));
+    }
 
-	@Test
-	public void testShouldHaveSku() throws Exception {
-		assertTrue(skus.hasSku("2"));
-	}
+    @Test
+    public void testShouldHaveSku() throws Exception {
+        assertTrue(skus.hasSku("2"));
+    }
 
-	@Test
-	public void testShouldNotHaveSku() throws Exception {
-		assertFalse(skus.hasSku("4"));
-	}
+    @Test
+    public void testShouldNotHaveSku() throws Exception {
+        assertFalse(skus.hasSku("4"));
+    }
 
-	@Test
-	public void testShouldReadNullList() throws Exception {
-		final Skus skus = Skus.fromBundle(new Bundle(), "test");
-		assertTrue(skus.list.isEmpty());
-	}
+    @Test
+    public void testShouldReadNullList() throws Exception {
+        final Skus skus = Skus.fromBundle(new Bundle(), "test");
+        assertTrue(skus.list.isEmpty());
+    }
 
-	@Test
-	public void testShouldReadEmptyList() throws Exception {
-		final Bundle bundle = new Bundle();
-		bundle.putStringArrayList(Skus.BUNDLE_LIST, new ArrayList<String>());
-		final Skus skus = Skus.fromBundle(bundle, "test");
-		assertTrue(skus.list.isEmpty());
-	}
+    @Test
+    public void testShouldReadEmptyList() throws Exception {
+        final Bundle bundle = new Bundle();
+        bundle.putStringArrayList(Skus.BUNDLE_LIST, new ArrayList<String>());
+        final Skus skus = Skus.fromBundle(bundle, "test");
+        assertTrue(skus.list.isEmpty());
+    }
 
-	@Test
-	public void testShouldHaveCorrectProduct() throws Exception {
-		final Skus skus = Skus.fromBundle(new Bundle(), "test");
-		assertEquals("test", skus.product);
-	}
+    @Test
+    public void testShouldHaveCorrectProduct() throws Exception {
+        final Skus skus = Skus.fromBundle(new Bundle(), "test");
+        assertEquals("test", skus.product);
+    }
 
-	@Test
-	public void testShouldReadSkus() throws Exception {
-		final ArrayList<String> list = new ArrayList<String>();
-		list.add(SkuTest.newJson("1"));
-		list.add(SkuTest.newJson("2"));
-		list.add(SkuTest.newJson("3"));
-		list.add(SkuTest.newJson("4"));
+    @Test
+    public void testShouldReadSkus() throws Exception {
+        final ArrayList<String> list = new ArrayList<String>();
+        list.add(SkuTest.newJson("1"));
+        list.add(SkuTest.newJson("2"));
+        list.add(SkuTest.newJson("3"));
+        list.add(SkuTest.newJson("4"));
 
-		final Bundle bundle = new Bundle();
-		bundle.putStringArrayList(Skus.BUNDLE_LIST, list);
-		final Skus skus = Skus.fromBundle(bundle, "test");
-		assertEquals(4, skus.list.size());
-		SkuTest.verifySku(skus.list.get(0), "1");
-		SkuTest.verifySku(skus.list.get(3), "4");
-	}
+        final Bundle bundle = new Bundle();
+        bundle.putStringArrayList(Skus.BUNDLE_LIST, list);
+        final Skus skus = Skus.fromBundle(bundle, "test");
+        assertEquals(4, skus.list.size());
+        SkuTest.verifySku(skus.list.get(0), "1");
+        SkuTest.verifySku(skus.list.get(3), "4");
+    }
 
-	private Sku newSku(String id) {
-		return new Sku("test", id, id, Sku.Price.EMPTY, id, id);
-	}
+    private Sku newSku(String id) {
+        return new Sku("test", id, id, Sku.Price.EMPTY, id, id);
+    }
 }

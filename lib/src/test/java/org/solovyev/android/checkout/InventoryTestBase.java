@@ -52,176 +52,176 @@ import static org.solovyev.android.checkout.PurchaseTest.verifyPurchase;
 @Config(manifest = Config.NONE)
 public abstract class InventoryTestBase {
 
-	@Nonnull
-	protected Billing billing;
+    @Nonnull
+    protected Billing billing;
 
-	@Nonnull
-	private Checkout checkout;
+    @Nonnull
+    private Checkout checkout;
 
-	@Nonnull
-	private Inventory inventory;
+    @Nonnull
+    private Inventory inventory;
 
-	@Nonnull
-	private SkuIds skuIds;
+    @Nonnull
+    private SkuIds skuIds;
 
-	@Before
-	public void setUp() throws Exception {
-		billing = newBilling();
-		skuIds = SkuIds.create()
-				.add(IN_APP, asList("1", "2", "3", "4", "6"))
-				.add(SUBSCRIPTION, asList("sub1", "sub2", "sub3", "sub4"));
-		checkout = Checkout.forApplication(billing, skuIds.getProducts());
-		inventory = newInventory(checkout);
-	}
+    @Before
+    public void setUp() throws Exception {
+        billing = newBilling();
+        skuIds = SkuIds.create()
+                .add(IN_APP, asList("1", "2", "3", "4", "6"))
+                .add(SUBSCRIPTION, asList("sub1", "sub2", "sub3", "sub4"));
+        checkout = Checkout.forApplication(billing, skuIds.getProducts());
+        inventory = newInventory(checkout);
+    }
 
-	@Nonnull
-	protected Billing newBilling() {
-		return Tests.newBilling();
-	}
+    @Nonnull
+    protected Billing newBilling() {
+        return Tests.newBilling();
+    }
 
-	@Nonnull
-	protected abstract Inventory newInventory(@Nonnull Checkout checkout);
+    @Nonnull
+    protected abstract Inventory newInventory(@Nonnull Checkout checkout);
 
-	@Test
-	public void testShouldLoadPurchases() throws Exception {
-		populatePurchases();
+    @Test
+    public void testShouldLoadPurchases() throws Exception {
+        populatePurchases();
 
-		final TestListener listener = new TestListener();
-		checkout.start();
-		inventory.load(skuIds).whenLoaded(listener);
+        final TestListener listener = new TestListener();
+        checkout.start();
+        inventory.load(skuIds).whenLoaded(listener);
 
-		waitWhileLoading(inventory);
+        waitWhileLoading(inventory);
 
-		final boolean complete = shouldVerifyPurchaseCompletely();
+        final boolean complete = shouldVerifyPurchaseCompletely();
 
-		final Inventory.Product inApp = listener.products.get(IN_APP);
-		final List<Purchase> actualInApps = inApp.getPurchases();
-		assertEquals(4, actualInApps.size());
+        final Inventory.Product inApp = listener.products.get(IN_APP);
+        final List<Purchase> actualInApps = inApp.getPurchases();
+        assertEquals(4, actualInApps.size());
 
-		verifyPurchase(actualInApps.get(0), 4, EXPIRED, complete, false);
-		verifyPurchase(actualInApps.get(1), 3, REFUNDED, complete, false);
-		verifyPurchase(actualInApps.get(2), 2, CANCELLED, complete, false);
-		verifyPurchase(actualInApps.get(3), 1, PURCHASED, complete, false);
+        verifyPurchase(actualInApps.get(0), 4, EXPIRED, complete, false);
+        verifyPurchase(actualInApps.get(1), 3, REFUNDED, complete, false);
+        verifyPurchase(actualInApps.get(2), 2, CANCELLED, complete, false);
+        verifyPurchase(actualInApps.get(3), 1, PURCHASED, complete, false);
 
-		final Inventory.Product sub = listener.products.get(SUBSCRIPTION);
-		final List<Purchase> actualSubs = sub.getPurchases();
-		assertEquals(4, actualSubs.size());
+        final Inventory.Product sub = listener.products.get(SUBSCRIPTION);
+        final List<Purchase> actualSubs = sub.getPurchases();
+        assertEquals(4, actualSubs.size());
 
-		verifyPurchase(actualSubs.get(0), 4, EXPIRED, complete, true);
-		verifyPurchase(actualSubs.get(1), 3, REFUNDED, complete, true);
-		verifyPurchase(actualSubs.get(2), 2, CANCELLED, complete, true);
-		verifyPurchase(actualSubs.get(3), 1, PURCHASED, complete, true);
+        verifyPurchase(actualSubs.get(0), 4, EXPIRED, complete, true);
+        verifyPurchase(actualSubs.get(1), 3, REFUNDED, complete, true);
+        verifyPurchase(actualSubs.get(2), 2, CANCELLED, complete, true);
+        verifyPurchase(actualSubs.get(3), 1, PURCHASED, complete, true);
 
-		assertSame(listener.products, inventory.getProducts());
-	}
+        assertSame(listener.products, inventory.getProducts());
+    }
 
-	protected void populatePurchases() throws Exception {
-		final List<Purchase> expectedInApps = asList(
-				Purchase.fromJson(PurchaseTest.newJson(1, PURCHASED), ""),
-				Purchase.fromJson(PurchaseTest.newJson(2, CANCELLED), ""),
-				Purchase.fromJson(PurchaseTest.newJson(3, REFUNDED), ""),
-				Purchase.fromJson(PurchaseTest.newJson(4, EXPIRED), "")
-		);
-		insertPurchases(IN_APP, expectedInApps);
+    protected void populatePurchases() throws Exception {
+        final List<Purchase> expectedInApps = asList(
+                Purchase.fromJson(PurchaseTest.newJson(1, PURCHASED), ""),
+                Purchase.fromJson(PurchaseTest.newJson(2, CANCELLED), ""),
+                Purchase.fromJson(PurchaseTest.newJson(3, REFUNDED), ""),
+                Purchase.fromJson(PurchaseTest.newJson(4, EXPIRED), "")
+        );
+        insertPurchases(IN_APP, expectedInApps);
 
-		final List<Purchase> expectedSubs = asList(
-				Purchase.fromJson(PurchaseTest.newJsonSubscription(1, PURCHASED), ""),
-				Purchase.fromJson(PurchaseTest.newJsonSubscription(2, CANCELLED), ""),
-				Purchase.fromJson(PurchaseTest.newJsonSubscription(3, REFUNDED), ""),
-				Purchase.fromJson(PurchaseTest.newJsonSubscription(4, EXPIRED), "")
-		);
-		insertPurchases(SUBSCRIPTION, expectedSubs);
-	}
+        final List<Purchase> expectedSubs = asList(
+                Purchase.fromJson(PurchaseTest.newJsonSubscription(1, PURCHASED), ""),
+                Purchase.fromJson(PurchaseTest.newJsonSubscription(2, CANCELLED), ""),
+                Purchase.fromJson(PurchaseTest.newJsonSubscription(3, REFUNDED), ""),
+                Purchase.fromJson(PurchaseTest.newJsonSubscription(4, EXPIRED), "")
+        );
+        insertPurchases(SUBSCRIPTION, expectedSubs);
+    }
 
-	protected abstract boolean shouldVerifyPurchaseCompletely();
+    protected abstract boolean shouldVerifyPurchaseCompletely();
 
-	protected abstract void insertPurchases(@Nonnull String product, @Nonnull List<Purchase> purchases) throws Exception;
+    protected abstract void insertPurchases(@Nonnull String product, @Nonnull List<Purchase> purchases) throws Exception;
 
-	@Test
-	public void testShouldCallListenerWhenLoaded() throws Exception {
-		final Inventory.Listener l1 = mock(Inventory.Listener.class);
-		final Inventory.Listener l2 = mock(Inventory.Listener.class);
-		final Inventory.Listener l3 = mock(Inventory.Listener.class);
+    @Test
+    public void testShouldCallListenerWhenLoaded() throws Exception {
+        final Inventory.Listener l1 = mock(Inventory.Listener.class);
+        final Inventory.Listener l2 = mock(Inventory.Listener.class);
+        final Inventory.Listener l3 = mock(Inventory.Listener.class);
 
-		inventory.whenLoaded(l1);
-		inventory.whenLoaded(l2);
-		checkout.start();
-		inventory.load(skuIds);
-		waitWhileLoading(inventory);
-		inventory.whenLoaded(l3);
+        inventory.whenLoaded(l1);
+        inventory.whenLoaded(l2);
+        checkout.start();
+        inventory.load(skuIds);
+        waitWhileLoading(inventory);
+        inventory.whenLoaded(l3);
 
-		verify(l1, times(1)).onLoaded(anyProducts());
-		verify(l2, times(1)).onLoaded(anyProducts());
-		verify(l3, times(1)).onLoaded(anyProducts());
-	}
+        verify(l1, times(1)).onLoaded(anyProducts());
+        verify(l2, times(1)).onLoaded(anyProducts());
+        verify(l3, times(1)).onLoaded(anyProducts());
+    }
 
-	@Nonnull
-	private Inventory.Products anyProducts() {
-		return any(Inventory.Products.class);
-	}
+    @Nonnull
+    private Inventory.Products anyProducts() {
+        return any(Inventory.Products.class);
+    }
 
-	@Test
-	public void testShouldNotAddSameListener() throws Exception {
-		final Inventory.Listener l = mock(Inventory.Listener.class);
+    @Test
+    public void testShouldNotAddSameListener() throws Exception {
+        final Inventory.Listener l = mock(Inventory.Listener.class);
 
-		inventory.whenLoaded(l);
-		inventory.whenLoaded(l);
-		inventory.whenLoaded(l);
-		checkout.start();
-		inventory.load(skuIds);
-		waitWhileLoading(inventory);
+        inventory.whenLoaded(l);
+        inventory.whenLoaded(l);
+        inventory.whenLoaded(l);
+        checkout.start();
+        inventory.load(skuIds);
+        waitWhileLoading(inventory);
 
-		verify(l, times(1)).onLoaded(anyProducts());
-	}
+        verify(l, times(1)).onLoaded(anyProducts());
+    }
 
-	@Test
-	public void testShouldRunSameListenerIfLoaded() throws Exception {
-		final Inventory.Listener l = mock(Inventory.Listener.class);
+    @Test
+    public void testShouldRunSameListenerIfLoaded() throws Exception {
+        final Inventory.Listener l = mock(Inventory.Listener.class);
 
-		checkout.start();
-		inventory.load(skuIds);
-		waitWhileLoading(inventory);
-		inventory.whenLoaded(l);
-		inventory.whenLoaded(l);
-		inventory.whenLoaded(l);
+        checkout.start();
+        inventory.load(skuIds);
+        waitWhileLoading(inventory);
+        inventory.whenLoaded(l);
+        inventory.whenLoaded(l);
+        inventory.whenLoaded(l);
 
-		verify(l, times(3)).onLoaded(anyProducts());
-	}
+        verify(l, times(3)).onLoaded(anyProducts());
+    }
 
-	@Test
-	public void testListenerShouldBeCalledOnlyOnce() throws Exception {
-		final Inventory.Listener l = mock(Inventory.Listener.class);
-		checkout.start();
-		inventory.whenLoaded(l);
-		inventory.load(skuIds);
-		inventory.load(skuIds);
-		inventory.load(skuIds);
-		waitWhileLoading(inventory);
-		inventory.load(skuIds);
-		inventory.load(skuIds);
-		verify(l, times(1)).onLoaded(anyProducts());
-	}
+    @Test
+    public void testListenerShouldBeCalledOnlyOnce() throws Exception {
+        final Inventory.Listener l = mock(Inventory.Listener.class);
+        checkout.start();
+        inventory.whenLoaded(l);
+        inventory.load(skuIds);
+        inventory.load(skuIds);
+        inventory.load(skuIds);
+        waitWhileLoading(inventory);
+        inventory.load(skuIds);
+        inventory.load(skuIds);
+        verify(l, times(1)).onLoaded(anyProducts());
+    }
 
-	void waitWhileLoading(@Nonnull Inventory inventory) throws InterruptedException {
-		int sleeping = 0;
-		while (!isLoaded(inventory)) {
-			Thread.sleep(50L);
-			sleeping += 50L;
-			if (sleeping > 1000L) {
-				fail("Too long wait!");
-			}
-		}
-	}
+    void waitWhileLoading(@Nonnull Inventory inventory) throws InterruptedException {
+        int sleeping = 0;
+        while (!isLoaded(inventory)) {
+            Thread.sleep(50L);
+            sleeping += 50L;
+            if (sleeping > 1000L) {
+                fail("Too long wait!");
+            }
+        }
+    }
 
-	protected abstract boolean isLoaded(Inventory inventory);
+    protected abstract boolean isLoaded(Inventory inventory);
 
-	static class TestListener implements Inventory.Listener {
-		@Nonnull
-		volatile Inventory.Products products;
+    static class TestListener implements Inventory.Listener {
+        @Nonnull
+        volatile Inventory.Products products;
 
-		@Override
-		public void onLoaded(@Nonnull Inventory.Products products) {
-			this.products = products;
-		}
-	}
+        @Override
+        public void onLoaded(@Nonnull Inventory.Products products) {
+            this.products = products;
+        }
+    }
 }

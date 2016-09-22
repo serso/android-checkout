@@ -22,55 +22,56 @@
 
 package org.solovyev.android.checkout;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
 class MapCache implements Cache {
 
-	@Nonnull
-	private final Map<Key, Entry> map = new HashMap<Key, Entry>();
+    @Nonnull
+    private final Map<Key, Entry> map = new HashMap<Key, Entry>();
 
-	MapCache() {
-	}
+    MapCache() {
+    }
 
-	@Nullable
-	@Override
-	public Entry get(@Nonnull Key key) {
-		return map.get(key);
-	}
+    @Nullable
+    @Override
+    public Entry get(@Nonnull Key key) {
+        return map.get(key);
+    }
 
-	@Override
-	public void put(@Nonnull Key key, @Nonnull Entry entry) {
-		map.put(key, entry);
-	}
+    @Override
+    public void put(@Nonnull Key key, @Nonnull Entry entry) {
+        map.put(key, entry);
+    }
 
-	@Override
-	public void init() {
-	}
+    @Override
+    public void init() {
+    }
 
-	@Override
-	public void remove(@Nonnull Key key) {
-		map.remove(key);
-	}
+    @Override
+    public void remove(@Nonnull Key key) {
+        map.remove(key);
+    }
 
-	@Override
-	public void removeAll(int type) {
-		final Set<Map.Entry<Key, Entry>> entries = map.entrySet();
-		final Iterator<Map.Entry<Key, Entry>> iterator = entries.iterator();
-		while (iterator.hasNext()) {
-			final Map.Entry<Key, Entry> entry = iterator.next();
-			if(entry.getKey().type == type) {
-				iterator.remove();
-			}
-		}
-	}
+    @Override
+    public void removeAll(int type) {
+        final Set<Map.Entry<Key, Entry>> entries = map.entrySet();
+        final Iterator<Map.Entry<Key, Entry>> iterator = entries.iterator();
+        while (iterator.hasNext()) {
+            final Map.Entry<Key, Entry> entry = iterator.next();
+            if (entry.getKey().type == type) {
+                iterator.remove();
+            }
+        }
+    }
 
-	@Override
-	public void clear() {
-		map.clear();
-	}
+    @Override
+    public void clear() {
+        map.clear();
+    }
 }

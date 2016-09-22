@@ -38,35 +38,35 @@ import static org.junit.Assert.assertTrue;
 @Config(manifest = Config.NONE)
 public class InventoryProductsTest {
 
-	@Nonnull
-	private Inventory.Products products;
+    @Nonnull
+    private Inventory.Products products;
 
-	@Before
-	public void setUp() throws Exception {
-		products = new Inventory.Products();
-		products.add(new Inventory.Product("0", true));
-		products.add(new Inventory.Product("1", false));
-		products.add(new Inventory.Product("2", true));
-	}
+    @Before
+    public void setUp() throws Exception {
+        products = new Inventory.Products();
+        products.add(new Inventory.Product("0", true));
+        products.add(new Inventory.Product("1", false));
+        products.add(new Inventory.Product("2", true));
+    }
 
-	@Test
-	public void testShouldAddProduct() throws Exception {
-		products.add(new Inventory.Product("2", true));
+    @Test
+    public void testShouldAddProduct() throws Exception {
+        products.add(new Inventory.Product("2", true));
 
-		assertEquals(3, products.size());
-		assertEquals("0", products.get("0").id);
-		assertEquals("1", products.get("1").id);
-		assertEquals("2", products.get("2").id);
-	}
+        assertEquals(3, products.size());
+        assertEquals("0", products.get("0").id);
+        assertEquals("1", products.get("1").id);
+        assertEquals("2", products.get("2").id);
+    }
 
-	@Test
-	public void testShouldIterateOverAllProducts() throws Exception {
-		int count = 0;
-		for (Inventory.Product product : products) {
-			assertTrue(asList("0", "1", "2").contains(product.id));
-			count++;
-		}
+    @Test
+    public void testShouldIterateOverAllProducts() throws Exception {
+        int count = 0;
+        for (Inventory.Product product : products) {
+            assertTrue(asList("0", "1", "2").contains(product.id));
+            count++;
+        }
 
-		assertEquals(3, count);
-	}
+        assertEquals(3, count);
+    }
 }

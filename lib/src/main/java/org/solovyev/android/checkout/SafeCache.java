@@ -29,66 +29,66 @@ import javax.annotation.Nullable;
  * Crash-safe wrapper around the cache
  */
 final class SafeCache implements Cache {
-	@Nonnull
-	private final Cache cache;
+    @Nonnull
+    private final Cache cache;
 
-	SafeCache(@Nonnull Cache cache) {
-		this.cache = cache;
-	}
+    SafeCache(@Nonnull Cache cache) {
+        this.cache = cache;
+    }
 
-	@Override
-	@Nullable
-	public Entry get(@Nonnull Key key) {
-		try {
-			return cache.get(key);
-		} catch (Exception e) {
-			Billing.error(e);
-			return null;
-		}
-	}
+    @Override
+    @Nullable
+    public Entry get(@Nonnull Key key) {
+        try {
+            return cache.get(key);
+        } catch (Exception e) {
+            Billing.error(e);
+            return null;
+        }
+    }
 
-	@Override
-	public void put(@Nonnull Key key, @Nonnull Entry entry) {
-		try {
-			cache.put(key, entry);
-		} catch (Exception e) {
-			Billing.error(e);
-		}
-	}
+    @Override
+    public void put(@Nonnull Key key, @Nonnull Entry entry) {
+        try {
+            cache.put(key, entry);
+        } catch (Exception e) {
+            Billing.error(e);
+        }
+    }
 
-	@Override
-	public void init() {
-		try {
-			cache.init();
-		} catch (Exception e) {
-			Billing.error(e);
-		}
-	}
+    @Override
+    public void init() {
+        try {
+            cache.init();
+        } catch (Exception e) {
+            Billing.error(e);
+        }
+    }
 
-	@Override
-	public void remove(@Nonnull Key key) {
-		try {
-			cache.remove(key);
-		} catch (Exception e) {
-			Billing.error(e);
-		}
-	}
+    @Override
+    public void remove(@Nonnull Key key) {
+        try {
+            cache.remove(key);
+        } catch (Exception e) {
+            Billing.error(e);
+        }
+    }
 
-	@Override
-	public void removeAll(int type) {
-		try {
-			cache.removeAll(type);
-		} catch (Exception e) {
-			Billing.error(e);
-		}
-	}
+    @Override
+    public void removeAll(int type) {
+        try {
+            cache.removeAll(type);
+        } catch (Exception e) {
+            Billing.error(e);
+        }
+    }
 
-	@Override
-	public void clear() {
-		try {
-			cache.clear();
-		} catch (Exception e) {
-			Billing.error(e);
-		}
-	}
+    @Override
+    public void clear() {
+        try {
+            cache.clear();
+        } catch (Exception e) {
+            Billing.error(e);
+        }
+    }
 }

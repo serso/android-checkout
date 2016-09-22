@@ -39,8 +39,10 @@ import javax.annotation.concurrent.GuardedBy;
 
 /**
  * <p/>
- * Billing API helper class. Might be used in {@link android.app.Activity} or {@link android.app.Service} and then its
- * lifespan should be bound to the lifecycle of the activity/service. For example, {@link #start()} and {@link #stop()} methods
+ * Billing API helper class. Might be used in {@link android.app.Activity} or {@link
+ * android.app.Service} and then its
+ * lifespan should be bound to the lifecycle of the activity/service. For example, {@link #start()}
+ * and {@link #stop()} methods
  * of this class should be called from appropriate methods of activity:<br/>
  * <pre>{@code
  * public class MainActivity extends Activity {
@@ -60,7 +62,8 @@ import javax.annotation.concurrent.GuardedBy;
  *                  public void onReady(@Nonnull BillingRequests requests) {
  *                  }
  * <p/>
- *                  public void onReady(@Nonnull BillingRequests requests, @Nonnull String product, boolean billingSupported) {
+ *                  public void onReady(@Nonnull BillingRequests requests, @Nonnull String product,
+ * boolean billingSupported) {
  *                      if (billingSupported) {
  *                          // billing for product is supported
  *                          // ...
@@ -68,7 +71,8 @@ import javax.annotation.concurrent.GuardedBy;
  *                  }
  *             });
  * <p/>
- *         // in case is Activity was recreated (screen rotation) we need to readd purchase listener
+ *         // in case is Activity was recreated (screen rotation) we need to readd purchase
+ * listener
  *         checkout.createPurchaseFlow(purchaseListener);
  *     }
  * <p/>
@@ -84,12 +88,17 @@ import javax.annotation.concurrent.GuardedBy;
  * }
  * }</pre>
  * <br/>
- * It is possible to call {@link #start()}/{@link #stop()} several times in order to start/stop work with Checkout class. Be aware, though, that {@link #stop()} will cancel all pending requests and remove all listeners.
+ * It is possible to call {@link #start()}/{@link #stop()} several times in order to start/stop work
+ * with Checkout class. Be aware, though, that {@link #stop()} will cancel all pending requests and
+ * remove all listeners.
  * </p>
  * <p>
  * As soon as Billing API is ready for product
- * {@link Listener#onReady(BillingRequests, String, boolean)} is called. If all products are ready {@link Listener#onReady(BillingRequests)}
- * is called. In case of any error while executing the initial requests {@link Listener#onReady(BillingRequests, String, boolean)} is called with <code>billingSupported=false</code>
+ * {@link Listener#onReady(BillingRequests, String, boolean)} is called. If all products are ready
+ * {@link Listener#onReady(BillingRequests)}
+ * is called. In case of any error while executing the initial requests {@link
+ * Listener#onReady(BillingRequests, String, boolean)} is called with
+ * <code>billingSupported=false</code>
  * </p>
  * <p>
  * <b>Note</b>: currently this class can only be used on the main application thread
@@ -97,283 +106,280 @@ import javax.annotation.concurrent.GuardedBy;
  */
 public class Checkout {
 
-	/**
-	 * For activity {@link ActivityCheckout#onActivityResult(int, int, android.content.Intent)} must be called from appropriate
-	 * activity method.
-	 */
-	@Nonnull
-	public static ActivityCheckout forActivity(@Nonnull Activity activity, @Nonnull Billing billing, @Nonnull Collection<String> products) {
-		return new ActivityCheckout(activity, billing, products);
-	}
+    @Nullable
+    protected final Context context;
+    @Nonnull
+    protected final Billing billing;
+    @Nonnull
+    final Object lock = new Object();
+    @Nonnull
+    private final List<String> products;
+    @GuardedBy("lock")
+    @Nonnull
+    private final Listeners listeners = new Listeners();
+    @GuardedBy("lock")
+    @Nonnull
+    private final Map<String, Boolean> supportedProducts = new HashMap<String, Boolean>();
+    @Nonnull
+    private final OnLoadExecutor onLoadExecutor = new OnLoadExecutor();
+    @GuardedBy("lock")
+    private Billing.Requests requests;
+    @GuardedBy("lock")
+    @Nonnull
+    private State state = State.INITIAL;
 
-	@Nonnull
-	public static ActivityCheckout forActivity(@Nonnull Activity activity, @Nonnull Checkout checkout) {
-		return new ActivityCheckout(activity, checkout.billing, checkout.products);
-	}
+    Checkout(@Nullable Context context, @Nonnull Billing billing, @Nonnull Collection<String> products) {
+        this.billing = billing;
+        Check.isNotEmpty(products);
+        this.context = context;
+        this.products = new ArrayList<>(products);
+    }
 
-	@Nonnull
-	public static Checkout forService(@Nonnull Service service, @Nonnull Billing billing, @Nonnull Collection<String> products) {
-		return new Checkout(service, billing, products);
-	}
+    /**
+     * For activity {@link ActivityCheckout#onActivityResult(int, int, android.content.Intent)} must
+     * be called from appropriate
+     * activity method.
+     */
+    @Nonnull
+    public static ActivityCheckout forActivity(@Nonnull Activity activity, @Nonnull Billing billing, @Nonnull Collection<String> products) {
+        return new ActivityCheckout(activity, billing, products);
+    }
 
-	@Nonnull
-	public static Checkout forApplication(@Nonnull Billing billing, @Nonnull Collection<String> products) {
-		return new Checkout(null, billing, products);
-	}
+    @Nonnull
+    public static ActivityCheckout forActivity(@Nonnull Activity activity, @Nonnull Checkout checkout) {
+        return new ActivityCheckout(activity, checkout.billing, checkout.products);
+    }
 
-	@Nonnull
-	Context getContext() {
-		return billing.getContext();
-	}
+    @Nonnull
+    public static Checkout forService(@Nonnull Service service, @Nonnull Billing billing, @Nonnull Collection<String> products) {
+        return new Checkout(service, billing, products);
+    }
 
-	/**
-	 * Initial request listener, all methods are called on the main application thread
-	 */
-	public static interface Listener {
-		/**
-		 * Called when {@link BillingRequests#isBillingSupported(String, RequestListener)} finished for all products
-		 *
-		 * @param requests requests ready to use
-		 */
-		void onReady(@Nonnull BillingRequests requests);
+    @Nonnull
+    public static Checkout forApplication(@Nonnull Billing billing, @Nonnull Collection<String> products) {
+        return new Checkout(null, billing, products);
+    }
 
-		/**
-		 * Called when {@link BillingRequests#isBillingSupported(String, RequestListener)} finished for <var>product</var>
-		 * with <var>billingSupported</var> result
-		 *
-		 * @param requests         requests ready to use
-		 * @param product          product for which check was done
-		 * @param billingSupported true if billing is supported for <var>product</var>
-		 */
-		void onReady(@Nonnull BillingRequests requests, @Nonnull String product, boolean billingSupported);
-	}
+    @Nonnull
+    Context getContext() {
+        return billing.getContext();
+    }
 
-	/**
-	 * This adapter class provides empty implementations of the methods from {@link org.solovyev.android.checkout.Checkout.Listener}.
-	 * Any custom listener that cares only about a subset of the methods of this listener can
-	 * simply subclass this adapter class instead of implementing the interface directly.
-	 */
-	public static abstract class ListenerAdapter implements Listener {
-		@Override
-		public void onReady(@Nonnull BillingRequests requests) {
-		}
+    @Nonnull
+    List<String> getProducts() {
+        return products;
+    }
 
-		@Override
-		public void onReady(@Nonnull BillingRequests requests, @Nonnull String product, boolean billingSupported) {
-		}
-	}
+    public void start() {
+        start(null);
+    }
 
-	@Nullable
-	protected final Context context;
+    public void start(@Nullable final Listener listener) {
+        Check.isMainThread();
 
-	@Nonnull
-	protected final Billing billing;
+        synchronized (lock) {
+            Check.isFalse(state == State.STARTED, "Already started");
+            Check.isNull(requests, "Already started");
+            state = State.STARTED;
+            billing.onCheckoutStarted();
+            requests = billing.getRequests(context);
+            if (listener != null) {
+                listeners.add(listener);
+            }
+            for (final String product : products) {
+                requests.isBillingSupported(product, new RequestListener<Object>() {
+                    @Override
+                    public void onSuccess(@Nonnull Object result) {
+                        onBillingSupported(product, true);
+                    }
 
-	@Nonnull
-	private final List<String> products;
+                    @Override
+                    public void onError(int response, @Nonnull Exception e) {
+                        onBillingSupported(product, false);
+                    }
+                });
+            }
+        }
+    }
 
-	@Nonnull
-	final Object lock = new Object();
+    public void whenReady(@Nonnull Listener listener) {
+        Check.isMainThread();
 
-	@GuardedBy("lock")
-	private Billing.Requests requests;
+        synchronized (lock) {
+            for (Map.Entry<String, Boolean> entry : supportedProducts.entrySet()) {
+                listener.onReady(requests, entry.getKey(), entry.getValue());
+            }
 
-	@GuardedBy("lock")
-	@Nonnull
-	private State state = State.INITIAL;
+            if (isReady()) {
+                checkIsNotStopped();
+                Check.isNotNull(requests);
+                listener.onReady(requests);
+            } else {
+                // still waiting
+                listeners.add(listener);
+            }
+        }
+    }
 
-	@GuardedBy("lock")
-	@Nonnull
-	private final Listeners listeners = new Listeners();
+    private void checkIsNotStopped() {
+        Check.isFalse(state == State.STOPPED, "Checkout is stopped");
+    }
 
-	@GuardedBy("lock")
-	@Nonnull
-	private final Map<String, Boolean> supportedProducts = new HashMap<String, Boolean>();
+    private boolean isReady() {
+        Check.isTrue(Thread.holdsLock(lock), "Should be called from synchronized block");
+        return supportedProducts.size() == products.size();
+    }
 
-	@Nonnull
-	private final OnLoadExecutor onLoadExecutor = new OnLoadExecutor();
+    private void onBillingSupported(@Nonnull String product, boolean supported) {
+        synchronized (lock) {
+            supportedProducts.put(product, supported);
+            listeners.onReady(requests, product, supported);
+            if (isReady()) {
+                listeners.onReady(requests);
+                listeners.clear();
+            }
+        }
+    }
 
-	Checkout(@Nullable Context context, @Nonnull Billing billing, @Nonnull Collection<String> products) {
-		this.billing = billing;
-		Check.isNotEmpty(products);
-		this.context = context;
-		this.products = new ArrayList<>(products);
-	}
+    @Nonnull
+    public Inventory loadInventory(@Nonnull SkuIds skus) {
+        Check.isMainThread();
 
-	@Nonnull
-	List<String> getProducts() {
-		return products;
-	}
+        synchronized (lock) {
+            checkIsNotStopped();
+        }
 
-	public void start() {
-		start(null);
-	}
+        final Inventory inventory;
+        final Inventory fallbackInventory = billing.getConfiguration().getFallbackInventory(this, onLoadExecutor);
+        if (fallbackInventory == null) {
+            inventory = new CheckoutInventory(this);
+        } else {
+            inventory = new FallingBackInventory(this, fallbackInventory);
+        }
+        inventory.load(skus);
+        return inventory;
+    }
 
-	public void start(@Nullable final Listener listener) {
-		Check.isMainThread();
+    /**
+     * Method clears all listeners and cancels all pending requests. After this method is called no
+     * more work can be
+     * done with this class unless {@link Checkout#start()} method is called again.
+     */
+    public void stop() {
+        Check.isMainThread();
 
-		synchronized (lock) {
-			Check.isFalse(state == State.STARTED, "Already started");
-			Check.isNull(requests, "Already started");
-			state = State.STARTED;
-			billing.onCheckoutStarted();
-			requests = billing.getRequests(context);
-			if (listener != null) {
-				listeners.add(listener);
-			}
-			for (final String product : products) {
-				requests.isBillingSupported(product, new RequestListener<Object>() {
-					@Override
-					public void onSuccess(@Nonnull Object result) {
-						onBillingSupported(product, true);
-					}
+        synchronized (lock) {
+            supportedProducts.clear();
+            listeners.clear();
+            if (state != State.INITIAL) {
+                state = State.STOPPED;
+            }
+            if (requests != null) {
+                requests.cancelAll();
+                requests = null;
+            }
+            if (state == State.STOPPED) {
+                billing.onCheckoutStopped();
+            }
+        }
+    }
 
-					@Override
-					public void onError(int response, @Nonnull Exception e) {
-						onBillingSupported(product, false);
-					}
-				});
-			}
-		}
-	}
+    public boolean isBillingSupported(@Nonnull String product) {
+        Check.isTrue(products.contains(product), "Product should be added to the products list");
+        Check.isTrue(supportedProducts.containsKey(product), "Billing information is not ready yet");
+        return supportedProducts.get(product);
+    }
 
-	public void whenReady(@Nonnull Listener listener) {
-		Check.isMainThread();
+    private enum State {
+        INITIAL,
+        STARTED,
+        STOPPED
+    }
 
-		synchronized (lock) {
-			for (Map.Entry<String, Boolean> entry : supportedProducts.entrySet()) {
-				listener.onReady(requests, entry.getKey(), entry.getValue());
-			}
+    /**
+     * Initial request listener, all methods are called on the main application thread
+     */
+    public static interface Listener {
+        /**
+         * Called when {@link BillingRequests#isBillingSupported(String, RequestListener)} finished
+         * for all products
+         *
+         * @param requests requests ready to use
+         */
+        void onReady(@Nonnull BillingRequests requests);
 
-			if (isReady()) {
-				checkIsNotStopped();
-				Check.isNotNull(requests);
-				listener.onReady(requests);
-			} else {
-				// still waiting
-				listeners.add(listener);
-			}
-		}
-	}
+        /**
+         * Called when {@link BillingRequests#isBillingSupported(String, RequestListener)} finished
+         * for <var>product</var>
+         * with <var>billingSupported</var> result
+         *
+         * @param requests         requests ready to use
+         * @param product          product for which check was done
+         * @param billingSupported true if billing is supported for <var>product</var>
+         */
+        void onReady(@Nonnull BillingRequests requests, @Nonnull String product, boolean billingSupported);
+    }
 
-	private void checkIsNotStopped() {
-		Check.isFalse(state == State.STOPPED, "Checkout is stopped");
-	}
+    /**
+     * This adapter class provides empty implementations of the methods from {@link
+     * org.solovyev.android.checkout.Checkout.Listener}.
+     * Any custom listener that cares only about a subset of the methods of this listener can
+     * simply subclass this adapter class instead of implementing the interface directly.
+     */
+    public static abstract class ListenerAdapter implements Listener {
+        @Override
+        public void onReady(@Nonnull BillingRequests requests) {
+        }
 
-	private boolean isReady() {
-		Check.isTrue(Thread.holdsLock(lock), "Should be called from synchronized block");
-		return supportedProducts.size() == products.size();
-	}
+        @Override
+        public void onReady(@Nonnull BillingRequests requests, @Nonnull String product, boolean billingSupported) {
+        }
+    }
 
-	private void onBillingSupported(@Nonnull String product, boolean supported) {
-		synchronized (lock) {
-			supportedProducts.put(product, supported);
-			listeners.onReady(requests, product, supported);
-			if (isReady()) {
-				listeners.onReady(requests);
-				listeners.clear();
-			}
-		}
-	}
+    private static final class Listeners implements Listener {
+        @Nonnull
+        private final List<Listener> list = new ArrayList<Listener>();
 
-	@Nonnull
-	public Inventory loadInventory(@Nonnull SkuIds skus) {
-		Check.isMainThread();
+        public void add(@Nonnull Listener l) {
+            if (!list.contains(l)) {
+                list.add(l);
+            }
+        }
 
-		synchronized (lock) {
-			checkIsNotStopped();
-		}
+        @Override
+        public void onReady(@Nonnull BillingRequests requests) {
+            final List<Listener> localList = new ArrayList<Listener>(list);
+            list.clear();
+            for (Listener listener : localList) {
+                listener.onReady(requests);
+            }
+        }
 
-		final Inventory inventory;
-		final Inventory fallbackInventory = billing.getConfiguration().getFallbackInventory(this, onLoadExecutor);
-		if (fallbackInventory == null) {
-			inventory = new CheckoutInventory(this);
-		} else {
-			inventory = new FallingBackInventory(this, fallbackInventory);
-		}
-		inventory.load(skus);
-		return inventory;
-	}
+        @Override
+        public void onReady(@Nonnull BillingRequests requests, @Nonnull String product, boolean billingSupported) {
+            for (Listener listener : list) {
+                listener.onReady(requests, product, billingSupported);
+            }
+        }
 
-	/**
-	 * Method clears all listeners and cancels all pending requests. After this method is called no more work can be
-	 * done with this class unless {@link Checkout#start()} method is called again.
-	 */
-	public void stop() {
-		Check.isMainThread();
+        public void clear() {
+            list.clear();
+        }
+    }
 
-		synchronized (lock) {
-			supportedProducts.clear();
-			listeners.clear();
-			if (state != State.INITIAL) {
-				state = State.STOPPED;
-			}
-			if (requests != null) {
-				requests.cancelAll();
-				requests = null;
-			}
-			if (state == State.STOPPED) {
-				billing.onCheckoutStopped();
-			}
-		}
-	}
+    private final class OnLoadExecutor implements Executor {
+        @Override
+        public void execute(Runnable command) {
+            final Executor executor;
+            synchronized (lock) {
+                executor = requests != null ? requests.getDeliveryExecutor() : null;
+            }
 
-	public boolean isBillingSupported(@Nonnull String product) {
-		Check.isTrue(products.contains(product), "Product should be added to the products list");
-		Check.isTrue(supportedProducts.containsKey(product), "Billing information is not ready yet");
-		return supportedProducts.get(product);
-	}
-
-	private static final class Listeners implements Listener {
-		@Nonnull
-		private final List<Listener> list = new ArrayList<Listener>();
-
-		public void add(@Nonnull Listener l) {
-			if (!list.contains(l)) {
-				list.add(l);
-			}
-		}
-
-		@Override
-		public void onReady(@Nonnull BillingRequests requests) {
-			final List<Listener> localList = new ArrayList<Listener>(list);
-			list.clear();
-			for (Listener listener : localList) {
-				listener.onReady(requests);
-			}
-		}
-
-		@Override
-		public void onReady(@Nonnull BillingRequests requests, @Nonnull String product, boolean billingSupported) {
-			for (Listener listener : list) {
-				listener.onReady(requests, product, billingSupported);
-			}
-		}
-
-		public void clear() {
-			list.clear();
-		}
-	}
-
-	private final class OnLoadExecutor implements Executor {
-		@Override
-		public void execute(Runnable command) {
-			final Executor executor;
-			synchronized (lock) {
-				executor = requests != null ? requests.getDeliveryExecutor() : null;
-			}
-
-			if (executor != null) {
-				executor.execute(command);
-			} else {
-				Billing.error("Trying to deliver result on stopped checkout.");
-			}
-		}
-	}
-
-	private enum State {
-		INITIAL,
-		STARTED,
-		STOPPED
-	}
+            if (executor != null) {
+                executor.execute(command);
+            } else {
+                Billing.error("Trying to deliver result on stopped checkout.");
+            }
+        }
+    }
 }

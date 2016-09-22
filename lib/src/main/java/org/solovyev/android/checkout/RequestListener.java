@@ -25,23 +25,28 @@ package org.solovyev.android.checkout;
 import javax.annotation.Nonnull;
 
 /**
- * Listener associated with request. This listener methods are called when result is ready or in case of any error.
- * Listener methods might be called either on background thread or on the main application thread. See {@link Billing} for more
+ * Listener associated with request. This listener methods are called when result is ready or in
+ * case of any error.
+ * Listener methods might be called either on background thread or on the main application thread.
+ * See {@link Billing} for more
  * information.<br/>
- * <b>Note</b>: if listener contains references to activity/context the associated request should be cancelled through
+ * <b>Note</b>: if listener contains references to activity/context the associated request should be
+ * cancelled through
  * {@link Billing#cancel(int)} or {@link Billing#cancelAll()} methods.
  */
 public interface RequestListener<R> {
-	/**
-	 * Called when request is finished successfully.
-	 * @param result request result
-	 */
-	void onSuccess(@Nonnull R result);
+    /**
+     * Called when request is finished successfully.
+     *
+     * @param result request result
+     */
+    void onSuccess(@Nonnull R result);
 
-	/**
-	 * Called when request is finished with an error (for example, exception was raised).
-	 * @param response response code
-	 * @param e raised exception
-	 */
-	void onError(int response, @Nonnull Exception e);
+    /**
+     * Called when request is finished with an error (for example, exception was raised).
+     *
+     * @param response response code
+     * @param e        raised exception
+     */
+    void onError(int response, @Nonnull Exception e);
 }

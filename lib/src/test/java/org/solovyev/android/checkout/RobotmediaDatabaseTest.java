@@ -48,146 +48,146 @@ import static org.solovyev.android.checkout.Tests.sameThreadExecutor;
 @Config(manifest = Config.NONE)
 public class RobotmediaDatabaseTest {
 
-	@Nonnull
-	private Checkout checkout;
+    @Nonnull
+    private Checkout checkout;
 
-	@Nonnull
-	private BillingDB db;
+    @Nonnull
+    private BillingDB db;
 
-	@Nonnull
-	private SkuIds skuIds;
+    @Nonnull
+    private SkuIds skuIds;
 
-	@Before
-	public void setUp() throws Exception {
-		final Billing billing = Tests.newBilling();
-		billing.setMainThread(sameThreadExecutor());
-		skuIds = SkuIds.create().add(IN_APP, asList("sku_0", "sku_1", "sku_2", "sku_3", "sku_4", "sku_6"));
-		checkout = Checkout.forApplication(billing, skuIds.getProducts());
-		db = new BillingDB(RuntimeEnvironment.application);
-	}
+    @Before
+    public void setUp() throws Exception {
+        final Billing billing = Tests.newBilling();
+        billing.setMainThread(sameThreadExecutor());
+        skuIds = SkuIds.create().add(IN_APP, asList("sku_0", "sku_1", "sku_2", "sku_3", "sku_4", "sku_6"));
+        checkout = Checkout.forApplication(billing, skuIds.getProducts());
+        db = new BillingDB(RuntimeEnvironment.application);
+    }
 
-	@Test
-	public void testShouldCreateEmptyProductsIfError() throws Exception {
-		db.close();
-		RuntimeEnvironment.application.deleteDatabase(RobotmediaDatabase.NAME);
+    @Test
+    public void testShouldCreateEmptyProductsIfError() throws Exception {
+        db.close();
+        RuntimeEnvironment.application.deleteDatabase(RobotmediaDatabase.NAME);
 
-		final RobotmediaInventory inventory = new RobotmediaInventory(checkout, sameThreadExecutor());
-		final CountDownListener l = new CountDownListener();
-		inventory.load(skuIds).whenLoaded(l);
+        final RobotmediaInventory inventory = new RobotmediaInventory(checkout, sameThreadExecutor());
+        final CountDownListener l = new CountDownListener();
+        inventory.load(skuIds).whenLoaded(l);
 
-		final Inventory.Products products = l.waitProducts();
-		final Inventory.Product product = products.get(IN_APP);
-		assertNotNull(product);
-		assertTrue(product.getPurchases().isEmpty());
-	}
+        final Inventory.Products products = l.waitProducts();
+        final Inventory.Product product = products.get(IN_APP);
+        assertNotNull(product);
+        assertTrue(product.getPurchases().isEmpty());
+    }
 
-	@Test
-	public void testShouldReadTransactions() throws Exception {
-		db.insert(newTransaction(0));
-		db.insert(newTransaction(1));
-		db.insert(newTransaction(2));
-		db.insert(newTransaction(3));
-		db.insert(newTransaction(4));
-		db.insert(newTransaction(5));
+    @Test
+    public void testShouldReadTransactions() throws Exception {
+        db.insert(newTransaction(0));
+        db.insert(newTransaction(1));
+        db.insert(newTransaction(2));
+        db.insert(newTransaction(3));
+        db.insert(newTransaction(4));
+        db.insert(newTransaction(5));
 
-		final RobotmediaInventory inventory = new RobotmediaInventory(checkout, sameThreadExecutor());
-		final CountDownListener l = new CountDownListener();
-		inventory.load(skuIds).whenLoaded(l);
+        final RobotmediaInventory inventory = new RobotmediaInventory(checkout, sameThreadExecutor());
+        final CountDownListener l = new CountDownListener();
+        inventory.load(skuIds).whenLoaded(l);
 
-		final Inventory.Products products = l.waitProducts();
-		final Inventory.Product product = products.get(IN_APP);
-		assertTrue(product.supported);
-		final List<Purchase> purchases = product.getPurchases();
-		assertEquals(5, purchases.size());
-		verifyPurchase(purchases, 0);
-		verifyPurchase(purchases, 1);
-		verifyPurchase(purchases, 2);
-		verifyPurchase(purchases, 3);
-		verifyPurchase(purchases, 4);
-	}
+        final Inventory.Products products = l.waitProducts();
+        final Inventory.Product product = products.get(IN_APP);
+        assertTrue(product.supported);
+        final List<Purchase> purchases = product.getPurchases();
+        assertEquals(5, purchases.size());
+        verifyPurchase(purchases, 0);
+        verifyPurchase(purchases, 1);
+        verifyPurchase(purchases, 2);
+        verifyPurchase(purchases, 3);
+        verifyPurchase(purchases, 4);
+    }
 
-	@Test
-	public void testShouldReadEmptyList() throws Exception {
-		final RobotmediaInventory inventory = new RobotmediaInventory(checkout, sameThreadExecutor());
-		final CountDownListener l = new CountDownListener();
-		inventory.load(skuIds).whenLoaded(l);
+    @Test
+    public void testShouldReadEmptyList() throws Exception {
+        final RobotmediaInventory inventory = new RobotmediaInventory(checkout, sameThreadExecutor());
+        final CountDownListener l = new CountDownListener();
+        inventory.load(skuIds).whenLoaded(l);
 
-		final Inventory.Products products = l.waitProducts();
-		final Inventory.Product product = products.get(IN_APP);
-		assertTrue(product.supported);
-		final List<Purchase> purchases = product.getPurchases();
-		assertEquals(0, purchases.size());
-	}
+        final Inventory.Products products = l.waitProducts();
+        final Inventory.Product product = products.get(IN_APP);
+        assertTrue(product.supported);
+        final List<Purchase> purchases = product.getPurchases();
+        assertEquals(0, purchases.size());
+    }
 
-	@Test
-	public void testShouldCreateValidInClause() throws Exception {
-		assertEquals("(?)", makeInClause(1));
-		assertEquals("(?,?)", makeInClause(2));
-		assertEquals("(?,?,?)", makeInClause(3));
-		assertEquals("(?,?,?,?)", makeInClause(4));
+    @Test
+    public void testShouldCreateValidInClause() throws Exception {
+        assertEquals("(?)", makeInClause(1));
+        assertEquals("(?,?)", makeInClause(2));
+        assertEquals("(?,?,?)", makeInClause(3));
+        assertEquals("(?,?,?,?)", makeInClause(4));
 
-		try {
-			makeInClause(0);
-			fail();
-		} catch (RuntimeException e) {
-			// ok
-		}
+        try {
+            makeInClause(0);
+            fail();
+        } catch (RuntimeException e) {
+            // ok
+        }
 
-	}
+    }
 
-	private void verifyPurchase(@Nonnull List<Purchase> purchases, int id) {
-		final Purchase purchase = findPurchase(purchases, id);
-		verifyPurchase(purchase, id);
-	}
+    private void verifyPurchase(@Nonnull List<Purchase> purchases, int id) {
+        final Purchase purchase = findPurchase(purchases, id);
+        verifyPurchase(purchase, id);
+    }
 
-	private void verifyPurchase(@Nonnull Purchase purchase, int id) {
-		final Transaction transaction = newTransaction(id);
-		assertEquals(transaction.orderId, purchase.orderId);
-		assertEquals(transaction.productId, purchase.sku);
-		assertEquals(transaction.developerPayload, purchase.payload);
-		assertEquals(transaction.purchaseTime, purchase.time);
-		assertEquals(transaction.purchaseState.ordinal(), purchase.state.id);
-	}
+    private void verifyPurchase(@Nonnull Purchase purchase, int id) {
+        final Transaction transaction = newTransaction(id);
+        assertEquals(transaction.orderId, purchase.orderId);
+        assertEquals(transaction.productId, purchase.sku);
+        assertEquals(transaction.developerPayload, purchase.payload);
+        assertEquals(transaction.purchaseTime, purchase.time);
+        assertEquals(transaction.purchaseState.ordinal(), purchase.state.id);
+    }
 
-	@Nonnull
-	private Purchase findPurchase(@Nonnull List<Purchase> purchases, int id) {
-		for (Purchase purchase : purchases) {
-			if(purchase.orderId.equals(String.valueOf(id))) {
-				return purchase;
-			}
-		}
-		throw new AssertionError("Purchase with id " + id + " was not found");
-	}
+    @Nonnull
+    private Purchase findPurchase(@Nonnull List<Purchase> purchases, int id) {
+        for (Purchase purchase : purchases) {
+            if (purchase.orderId.equals(String.valueOf(id))) {
+                return purchase;
+            }
+        }
+        throw new AssertionError("Purchase with id " + id + " was not found");
+    }
 
-	@Nonnull
-	private Transaction newTransaction(int id) {
-		final Transaction t = new Transaction();
-		t.orderId = String.valueOf(id);
-		t.productId = "sku_" + id;
-		t.purchaseTime = id;
-		final Transaction.PurchaseState[] states = Transaction.PurchaseState.values();
-		t.purchaseState = states[id % states.length];
-		t.developerPayload = id % 2 == 0 ? "payload_" + id : null;
-		return t;
-	}
+    @Nonnull
+    private Transaction newTransaction(int id) {
+        final Transaction t = new Transaction();
+        t.orderId = String.valueOf(id);
+        t.productId = "sku_" + id;
+        t.purchaseTime = id;
+        final Transaction.PurchaseState[] states = Transaction.PurchaseState.values();
+        t.purchaseState = states[id % states.length];
+        t.developerPayload = id % 2 == 0 ? "payload_" + id : null;
+        return t;
+    }
 
-	private static class CountDownListener implements Inventory.Listener {
-		@Nonnull
-		private final CountDownLatch latch = new CountDownLatch(1);
-		private Inventory.Products products;
+    private static class CountDownListener implements Inventory.Listener {
+        @Nonnull
+        private final CountDownLatch latch = new CountDownLatch(1);
+        private Inventory.Products products;
 
-		@Override
-		public void onLoaded(@Nonnull Inventory.Products products) {
-			this.products = products;
-			latch.countDown();
-		}
+        @Override
+        public void onLoaded(@Nonnull Inventory.Products products) {
+            this.products = products;
+            latch.countDown();
+        }
 
-		@Nonnull
-		Inventory.Products waitProducts() throws InterruptedException {
-			if (latch.await(5, TimeUnit.SECONDS)) {
-				return products;
-			}
-			throw new AssertionError();
-		}
-	}
+        @Nonnull
+        Inventory.Products waitProducts() throws InterruptedException {
+            if (latch.await(5, TimeUnit.SECONDS)) {
+                return products;
+            }
+            throw new AssertionError();
+        }
+    }
 }

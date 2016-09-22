@@ -32,141 +32,145 @@ import org.skyscreamer.jsonassert.JSONAssert;
 
 import javax.annotation.Nonnull;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class PurchaseTest {
 
-	@Test
-	public void testShouldBeCreatedFromJson() throws Exception {
-		final Purchase purchase = Purchase.fromJson(newJson(2, Purchase.State.REFUNDED), "signature");
-		verifyPurchase(purchase, 2, Purchase.State.REFUNDED);
-	}
+    static void verifyPurchase(@Nonnull Purchase purchase, long id, Purchase.State state) {
+        verifyPurchase(purchase, id, state, true, false);
+    }
 
-	@Test
-	public void testToJsonShouldReturnCorrectJson() throws Exception {
-		final Purchase purchase = Purchase.fromJson(newJson(2, Purchase.State.REFUNDED), "signature");
-		final String json = purchase.toJson();
-		final Purchase actual = Purchase.fromJson(json, "signature");
+    static void verifyPurchase(@Nonnull Purchase purchase, long id, Purchase.State state, boolean complete, boolean sub) {
+        if (sub) {
+            assertEquals("sub" + String.valueOf(id), purchase.sku);
+        } else {
+            assertEquals(String.valueOf(id), purchase.sku);
+        }
+        if (sub) {
+            assertEquals("suborderId_" + id, purchase.orderId);
+        } else {
+            assertEquals("orderId_" + id, purchase.orderId);
+        }
+        if (complete) {
+            assertEquals("packageName_" + id, purchase.packageName);
+        }
+        assertEquals(id, purchase.time);
+        assertEquals(state, purchase.state);
+        assertEquals("developerPayload_" + id, purchase.payload);
+        if (complete) {
+            assertEquals("purchaseToken_" + id, purchase.token);
+        }
+    }
 
-		verifyPurchase(actual, 2, Purchase.State.REFUNDED);
-	}
+    @Nonnull
+    static String newJson(long id, Purchase.State state) throws JSONException {
+        return newJsonObject(id, state).toString();
+    }
 
-	@Test
-	public void testToJsonShouldReturnCorrectJsonForPartiallyEmptyPurchase() throws Exception {
-		final JSONObject expected = newJsonObject(3, Purchase.State.CANCELLED);
-		expected.remove("orderId");
-		expected.remove("packageName");
-		expected.remove("purchaseState");
-		expected.remove("developerPayload");
-		expected.remove("purchaseToken");
-		final Purchase purchase = Purchase.fromJson(expected.toString(), "signature");
+    @Nonnull
+    static String newJsonSubscription(long id, Purchase.State state) throws JSONException {
+        return newJsonObjectSubscription(id, state).toString();
+    }
 
-		final JSONObject actual = new JSONObject(purchase.toJson());
-		assertTrue(actual.has("purchaseState"));
-		actual.remove("purchaseState");
+    @Nonnull
+    static JSONObject newJsonObjectSubscription(long id, Purchase.State state) throws JSONException {
+        JSONObject json = newJsonObject(id, state);
+        json.put("productId", "sub" + json.getString("productId"));
+        json.put("orderId", "sub" + json.getString("orderId"));
+        return json;
+    }
 
-		JSONAssert.assertEquals(expected, actual, false);
-	}
+    @Nonnull
+    static JSONObject newJsonObject(long id, Purchase.State state) throws JSONException {
+        final JSONObject json = new JSONObject();
+        json.put("productId", String.valueOf(id));
+        json.put("orderId", "orderId_" + id);
+        json.put("packageName", "packageName_" + id);
+        json.put("purchaseTime", id);
+        json.put("purchaseState", state.id);
+        json.put("developerPayload", "developerPayload_" + id);
+        json.put("purchaseToken", "purchaseToken_" + id);
+        return json;
+    }
 
-	@Test
-	public void testJsonShouldNotContainSignature() throws Exception {
-		final Purchase purchase = Purchase.fromJson(newJson(2, Purchase.State.REFUNDED), "signature");
-		final String json = purchase.toJson();
-		final JSONObject jsonObject = new JSONObject(json);
-		assertFalse(jsonObject.has("signature"));
-	}
+    @Test
+    public void testShouldBeCreatedFromJson() throws Exception {
+        final Purchase purchase = Purchase.fromJson(newJson(2, Purchase.State.REFUNDED), "signature");
+        verifyPurchase(purchase, 2, Purchase.State.REFUNDED);
+    }
 
-	@Test
-	public void testJsonShouldContainSignature() throws Exception {
-		final Purchase purchase = Purchase.fromJson(newJson(2, Purchase.State.REFUNDED), "signature");
-		final String json = purchase.toJson(true);
-		final JSONObject jsonObject = new JSONObject(json);
-		assertTrue(jsonObject.has("signature"));
-		assertEquals("signature", jsonObject.getString("signature"));
-	}
+    @Test
+    public void testToJsonShouldReturnCorrectJson() throws Exception {
+        final Purchase purchase = Purchase.fromJson(newJson(2, Purchase.State.REFUNDED), "signature");
+        final String json = purchase.toJson();
+        final Purchase actual = Purchase.fromJson(json, "signature");
 
-	@Test
-	public void testShouldNotBeCreatedIfProductIdIsMissing() throws Exception {
-		final JSONObject json = newJsonObject(4, Purchase.State.PURCHASED);
-		json.remove("productId");
+        verifyPurchase(actual, 2, Purchase.State.REFUNDED);
+    }
 
-		try {
-			Purchase.fromJson(json.toString(), "signature");
-			fail();
-		} catch (JSONException e) {
-		}
-	}
+    @Test
+    public void testToJsonShouldReturnCorrectJsonForPartiallyEmptyPurchase() throws Exception {
+        final JSONObject expected = newJsonObject(3, Purchase.State.CANCELLED);
+        expected.remove("orderId");
+        expected.remove("packageName");
+        expected.remove("purchaseState");
+        expected.remove("developerPayload");
+        expected.remove("purchaseToken");
+        final Purchase purchase = Purchase.fromJson(expected.toString(), "signature");
 
-	@Test
-	public void testShouldBeCreatedWithoutUnnecessaryProperties() throws Exception {
-		final JSONObject json = newJsonObject(3, Purchase.State.CANCELLED);
-		json.remove("orderId");
-		json.remove("packageName");
-		json.remove("purchaseState");
-		json.remove("developerPayload");
-		json.remove("purchaseToken");
+        final JSONObject actual = new JSONObject(purchase.toJson());
+        assertTrue(actual.has("purchaseState"));
+        actual.remove("purchaseState");
 
-		final Purchase purchase = Purchase.fromJson(json.toString(), "signature");
+        JSONAssert.assertEquals(expected, actual, false);
+    }
 
-		assertNotNull(purchase);
-	}
+    @Test
+    public void testJsonShouldNotContainSignature() throws Exception {
+        final Purchase purchase = Purchase.fromJson(newJson(2, Purchase.State.REFUNDED), "signature");
+        final String json = purchase.toJson();
+        final JSONObject jsonObject = new JSONObject(json);
+        assertFalse(jsonObject.has("signature"));
+    }
 
-	static void verifyPurchase(@Nonnull Purchase purchase, long id, Purchase.State state) {
-		verifyPurchase(purchase, id, state, true, false);
-	}
+    @Test
+    public void testJsonShouldContainSignature() throws Exception {
+        final Purchase purchase = Purchase.fromJson(newJson(2, Purchase.State.REFUNDED), "signature");
+        final String json = purchase.toJson(true);
+        final JSONObject jsonObject = new JSONObject(json);
+        assertTrue(jsonObject.has("signature"));
+        assertEquals("signature", jsonObject.getString("signature"));
+    }
 
-	static void verifyPurchase(@Nonnull Purchase purchase, long id, Purchase.State state, boolean complete, boolean sub) {
-		if (sub) {
-			assertEquals("sub" + String.valueOf(id), purchase.sku);
-		} else {
-			assertEquals(String.valueOf(id), purchase.sku);
-		}
-		if (sub) {
-			assertEquals("suborderId_" + id, purchase.orderId);
-		} else {
-			assertEquals("orderId_" + id, purchase.orderId);
-		}
-		if (complete) {
-			assertEquals("packageName_" + id, purchase.packageName);
-		}
-		assertEquals(id, purchase.time);
-		assertEquals(state, purchase.state);
-		assertEquals("developerPayload_" + id, purchase.payload);
-		if (complete) {
-			assertEquals("purchaseToken_" + id, purchase.token);
-		}
-	}
+    @Test
+    public void testShouldNotBeCreatedIfProductIdIsMissing() throws Exception {
+        final JSONObject json = newJsonObject(4, Purchase.State.PURCHASED);
+        json.remove("productId");
 
-	@Nonnull
-	static String newJson(long id, Purchase.State state) throws JSONException {
-		return newJsonObject(id, state).toString();
-	}
+        try {
+            Purchase.fromJson(json.toString(), "signature");
+            fail();
+        } catch (JSONException e) {
+        }
+    }
 
-	@Nonnull
-	static String newJsonSubscription(long id, Purchase.State state) throws JSONException {
-		return newJsonObjectSubscription(id, state).toString();
-	}
+    @Test
+    public void testShouldBeCreatedWithoutUnnecessaryProperties() throws Exception {
+        final JSONObject json = newJsonObject(3, Purchase.State.CANCELLED);
+        json.remove("orderId");
+        json.remove("packageName");
+        json.remove("purchaseState");
+        json.remove("developerPayload");
+        json.remove("purchaseToken");
 
-	@Nonnull
-	static JSONObject newJsonObjectSubscription(long id, Purchase.State state) throws JSONException {
-		JSONObject json = newJsonObject(id, state);
-		json.put("productId", "sub" + json.getString("productId"));
-		json.put("orderId", "sub" + json.getString("orderId"));
-		return json;
-	}
+        final Purchase purchase = Purchase.fromJson(json.toString(), "signature");
 
-	@Nonnull
-	static JSONObject newJsonObject(long id, Purchase.State state) throws JSONException {
-		final JSONObject json = new JSONObject();
-		json.put("productId", String.valueOf(id));
-		json.put("orderId", "orderId_" + id);
-		json.put("packageName", "packageName_" + id);
-		json.put("purchaseTime", id);
-		json.put("purchaseState", state.id);
-		json.put("developerPayload", "developerPayload_" + id);
-		json.put("purchaseToken", "purchaseToken_" + id);
-		return json;
-	}
+        assertNotNull(purchase);
+    }
 }

@@ -23,15 +23,15 @@
   -->
 
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
-	<!-- shapes are used because of http://stackoverflow.com/a/5155600/720489 -->
-	<item android:state_pressed="true">
-		<shape>
-			<solid android:color="@color/pressed_bg" />
-		</shape>
-	</item>
-	<item>
-		<shape>
-			<solid android:color="@android:color/transparent" />
-		</shape>
-	</item>
+    <!-- shapes are used because of http://stackoverflow.com/a/5155600/720489 -->
+    <item android:state_pressed="true">
+        <shape>
+            <solid android:color="@color/pressed_bg" />
+        </shape>
+    </item>
+    <item>
+        <shape>
+            <solid android:color="@android:color/transparent" />
+        </shape>
+    </item>
 </selector>

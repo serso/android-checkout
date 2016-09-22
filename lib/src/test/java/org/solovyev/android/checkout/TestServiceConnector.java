@@ -27,25 +27,24 @@ import com.android.vending.billing.IInAppBillingService;
 import javax.annotation.Nonnull;
 
 class TestServiceConnector implements Billing.ServiceConnector {
-	@Nonnull
-	private final Billing billing;
+    @Nonnull
+    public final IInAppBillingService service;
+    @Nonnull
+    private final Billing billing;
 
-	@Nonnull
-	public final IInAppBillingService service;
+    public TestServiceConnector(@Nonnull Billing billing, @Nonnull IInAppBillingService service) {
+        this.billing = billing;
+        this.service = service;
+    }
 
-	public TestServiceConnector(@Nonnull Billing billing, @Nonnull IInAppBillingService service) {
-		this.billing = billing;
-		this.service = service;
-	}
+    @Override
+    public boolean connect() {
+        billing.setService(service, true);
+        return true;
+    }
 
-	@Override
-	public boolean connect() {
-		billing.setService(service, true);
-		return true;
-	}
-
-	@Override
-	public void disconnect() {
-		billing.setService(null, false);
-	}
+    @Override
+    public void disconnect() {
+        billing.setService(null, false);
+    }
 }

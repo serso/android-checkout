@@ -37,22 +37,22 @@ import static org.solovyev.android.checkout.Billing.DAY;
 @Config(manifest = Config.NONE)
 abstract class CacheTestBase {
 
-	@Nonnull
-	private final AtomicInteger counter = new AtomicInteger();
+    @Nonnull
+    private final AtomicInteger counter = new AtomicInteger();
 
-	@Nonnull
-	protected final Cache.Key newKey() {
-		return new Cache.Key(counter.getAndIncrement() % RequestType.values().length, "test");
-	}
+    @Nonnull
+    protected final Cache.Key newKey() {
+        return new Cache.Key(counter.getAndIncrement() % RequestType.values().length, "test");
+    }
 
-	@Nonnull
-	protected final Cache.Entry newEntry() {
-		return newEntry(DAY);
-	}
+    @Nonnull
+    protected final Cache.Entry newEntry() {
+        return newEntry(DAY);
+    }
 
-	@Nonnull
-	protected final Cache.Entry newEntry(long expiresIn) {
-		return new Cache.Entry(counter.getAndIncrement(), currentTimeMillis() + expiresIn);
-	}
+    @Nonnull
+    protected final Cache.Entry newEntry(long expiresIn) {
+        return new Cache.Entry(counter.getAndIncrement(), currentTimeMillis() + expiresIn);
+    }
 
 }

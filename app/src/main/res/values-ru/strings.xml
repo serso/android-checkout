@@ -21,14 +21,14 @@
   -->
 
 <resources>
-	<string name="app_name">Checkout Lib</string>
-	<string name="skus_empty">Нет товаров для покупки</string>
-	<string name="billing_not_supported">Покупки внутри приложения не поддерживаются.\n\nВозможные причины:\n1. Приложение Google Play не установлено или не обновлено\n2. Приложение запущено в эмуляторе\n3. Ошибка в библиотеке</string>
-	<string name="msg_thank_you_for_purchase">Спасибо за покупку! Нажмите ещё раз для того, чтобы потребить товар.</string>
-	<string name="msg_item_consumed">Товар потреблён. Теперь вы можете купить его снова.</string>
-	<string name="items_for_purchase">Товары для продажи</string>
-	<string name="msg_info">Вступите в группу Альфа тестеров в Google+ для совершения тестовых покупок. Не забудьте поддержать проект реальными деньгами!</string>
-	<string name="cd_info">Информация</string>
-	<string name="join">Вступить</string>
-	<string name="cd_sku_icon">Иконка товара</string>
+    <string name="app_name">Checkout Lib</string>
+    <string name="skus_empty">Нет товаров для покупки</string>
+    <string name="billing_not_supported">Покупки внутри приложения не поддерживаются.\n\nВозможные причины:\n1. Приложение Google Play не установлено или не обновлено\n2. Приложение запущено в эмуляторе\n3. Ошибка в библиотеке</string>
+    <string name="msg_thank_you_for_purchase">Спасибо за покупку! Нажмите ещё раз для того, чтобы потребить товар.</string>
+    <string name="msg_item_consumed">Товар потреблён. Теперь вы можете купить его снова.</string>
+    <string name="items_for_purchase">Товары для продажи</string>
+    <string name="msg_info">Вступите в группу Альфа тестеров в Google+ для совершения тестовых покупок. Не забудьте поддержать проект реальными деньгами!</string>
+    <string name="cd_info">Информация</string>
+    <string name="join">Вступить</string>
+    <string name="cd_sku_icon">Иконка товара</string>
 </resources>

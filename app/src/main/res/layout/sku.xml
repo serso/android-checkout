@@ -23,46 +23,46 @@
   -->
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-	android:orientation="horizontal"
-	android:layout_width="match_parent"
-	android:layout_height="match_parent"
-	android:focusable="false"
-	android:focusableInTouchMode="false">
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:focusable="false"
+    android:focusableInTouchMode="false"
+    android:orientation="horizontal">
 
-	<ImageView
-		android:id="@+id/sku_icon"
-		android:contentDescription="@string/cd_sku_icon"
-		android:layout_gravity="center_vertical|left"
-		android:layout_width="wrap_content"
-		android:layout_height="wrap_content" />
+    <ImageView
+        android:id="@+id/sku_icon"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical|left"
+        android:contentDescription="@string/cd_sku_icon" />
 
-	<LinearLayout
-		android:layout_width="0dp"
-		android:layout_weight="1"
-		android:layout_height="wrap_content"
-		android:orientation="vertical">
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical">
 
-		<TextView
-			android:id="@+id/sku_title"
-			style="@style/ListItemText" />
+        <TextView
+            android:id="@+id/sku_title"
+            style="@style/ListItemText" />
 
-		<TextView
-			android:id="@+id/sku_description"
-			style="@style/ListItemSubText" />
+        <TextView
+            android:id="@+id/sku_description"
+            style="@style/ListItemSubText" />
 
-		<TextView
-			android:id="@+id/sku_price"
-			android:layout_width="wrap_content"
-			style="@style/SkuPrice" />
-	</LinearLayout>
+        <TextView
+            android:id="@+id/sku_price"
+            style="@style/SkuPrice"
+            android:layout_width="wrap_content" />
+    </LinearLayout>
 
-	<ImageView
-		android:id="@+id/sku_change_sub"
-		android:contentDescription="@string/change_subscription"
-		android:layout_gravity="center_vertical|left"
-		android:layout_width="wrap_content"
-		android:layout_height="wrap_content"
-		android:src="@drawable/ic_arrow_upward_black_24dp"
-		android:visibility="gone"/>
+    <ImageView
+        android:id="@+id/sku_change_sub"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical|left"
+        android:contentDescription="@string/change_subscription"
+        android:src="@drawable/ic_arrow_upward_black_24dp"
+        android:visibility="gone" />
 
 </LinearLayout>

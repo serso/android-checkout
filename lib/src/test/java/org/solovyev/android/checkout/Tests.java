@@ -43,107 +43,107 @@ import static org.mockito.Mockito.mock;
 
 public final class Tests {
 
-	private Tests() {
-		throw new AssertionError();
-	}
+    private Tests() {
+        throw new AssertionError();
+    }
 
-	@Nonnull
-	static CancellableExecutor sameThreadExecutor() {
-		return SameThreadExecutor.INSTANCE;
-	}
+    @Nonnull
+    static CancellableExecutor sameThreadExecutor() {
+        return SameThreadExecutor.INSTANCE;
+    }
 
-	@Nonnull
-	static Billing newBilling() {
-		return newBilling(true);
-	}
+    @Nonnull
+    static Billing newBilling() {
+        return newBilling(true);
+    }
 
-	@Nonnull
-	static Billing newBilling(boolean cache) {
-		return newBilling(cache, false);
-	}
+    @Nonnull
+    static Billing newBilling(boolean cache) {
+        return newBilling(cache, false);
+    }
 
-	@Nonnull
-	static Billing newBilling(boolean cache, boolean autoConnect) {
-		return newBilling(newConfiguration(cache, autoConnect));
-	}
+    @Nonnull
+    static Billing newBilling(boolean cache, boolean autoConnect) {
+        return newBilling(newConfiguration(cache, autoConnect));
+    }
 
-	@Nonnull
-	static Billing newBilling(@Nonnull Billing.Configuration configuration) {
-		final Billing billing = new Billing(RuntimeEnvironment.application, configuration);
-		billing.setPurchaseVerifier(Tests.newMockVerifier(true));
-		final IInAppBillingService service = mock(IInAppBillingService.class);
-		setService(billing, service);
-		return billing;
-	}
+    @Nonnull
+    static Billing newBilling(@Nonnull Billing.Configuration configuration) {
+        final Billing billing = new Billing(RuntimeEnvironment.application, configuration);
+        billing.setPurchaseVerifier(Tests.newMockVerifier(true));
+        final IInAppBillingService service = mock(IInAppBillingService.class);
+        setService(billing, service);
+        return billing;
+    }
 
-	@Nonnull
-	private static Billing.Configuration newConfiguration(final boolean cache, final boolean autoConnect) {
-		return new Billing.Configuration() {
-			@Nonnull
-			@Override
-			public String getPublicKey() {
-				return "test";
-			}
+    @Nonnull
+    private static Billing.Configuration newConfiguration(final boolean cache, final boolean autoConnect) {
+        return new Billing.Configuration() {
+            @Nonnull
+            @Override
+            public String getPublicKey() {
+                return "test";
+            }
 
-			@Nullable
-			@Override
-			public Cache getCache() {
-				return cache ? Billing.newCache() : null;
-			}
+            @Nullable
+            @Override
+            public Cache getCache() {
+                return cache ? Billing.newCache() : null;
+            }
 
-			@Nonnull
-			@Override
-			public PurchaseVerifier getPurchaseVerifier() {
-				return Billing.newPurchaseVerifier(this.getPublicKey());
-			}
+            @Nonnull
+            @Override
+            public PurchaseVerifier getPurchaseVerifier() {
+                return Billing.newPurchaseVerifier(this.getPublicKey());
+            }
 
-			@Override
-			public Inventory getFallbackInventory(@Nonnull Checkout checkout, @Nonnull Executor onLoadExecutor) {
-				return null;
-			}
+            @Override
+            public Inventory getFallbackInventory(@Nonnull Checkout checkout, @Nonnull Executor onLoadExecutor) {
+                return null;
+            }
 
-			@Override
-			public boolean isAutoConnect() {
-				return autoConnect;
-			}
-		};
-	}
+            @Override
+            public boolean isAutoConnect() {
+                return autoConnect;
+            }
+        };
+    }
 
-	@Nonnull
-	static Billing newSynchronousBilling() {
-		final Billing billing = new Billing(RuntimeEnvironment.application, newConfiguration(true, false));
-		billing.setPurchaseVerifier(Tests.newMockVerifier(true));
-		final IInAppBillingService service = mock(IInAppBillingService.class);
-		final CancellableExecutor sameThreadExecutor = sameThreadExecutor();
-		billing.setBackground(sameThreadExecutor);
-		billing.setMainThread(sameThreadExecutor);
-		setService(billing, service);
-		return billing;
-	}
+    @Nonnull
+    static Billing newSynchronousBilling() {
+        final Billing billing = new Billing(RuntimeEnvironment.application, newConfiguration(true, false));
+        billing.setPurchaseVerifier(Tests.newMockVerifier(true));
+        final IInAppBillingService service = mock(IInAppBillingService.class);
+        final CancellableExecutor sameThreadExecutor = sameThreadExecutor();
+        billing.setBackground(sameThreadExecutor);
+        billing.setMainThread(sameThreadExecutor);
+        setService(billing, service);
+        return billing;
+    }
 
-	static void setService(@Nonnull final Billing billing, @Nonnull final IInAppBillingService service) {
-		if (billing.getState() != Billing.State.INITIAL) {
-			billing.disconnect();
-		}
-		billing.setConnector(new TestServiceConnector(billing, service));
-	}
+    static void setService(@Nonnull final Billing billing, @Nonnull final IInAppBillingService service) {
+        if (billing.getState() != Billing.State.INITIAL) {
+            billing.disconnect();
+        }
+        billing.setConnector(new TestServiceConnector(billing, service));
+    }
 
-	@Nonnull
-	static PurchaseVerifier newMockVerifier(final boolean verified) {
-		return mockVerifier(mock(PurchaseVerifier.class), verified);
-	}
+    @Nonnull
+    static PurchaseVerifier newMockVerifier(final boolean verified) {
+        return mockVerifier(mock(PurchaseVerifier.class), verified);
+    }
 
-	@Nonnull
-	static PurchaseVerifier mockVerifier(@Nonnull PurchaseVerifier verifier, final boolean verified) {
-		doAnswer(new Answer<Object>() {
-			@Override
-			public Object answer(InvocationOnMock invocation) throws Throwable {
-				final List<Purchase> purchases = (List<Purchase>) invocation.getArguments()[0];
-				final RequestListener<List<Purchase>> l = (RequestListener) invocation.getArguments()[1];
-				l.onSuccess(verified ? new ArrayList<Purchase>(purchases) : Collections.<Purchase>emptyList());
-				return null;
-			}
-		}).when(verifier).verify(anyList(), any(RequestListener.class));
-		return verifier;
-	}
+    @Nonnull
+    static PurchaseVerifier mockVerifier(@Nonnull PurchaseVerifier verifier, final boolean verified) {
+        doAnswer(new Answer<Object>() {
+            @Override
+            public Object answer(InvocationOnMock invocation) throws Throwable {
+                final List<Purchase> purchases = (List<Purchase>) invocation.getArguments()[0];
+                final RequestListener<List<Purchase>> l = (RequestListener) invocation.getArguments()[1];
+                l.onSuccess(verified ? new ArrayList<Purchase>(purchases) : Collections.<Purchase>emptyList());
+                return null;
+            }
+        }).when(verifier).verify(anyList(), any(RequestListener.class));
+        return verifier;
+    }
 }

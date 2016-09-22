@@ -30,18 +30,18 @@ import static org.junit.Assert.assertNull;
 
 public class ConsumePurchaseRequestTest extends RequestTestBase {
 
-	@Override
-	protected ConsumePurchaseRequest newRequest() {
-		return newRequest("token");
-	}
+    @Override
+    protected ConsumePurchaseRequest newRequest() {
+        return newRequest("token");
+    }
 
-	@Nonnull
-	private ConsumePurchaseRequest newRequest(@Nonnull String token) {
-		return new ConsumePurchaseRequest(token);
-	}
+    @Nonnull
+    private ConsumePurchaseRequest newRequest(@Nonnull String token) {
+        return new ConsumePurchaseRequest(token);
+    }
 
-	@Test
-	public void testShouldNotBeCached() throws Exception {
-		assertNull(newRequest().getCacheKey());
-	}
+    @Test
+    public void testShouldNotBeCached() throws Exception {
+        assertNull(newRequest().getCacheKey());
+    }
 }
