@@ -31,4 +31,5 @@
 	<string name="cd_info">Information</string>
 	<string name="join">Join</string>
 	<string name="cd_sku_icon">Item icon</string>
+	<string name="change_subscription">Change subscription</string>
 </resources>

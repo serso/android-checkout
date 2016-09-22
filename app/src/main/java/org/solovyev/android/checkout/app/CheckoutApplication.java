@@ -49,6 +49,7 @@ import javax.annotation.Nullable;
 
 import static android.content.Intent.ACTION_VIEW;
 import static org.solovyev.android.checkout.ProductTypes.IN_APP;
+import static org.solovyev.android.checkout.ProductTypes.SUBSCRIPTION;
 
 @ReportsCrashes(mailTo = CheckoutApplication.MAIL,
 		mode = ReportingInteractionMode.SILENT)
@@ -61,14 +62,17 @@ public class CheckoutApplication extends Application {
 	private static final Products products;
 
 	static {
-		final List<String> skus = new ArrayList<>();
-		skus.addAll(Arrays.asList("coffee", "beer", "cake", "hamburger"));
+		final List<String> inApps = new ArrayList<>();
+		inApps.addAll(Arrays.asList("coffee", "beer", "cake", "hamburger"));
 		for (int i = 0; i < 20; i++) {
 			final int id = i + 1;
 			final String sku = id < 10 ? "item_0" + id : "item_" + id;
-			skus.add(sku);
+			inApps.add(sku);
 		}
-		products = Products.create().add(IN_APP, skus);
+		final List<String> subs = new ArrayList<>();
+		subs.add("sub_01");
+		subs.add("sub_02");
+		products = Products.create().add(IN_APP, inApps).add(SUBSCRIPTION, subs);
 	}
 
 	/**

@@ -23,6 +23,7 @@
 package org.solovyev.android.checkout;
 
 import android.os.RemoteException;
+
 import com.android.vending.billing.IInAppBillingService;
 
 import javax.annotation.Nonnull;
@@ -34,14 +35,16 @@ final class BillingSupportedRequest extends Request<Object> {
 
 	@Nonnull
 	private final String product;
+	private final int apiVersion;
 
-	BillingSupportedRequest(@Nonnull String product) {
-		super(BILLING_SUPPORTED);
+	BillingSupportedRequest(@Nonnull String product, int apiVersion) {
+		super(BILLING_SUPPORTED, apiVersion);
 		this.product = product;
+		this.apiVersion = apiVersion;
 	}
 
 	@Override
-	public void start(@Nonnull IInAppBillingService service, int apiVersion, @Nonnull String packageName) throws RemoteException {
+	public void start(@Nonnull IInAppBillingService service, @Nonnull String packageName) throws RemoteException {
 		final int response = service.isBillingSupported(apiVersion, packageName, product);
 		if (!handleError(response)) {
 			onSuccess(new Object());

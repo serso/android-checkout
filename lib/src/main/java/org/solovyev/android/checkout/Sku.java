@@ -79,6 +79,14 @@ public final class Sku {
 		return new Sku(product, sku, price, detailedPrice, title, description);
 	}
 
+	public boolean isInApp() {
+		return product.equals(ProductTypes.IN_APP);
+	}
+
+	public boolean isSubscription() {
+		return product.equals(ProductTypes.SUBSCRIPTION);
+	}
+
 	/**
 	 * Contains detailed information about SKU's price as described <a href="http://developer.android.com/google/play/billing/billing_reference.html#getSkuDetails">here</a>
 	 */

@@ -22,19 +22,24 @@
 
 package org.solovyev.android.checkout;
 
+import static android.app.Activity.RESULT_OK;
+import static java.util.Arrays.asList;
+import static org.solovyev.android.checkout.ResponseCodes.EXCEPTION;
+import static org.solovyev.android.checkout.ResponseCodes.NULL_INTENT;
+import static org.solovyev.android.checkout.ResponseCodes.OK;
+import static org.solovyev.android.checkout.ResponseCodes.WRONG_SIGNATURE;
+
 import android.app.Activity;
 import android.app.PendingIntent;
 import android.content.Intent;
 import android.content.IntentSender;
+
 import org.json.JSONException;
+
+import java.util.List;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.List;
-
-import static android.app.Activity.RESULT_OK;
-import static java.util.Arrays.asList;
-import static org.solovyev.android.checkout.ResponseCodes.*;
 
 /**
  * Class which handles different events during the purchase process
@@ -106,12 +111,12 @@ public final class PurchaseFlow implements CancellableRequestListener<PendingInt
 	}
 
 	private void handleError(int response) {
-		Billing.error("Error response: " + response + " in " + PurchaseRequest.class.getSimpleName() + " request");
+		Billing.error("Error response: " + response + " in Purchase/ChangePurchase request");
 		onError(response, new BillingException(response));
 	}
 
 	private void handleError(@Nonnull Exception e) {
-		Billing.error("Exception in " + PurchaseRequest.class.getSimpleName() + " request: ", e);
+		Billing.error("Exception in Purchase/ChangePurchase request: ", e);
 		onError(ResponseCodes.EXCEPTION, e);
 	}
 
