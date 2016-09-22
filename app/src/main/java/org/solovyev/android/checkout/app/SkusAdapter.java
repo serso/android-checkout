@@ -105,7 +105,7 @@ class SkusAdapter extends ArrayAdapter<SkuUi> {
 
         public void fill(@Nonnull SkuUi skuUi) {
             this.skuUi = skuUi;
-            final int iconResId = SkuUi.getIconResId(skuUi.sku.id);
+            final int iconResId = SkuUi.getIconResId(skuUi.sku.id.code);
             icon.setImageResource(iconResId);
             title.setText(SkuUi.getTitle(skuUi.sku));
             description.setText(skuUi.sku.description);
@@ -117,7 +117,7 @@ class SkusAdapter extends ArrayAdapter<SkuUi> {
 
             if (skuUi.sku.isSubscription() && skuUi.isPurchased() && skuUi.canChangeSubs) {
                 changeSub.setVisibility(View.VISIBLE);
-                changeSub.setImageResource(skuUi.sku.id.equals("sub_01") ? R.drawable.ic_arrow_downward_black_24dp : R.drawable.ic_arrow_upward_black_24dp);
+                changeSub.setImageResource(skuUi.sku.id.code.equals("sub_01") ? R.drawable.ic_arrow_downward_black_24dp : R.drawable.ic_arrow_upward_black_24dp);
                 changeSub.setOnClickListener(this);
             } else {
                 changeSub.setVisibility(View.GONE);

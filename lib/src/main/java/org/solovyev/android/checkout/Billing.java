@@ -113,13 +113,13 @@ public final class Billing {
      * Creates an instance. After creation, it will be ready to use. This constructor does not
      * block and is safe to call from a UI thread.
      *
-     * @param context       application or activity context. Needed to bind to the in-app billing
+     * @param context       application or activity mContext. Needed to bind to the in-app billing
      *                      service.
      * @param configuration billing configuration
      */
     public Billing(@Nonnull Context context, @Nonnull Handler handler, @Nonnull Configuration configuration) {
         if (context instanceof Application) {
-            // context.getApplicationContext() might return null for applications as we allow create Billing before
+            // mContext.getApplicationContext() might return null for applications as we allow create Billing before
             // Application#onCreate is called
             this.context = context;
         } else {
@@ -443,7 +443,7 @@ public final class Billing {
      * main application thread
      *
      * @param service service
-     * @return requests for given <var>context</var>
+     * @return requests for given <var>mContext</var>
      */
     @Nonnull
     public BillingRequests getRequests(@Nonnull Service service) {
@@ -930,13 +930,13 @@ public final class Billing {
         @Override
         public int changeSubscription(@Nonnull List<Sku> oldSkus, @Nonnull Sku newSku,
                                       @Nullable String payload, @Nonnull PurchaseFlow purchaseFlow) {
-            Check.isTrue(ProductTypes.SUBSCRIPTION.equals(newSku.product), "Only subscriptions can be downgraded/upgraded");
+            Check.isTrue(ProductTypes.SUBSCRIPTION.equals(newSku.id.product), "Only subscriptions can be downgraded/upgraded");
             final List<String> oldSkuIds = new ArrayList<>(oldSkus.size());
             for (Sku oldSku : oldSkus) {
-                Check.isTrue(oldSku.product.equals(newSku.product), "Product type can't be changed");
-                oldSkuIds.add(oldSku.id);
+                Check.isTrue(oldSku.id.product.equals(newSku.id.product), "Product type can't be changed");
+                oldSkuIds.add(oldSku.id.code);
             }
-            return changeSubscription(oldSkuIds, newSku.id, payload, purchaseFlow);
+            return changeSubscription(oldSkuIds, newSku.id.code, payload, purchaseFlow);
         }
 
         @Override
@@ -946,7 +946,7 @@ public final class Billing {
 
         @Override
         public int purchase(@Nonnull Sku sku, @Nullable String payload, @Nonnull PurchaseFlow purchaseFlow) {
-            return purchase(sku.product, sku.id, payload, purchaseFlow);
+            return purchase(sku.id.product, sku.id.code, payload, purchaseFlow);
         }
 
         @Override

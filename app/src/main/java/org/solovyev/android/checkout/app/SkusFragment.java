@@ -120,8 +120,8 @@ public class SkusFragment extends BaseListFragment {
             checkout.whenReady(new Checkout.ListenerAdapter() {
                 @Override
                 public void onReady(@Nonnull BillingRequests requests) {
-                    final List<String> oldSkus = Collections.singletonList(skuUi.sku.id);
-                    final String newSku = skuUi.sku.product.equals("sub_01") ? "sub_02" : "sub_01";
+                    final List<String> oldSkus = Collections.singletonList(skuUi.sku.id.code);
+                    final String newSku = skuUi.sku.id.code.equals("sub_01") ? "sub_02" : "sub_01";
                     requests.changeSubscription(oldSkus, newSku, null, checkout.getPurchaseFlow());
                 }
             });

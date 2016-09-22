@@ -82,7 +82,7 @@ public final class Skus {
     @Nullable
     public Sku getSku(@Nonnull String sku) {
         for (Sku s : list) {
-            if (s.id.equals(sku)) {
+            if (s.id.code.equals(sku)) {
                 return s;
             }
         }

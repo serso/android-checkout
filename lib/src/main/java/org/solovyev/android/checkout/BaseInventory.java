@@ -44,7 +44,7 @@ public abstract class BaseInventory implements Inventory {
 
     protected BaseInventory(@Nonnull Checkout checkout) {
         this.checkout = checkout;
-        this.lock = checkout.lock;
+        this.lock = checkout.mLock;
         this.listeners = new InventoryListeners(this.lock);
         this.skus = SkuIds.create();
     }

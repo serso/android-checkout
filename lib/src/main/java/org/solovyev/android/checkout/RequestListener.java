@@ -30,7 +30,7 @@ import javax.annotation.Nonnull;
  * Listener methods might be called either on background thread or on the main application thread.
  * See {@link Billing} for more
  * information.<br/>
- * <b>Note</b>: if listener contains references to activity/context the associated request should be
+ * <b>Note</b>: if listener contains references to activity/mContext the associated request should be
  * cancelled through
  * {@link Billing#cancel(int)} or {@link Billing#cancelAll()} methods.
  */

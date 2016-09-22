@@ -36,13 +36,8 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 public final class Sku {
 
-    // value must be “inapp” for an in-app product or "subs" for subscriptions.
     @Nonnull
-    public final String product;
-
-    // the product ID for the product
-    @Nonnull
-    public final String id;
+    public final Id id;
 
     // formatted price of the item, including its currency sign. The price does not include tax.
     // See #detailedPrice for parsed values
@@ -60,9 +55,8 @@ public final class Sku {
     @Nonnull
     public final String description;
 
-    Sku(@Nonnull String product, @Nonnull String id, @Nonnull String price, @Nonnull Price detailedPrice, @Nonnull String title, @Nonnull String description) {
-        this.product = product;
-        this.id = id;
+    Sku(@Nonnull String product, @Nonnull String code, @Nonnull String price, @Nonnull Price detailedPrice, @Nonnull String title, @Nonnull String description) {
+        this.id = new Id(product, code);
         this.price = price;
         this.detailedPrice = detailedPrice;
         this.title = title;
@@ -81,14 +75,34 @@ public final class Sku {
     }
 
     public boolean isInApp() {
-        return product.equals(ProductTypes.IN_APP);
+        return id.isInApp();
     }
 
     public boolean isSubscription() {
-        return product.equals(ProductTypes.SUBSCRIPTION);
+        return id.isSubscription();
     }
 
-    /**
+    public static final class Id {
+        // either “inapp” for in-apps or "subs" for subscriptions.
+        public final String product;
+        // SKU code
+        public final String code;
+
+        public Id(String product, String code) {
+            this.product = product;
+            this.code = code;
+        }
+
+        public boolean isInApp() {
+            return product.equals(ProductTypes.IN_APP);
+        }
+
+        public boolean isSubscription() {
+            return product.equals(ProductTypes.SUBSCRIPTION);
+        }
+    }
+
+        /**
      * Contains detailed information about SKU's price as described <a
      * href="http://developer.android.com/google/play/billing/billing_reference.html#getSkuDetails">here</a>
      */

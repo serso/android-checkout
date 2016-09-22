@@ -32,20 +32,20 @@ import javax.annotation.Nonnull;
 
 /**
  * Variant of {@link Checkout} that can initiate a purchase. {@link ActivityCheckout} lives in the
- * context of {@link Activity} as it is required by Billing API.
+ * mContext of {@link Activity} as it is required by Billing API.
  * Usage example:
  * <pre>
  * {@code
  *
- *  protected final ActivityCheckout checkout = Checkout.forActivity(this, getBilling());
+ *  protected final ActivityCheckout mCheckout = Checkout.forActivity(this, getBilling());
  *
  *  protected void onCreate(Bundle savedInstanceState) {
  *      super.onCreate(savedInstanceState);
- *      checkout.start();
+ *      mCheckout.start();
  *  }
  *
  *  protected void purchase(final String product, final String sku) {
- *      checkout.whenReady(new Checkout.ListenerAdapter() {
+ *      mCheckout.whenReady(new Checkout.ListenerAdapter() {
  *          public void onReady(BillingRequests requests) {
  *              requests.purchase(product, sku, null, checkout.getPurchaseFlow());
  *          }
@@ -54,11 +54,11 @@ import javax.annotation.Nonnull;
  *
  *  protected void onActivityResult(int requestCode, int resultCode, Intent data) {
  *      super.onActivityResult(requestCode, resultCode, data);
- *      checkout.onActivityResult(requestCode, resultCode, data);
+ *      mCheckout.onActivityResult(requestCode, resultCode, data);
  *  }
  *
  *  protected void onDestroy() {
- *      checkout.stop();
+ *      mCheckout.stop();
  *      super.onDestroy();
  *  }
  * }
@@ -231,13 +231,13 @@ public final class ActivityCheckout extends Checkout {
                 }
             };
         }
-        flow = billing.createPurchaseFlow(getActivity(), requestCode, listener);
+        flow = mBilling.createPurchaseFlow(getActivity(), requestCode, listener);
         mFlows.append(requestCode, flow);
         return flow;
     }
 
     private Activity getActivity() {
-        return (Activity) context;
+        return (Activity) mContext;
     }
 
     /**

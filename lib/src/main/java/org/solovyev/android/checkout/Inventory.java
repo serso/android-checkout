@@ -155,7 +155,7 @@ public interface Inventory {
         }
 
         public boolean isPurchased(@Nonnull Sku sku) {
-            return isPurchased(sku.id);
+            return isPurchased(sku.id.code);
         }
 
         public boolean isPurchased(@Nonnull String sku) {
@@ -173,7 +173,7 @@ public interface Inventory {
 
         @Nullable
         public Purchase getPurchaseInState(@Nonnull Sku sku, @Nonnull Purchase.State state) {
-            return getPurchaseInState(sku.id, state);
+            return getPurchaseInState(sku.id.code, state);
         }
 
         /**

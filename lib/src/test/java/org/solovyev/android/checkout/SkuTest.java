@@ -40,7 +40,7 @@ import static org.junit.Assert.fail;
 @Config(manifest = Config.NONE)
 public class SkuTest {
     static void verifySku(@Nonnull Sku sku, @Nonnull String id) {
-        assertEquals(id, sku.id);
+        assertEquals(id, sku.id.code);
         assertEquals("price_" + id, sku.price);
         assertEquals("description_" + id, sku.description);
         assertEquals("title_" + id, sku.title);
@@ -84,7 +84,7 @@ public class SkuTest {
         final JSONObject json = newJsonObject("3");
         json.remove("description");
         final Sku sku = Sku.fromJson(json.toString(), "test");
-        assertEquals("3", sku.id);
+        assertEquals("3", sku.id.code);
         assertEquals("price_3", sku.price);
         assertEquals("", sku.description);
         assertEquals("title_3", sku.title);
