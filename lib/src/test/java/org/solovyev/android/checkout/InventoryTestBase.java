@@ -86,9 +86,9 @@ public abstract class InventoryTestBase {
     public void testShouldLoadPurchases() throws Exception {
         populatePurchases();
 
-        final TestListener listener = new TestListener();
+        final TestCallback listener = new TestCallback();
         checkout.start();
-        inventory.load(skuIds).whenLoaded(listener);
+        inventory.load(skuIds, listener);
 
         waitWhileLoading(inventory);
 
@@ -139,20 +139,13 @@ public abstract class InventoryTestBase {
 
     @Test
     public void testShouldCallListenerWhenLoaded() throws Exception {
-        final Inventory.Listener l1 = mock(Inventory.Listener.class);
-        final Inventory.Listener l2 = mock(Inventory.Listener.class);
-        final Inventory.Listener l3 = mock(Inventory.Listener.class);
+        final Inventory.Callback l1 = mock(Inventory.Callback.class);
 
-        inventory.whenLoaded(l1);
-        inventory.whenLoaded(l2);
         checkout.start();
-        inventory.load(skuIds);
+        inventory.load(skuIds, l1);
         waitWhileLoading(inventory);
-        inventory.whenLoaded(l3);
 
         verify(l1, times(1)).onLoaded(anyProducts());
-        verify(l2, times(1)).onLoaded(anyProducts());
-        verify(l3, times(1)).onLoaded(anyProducts());
     }
 
     @Nonnull
@@ -161,44 +154,15 @@ public abstract class InventoryTestBase {
     }
 
     @Test
-    public void testShouldNotAddSameListener() throws Exception {
-        final Inventory.Listener l = mock(Inventory.Listener.class);
-
-        inventory.whenLoaded(l);
-        inventory.whenLoaded(l);
-        inventory.whenLoaded(l);
-        checkout.start();
-        inventory.load(skuIds);
-        waitWhileLoading(inventory);
-
-        verify(l, times(1)).onLoaded(anyProducts());
-    }
-
-    @Test
-    public void testShouldRunSameListenerIfLoaded() throws Exception {
-        final Inventory.Listener l = mock(Inventory.Listener.class);
-
-        checkout.start();
-        inventory.load(skuIds);
-        waitWhileLoading(inventory);
-        inventory.whenLoaded(l);
-        inventory.whenLoaded(l);
-        inventory.whenLoaded(l);
-
-        verify(l, times(3)).onLoaded(anyProducts());
-    }
-
-    @Test
     public void testListenerShouldBeCalledOnlyOnce() throws Exception {
-        final Inventory.Listener l = mock(Inventory.Listener.class);
+        final Inventory.Callback l = mock(Inventory.Callback.class);
         checkout.start();
-        inventory.whenLoaded(l);
-        inventory.load(skuIds);
-        inventory.load(skuIds);
-        inventory.load(skuIds);
+        inventory.load(skuIds, mock(Inventory.Callback.class));
+        inventory.load(skuIds, mock(Inventory.Callback.class));
+        inventory.load(skuIds, l);
         waitWhileLoading(inventory);
-        inventory.load(skuIds);
-        inventory.load(skuIds);
+        inventory.load(skuIds, mock(Inventory.Callback.class));
+        inventory.load(skuIds, mock(Inventory.Callback.class));
         verify(l, times(1)).onLoaded(anyProducts());
     }
 
@@ -215,7 +179,7 @@ public abstract class InventoryTestBase {
 
     protected abstract boolean isLoaded(Inventory inventory);
 
-    static class TestListener implements Inventory.Listener {
+    static class TestCallback implements Inventory.Callback {
         @Nonnull
         volatile Inventory.Products products;
 

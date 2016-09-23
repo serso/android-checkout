@@ -87,9 +87,9 @@ public class CheckoutInventoryTest extends InventoryTestBase {
         final Checkout checkout = Checkout.forApplication(billing, skuIds.getProducts());
 
         final CheckoutInventory inventory = new CheckoutInventory(checkout);
-        final TestListener listener = new TestListener();
+        final TestCallback listener = new TestCallback();
         checkout.start();
-        inventory.load(skuIds).whenLoaded(listener);
+        inventory.load(skuIds, listener);
 
         waitWhileLoading(inventory);
 
@@ -110,17 +110,17 @@ public class CheckoutInventoryTest extends InventoryTestBase {
                 .add(SUBSCRIPTION, "sub_01");
         final Checkout checkout = Checkout.forApplication(billing, skuIds.getProducts());
 
-        final CrashingListener listener = new CrashingListener();
+        final CrashingCallback listener = new CrashingCallback();
         final CheckoutInventory inventory = new CheckoutInventory(checkout);
         checkout.start();
-        inventory.load(skuIds).whenLoaded(listener);
+        inventory.load(skuIds, listener);
 
         waitWhileLoading(inventory);
 
         Assert.assertTrue(listener.exceptionThrown);
     }
 
-    private static final class CrashingListener implements Inventory.Listener {
+    private static final class CrashingCallback implements Inventory.Callback {
 
         private volatile boolean exceptionThrown;
 

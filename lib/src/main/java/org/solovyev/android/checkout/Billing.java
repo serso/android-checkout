@@ -579,7 +579,7 @@ public final class Billing {
 
         /**
          * @param checkout       checkout
-         * @param onLoadExecutor executor to be used to call {@link org.solovyev.android.checkout.Inventory.Listener}
+         * @param onLoadExecutor executor to be used to call {@link Inventory.Callback}
          *                       methods
          * @return inventory to be used if Billing v.3 is not supported
          */

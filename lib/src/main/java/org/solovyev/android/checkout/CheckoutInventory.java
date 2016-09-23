@@ -30,13 +30,13 @@ import javax.annotation.Nonnull;
 import javax.annotation.concurrent.GuardedBy;
 
 /**
- * Default Billing v.3 {@link Inventory}. Loads its contents from the {@link Checkout}.
+ * Default Billing v.3 {@link Inventory}. Loads the purchase information from the {@link Checkout}.
  */
 final class CheckoutInventory extends BaseInventory {
 
-    @GuardedBy("lock")
+    @GuardedBy("mLock")
     @Nonnull
-    private final Counter counter = new Counter();
+    private final Counter mCounter = new Counter();
 
     CheckoutInventory(@Nonnull Checkout checkout) {
         super(checkout);
@@ -44,47 +44,45 @@ final class CheckoutInventory extends BaseInventory {
 
     @Nonnull
     @Override
-    public Inventory load(@Nonnull SkuIds skus) {
+    public Inventory load(@Nonnull SkuIds skus, @Nonnull Callback callback) {
         Check.isMainThread();
 
-        synchronized (lock) {
-            if (!setSkus(skus)) {
-                return this;
-            }
+        synchronized (mLock) {
+            setSkus(skus, callback);
             // for each product we wait for:
             // 1. onReady to be called
             // 2. loadPurchased to be finished
             // 3. loadSkus to be finished
             final int size = skus.getProductsCount();
-            final long id = counter.newAttempt(size * 3);
+            final long id = mCounter.newAttempt(size * 3);
 
             // clear all previously loaded data
-            this.products = new Products();
+            mProducts = new Products();
 
-            checkout.whenReady(new CheckoutListener(id));
+            mCheckout.whenReady(new CheckoutListener(id));
         }
 
         return this;
     }
 
-    protected final boolean onFinished(long id) {
+    private boolean onFinished(long id) {
         return onFinished(1, id);
     }
 
-    protected final boolean onFinished(int count, long id) {
-        synchronized (lock) {
-            final boolean stillLoading = counter.countDown(count, id);
-            if (stillLoading && isLoaded()) {
-                listeners.onLoaded(products);
+    private boolean onFinished(int count, long id) {
+        synchronized (mLock) {
+            final boolean loading = mCounter.countDown(count, id);
+            if (loading && isLoaded()) {
+                onLoaded();
             }
-            return stillLoading;
+            return loading;
         }
     }
 
     @Override
     boolean isLoaded() {
-        synchronized (lock) {
-            return counter.isFinished();
+        synchronized (mLock) {
+            return mCounter.isFinished();
         }
     }
 
@@ -92,11 +90,11 @@ final class CheckoutInventory extends BaseInventory {
         requests.getAllPurchases(product.id, new ProductRequestListener<Purchases>(product, id) {
             @Override
             public void onSuccess(@Nonnull Purchases purchases) {
-                synchronized (lock) {
+                synchronized (mLock) {
                     if (isAlive()) {
-                        product.setPurchases(purchases.list);
+                        mProduct.setPurchases(purchases.list);
                     }
-                    onFinished(id);
+                    onFinished(mId);
                 }
             }
         });
@@ -108,17 +106,17 @@ final class CheckoutInventory extends BaseInventory {
             requests.getSkus(product.id, skuIds, new ProductRequestListener<Skus>(product, id) {
                 @Override
                 public void onSuccess(@Nonnull Skus skus) {
-                    synchronized (lock) {
+                    synchronized (mLock) {
                         if (isAlive()) {
-                            product.setSkus(skus.list);
+                            mProduct.setSkus(skus.list);
                         }
-                        onFinished(id);
+                        onFinished(mId);
                     }
                 }
             });
         } else {
             Billing.warning("There are no SKUs for \"" + product.id + "\" product. No SKU information will be loaded");
-            synchronized (lock) {
+            synchronized (mLock) {
                 onFinished(id);
             }
         }
@@ -126,80 +124,81 @@ final class CheckoutInventory extends BaseInventory {
 
     private static final class Counter {
         @Nonnull
-        private final AtomicInteger counter = new AtomicInteger(-1);
+        private final AtomicInteger mCount = new AtomicInteger(-1);
 
         @Nonnull
-        private final AtomicLong id = new AtomicLong();
+        private final AtomicLong mId = new AtomicLong();
 
-        public long newAttempt(int counter) {
-            final long id = this.id.incrementAndGet();
-            this.counter.set(counter);
+        public long newAttempt(int count) {
+            final long id = mId.incrementAndGet();
+            mCount.set(count);
             return id;
         }
 
         /**
          * @param counts number of count downs
          * @param id     loading ID
-         * @return true if current loading id is the same same as <var>id</var>
+         * @return true if current loading id is the same same as <var>mId</var>
          */
         public boolean countDown(int counts, long id) {
-            if (this.id.get() != id) {
+            if (mId.get() != id) {
                 // new loading was requested => have to stop now
                 return false;
             }
             Check.isFalse(isFinished(), "Inventory is already loaded. Loading id: " + id);
-            counter.addAndGet(-counts);
+            mCount.addAndGet(-counts);
             return true;
         }
 
         public boolean isFinished() {
-            return counter.get() == 0L;
+            return mCount.get() == 0L;
         }
     }
 
     private abstract class ProductRequestListener<R> implements RequestListener<R> {
 
         @Nonnull
-        protected final Product product;
-        protected final long id;
+        protected final Product mProduct;
+        protected final long mId;
 
         protected ProductRequestListener(@Nonnull Product product, long id) {
-            this.product = product;
-            this.id = id;
+            mProduct = product;
+            mId = id;
         }
 
         boolean isAlive() {
-            Check.isTrue(Thread.holdsLock(lock), "Should be called from synchronized block");
-            final Product p = products.get(product.id);
-            return p == product;
+            Check.isTrue(Thread.holdsLock(mLock), "Should be called from a synchronized block");
+            final Product p = mProducts.get(mProduct.id);
+            return p == mProduct;
         }
 
         @Override
         public final void onError(int response, @Nonnull Exception e) {
-            onFinished(id);
+            onFinished(mId);
         }
     }
 
     private class CheckoutListener extends Checkout.ListenerAdapter {
-        private final long id;
+        private final long mId;
 
         public CheckoutListener(long id) {
-            this.id = id;
+            mId = id;
         }
 
         @Override
         public void onReady(@Nonnull BillingRequests requests, @Nonnull String productId, boolean billingSupported) {
             final Product product = new Product(productId, billingSupported);
-            synchronized (lock) {
-                final boolean stillLoading = onFinished(id);
-                if (stillLoading) {
-                    products.add(product);
-                    if (product.supported) {
-                        loadPurchases(requests, product, id);
-                        loadSkus(requests, product, id);
-                    } else {
-                        onFinished(2, id);
-                    }
+            synchronized (mLock) {
+                final boolean loading = onFinished(mId);
+                if (!loading) {
+                    return;
+                }
+                mProducts.add(product);
+                if (product.supported) {
+                    loadPurchases(requests, product, mId);
+                    loadSkus(requests, product, mId);
+                } else {
+                    onFinished(2, mId);
                 }
             }
         }

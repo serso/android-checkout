@@ -70,7 +70,7 @@ public class SkusFragment extends BaseListFragment {
         titleView.setText(R.string.items_for_purchase);
         emptyView.setText(R.string.skus_empty);
 
-        inventory.whenLoaded(new InventoryLoadedListener());
+        inventory.load(CheckoutApplication.skus, new InventoryLoadedCallback());
 
         return view;
     }
@@ -136,7 +136,7 @@ public class SkusFragment extends BaseListFragment {
 
         private void onPurchased() {
             // let's update purchase information in local inventory
-            inventory.load(CheckoutApplication.skus).whenLoaded(new InventoryLoadedListener());
+            inventory.load(CheckoutApplication.skus, new InventoryLoadedCallback());
             Toast.makeText(getActivity(), R.string.msg_thank_you_for_purchase, Toast.LENGTH_SHORT).show();
         }
 
@@ -159,7 +159,7 @@ public class SkusFragment extends BaseListFragment {
         }
     }
 
-    private class InventoryLoadedListener implements Inventory.Listener {
+    private class InventoryLoadedCallback implements Inventory.Callback {
         @Override
         public void onLoaded(@Nonnull final Inventory.Products products) {
             checkout.whenReady(new Checkout.ListenerAdapter() {
@@ -225,7 +225,7 @@ public class SkusFragment extends BaseListFragment {
         }
 
         private void onConsumed() {
-            inventory.load(CheckoutApplication.skus).whenLoaded(new InventoryLoadedListener());
+            inventory.load(CheckoutApplication.skus, new InventoryLoadedCallback());
             Toast.makeText(getActivity(), R.string.msg_item_consumed, Toast.LENGTH_SHORT).show();
         }
 

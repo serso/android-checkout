@@ -39,8 +39,8 @@ public class InventoryProductTest {
     @Test
     public void testShouldAddPurchases() throws Exception {
         final Inventory.Product product = new Inventory.Product("test", true);
-        product.purchases.add(Purchase.fromJson(PurchaseTest.newJson(0, Purchase.State.PURCHASED), null));
-        product.purchases.add(Purchase.fromJson(PurchaseTest.newJson(1, CANCELLED), null));
+        product.mPurchases.add(Purchase.fromJson(PurchaseTest.newJson(0, Purchase.State.PURCHASED), null));
+        product.mPurchases.add(Purchase.fromJson(PurchaseTest.newJson(1, CANCELLED), null));
 
         assertTrue(product.isPurchased("0"));
         assertTrue(product.hasPurchaseInState("1", CANCELLED));

@@ -38,35 +38,52 @@ import static java.util.Collections.unmodifiableList;
 
 /**
  * Class which contains information about products, SKUs and purchases. This class can't be
- * instantiated manually but only
- * through {@link Checkout#loadInventory(SkuIds)} method call.
- * Note that this class doesn't reflect real time billing information. It is not updated or notified
- * if item was purchased
- * or cancelled.
+ * instantiated manually but only through {@link Checkout#loadInventory(SkuIds, Callback)} or
+ * {@link Checkout#makeInventory()} method calls.
+ * Note that this class doesn't reflect a real-time billing stats. It is not updated or notified if
+ * an item is purchased or cancelled; its contents are static and changed only when
+ * {@link #load(SkuIds, Callback)} is called.
  * This class lifecycle is bound to the lifecycle of {@link Checkout} in which it was created. If
- * {@link Checkout}
- * stops this class loading also stops and no {@link Inventory.Listener#onLoaded(Inventory.Products)}
- * method is called.
+ * {@link Checkout} stops this class loading also stops and no
+ * {@link Callback#onLoaded(Inventory.Products)} method is called.
  */
 public interface Inventory {
 
+    /**
+     * Loads a list of SKUs and asynchronously delivers it to the provided {@link Callback}.
+     * Multiple simultaneous loadings are not supported, each new call of {@link #load(SkuIds,
+     * Callback)} cancels all previous requests.
+     *
+     * @param skus list of SKUs to be loaded
+     * @return instance of this {@link Inventory}
+     */
     @Nonnull
-    Inventory load(@Nonnull SkuIds skus);
+    Inventory load(@Nonnull SkuIds skus, @Nonnull Callback callback);
 
-    void whenLoaded(@Nonnull Listener listener);
+    /**
+     * Cancels current loading, if any.
+     */
+    void cancel();
 
     /**
      * Note that this method may return different instances of {@link Inventory.Products} with
-     * different contents.
-     * If you're reloading this inventory consider using {@link #whenLoaded(Inventory.Listener)}
-     * method.
+     * different contents
      *
-     * @return currently loaded set of products
+     * @return the last loaded set of products
      */
     @Nonnull
     Inventory.Products getProducts();
 
-    interface Listener {
+    /**
+     * A callback of {@link #load(SkuIds, Callback)} method.
+     */
+    interface Callback {
+        /**
+         * Called when all the products were loaded. Note that this method is called even if the
+         * loading fails.
+         *
+         * @param products loaded products
+         */
         void onLoaded(@Nonnull Inventory.Products products);
     }
 
@@ -80,20 +97,18 @@ public interface Inventory {
         static final Products EMPTY = new Products();
 
         @Nonnull
-        private final Map<String, Inventory.Product> map = new HashMap<String, Inventory.Product>();
+        private final Map<String, Inventory.Product> mMap = new HashMap<>();
 
         void add(@Nonnull Inventory.Product product) {
-            map.put(product.id, product);
+            mMap.put(product.id, product);
         }
 
         /**
          * @param productId product id
          * @return product by id
-         * @throws java.lang.RuntimeException if product doesn't exist
          */
-        @Nonnull
         public Inventory.Product get(@Nonnull String productId) {
-            return map.get(productId);
+            return mMap.get(productId);
         }
 
         /**
@@ -101,20 +116,20 @@ public interface Inventory {
          */
         @Override
         public Iterator<Inventory.Product> iterator() {
-            return unmodifiableCollection(map.values()).iterator();
+            return unmodifiableCollection(mMap.values()).iterator();
         }
 
         /**
          * @return number of products
          */
         public int size() {
-            return map.size();
+            return mMap.size();
         }
 
         void merge(@Nonnull Products products) {
-            for (Map.Entry<String, Product> entry : map.entrySet()) {
+            for (Map.Entry<String, Product> entry : mMap.entrySet()) {
                 if (!entry.getValue().supported) {
-                    final Product product = products.map.get(entry.getKey());
+                    final Product product = products.mMap.get(entry.getKey());
                     if (product != null) {
                         entry.setValue(product);
                     }
@@ -144,10 +159,10 @@ public interface Inventory {
         public final boolean supported;
 
         @Nonnull
-        final List<Purchase> purchases = new ArrayList<Purchase>();
+        final List<Purchase> mPurchases = new ArrayList<>();
 
         @Nonnull
-        final List<Sku> skus = new ArrayList<Sku>();
+        final List<Sku> mSkus = new ArrayList<>();
 
         Product(@Nonnull String id, boolean supported) {
             this.id = id;
@@ -168,7 +183,7 @@ public interface Inventory {
 
         @Nullable
         public Purchase getPurchaseInState(@Nonnull String sku, @Nonnull Purchase.State state) {
-            return Purchases.getPurchaseInState(purchases, sku, state);
+            return Purchases.getPurchaseInState(mPurchases, sku, state);
         }
 
         @Nullable
@@ -183,30 +198,26 @@ public interface Inventory {
          */
         @Nonnull
         public List<Purchase> getPurchases() {
-            return unmodifiableList(purchases);
+            return unmodifiableList(mPurchases);
         }
 
         void setPurchases(@Nonnull List<Purchase> purchases) {
-            Check.isTrue(this.purchases.isEmpty(), "Must be called only once");
-            this.purchases.addAll(Purchases.neutralize(purchases));
-            sort(this.purchases, PurchaseComparator.latestFirst());
+            Check.isTrue(mPurchases.isEmpty(), "Must be called only once");
+            mPurchases.addAll(Purchases.neutralize(purchases));
+            sort(mPurchases, PurchaseComparator.latestFirst());
         }
 
         /**
-         * Note that this list might be empty if {@link org.solovyev.android.checkout.Inventory}
-         * doesn't contain
-         * information about SKUs
-         *
-         * @return unmodifiable list of SKUs
+         * @return unmodifiable list of SKUs in the product
          */
         @Nonnull
         public List<Sku> getSkus() {
-            return unmodifiableList(skus);
+            return unmodifiableList(mSkus);
         }
 
         void setSkus(@Nonnull List<Sku> skus) {
-            Check.isTrue(this.skus.isEmpty(), "Must be called only once");
-            this.skus.addAll(skus);
+            Check.isTrue(mSkus.isEmpty(), "Must be called only once");
+            mSkus.addAll(skus);
         }
     }
 }

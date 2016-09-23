@@ -24,7 +24,6 @@ package org.solovyev.android.checkout.app;
 
 import org.solovyev.android.checkout.ActivityCheckout;
 import org.solovyev.android.checkout.Inventory;
-import org.solovyev.android.checkout.SkuIds;
 
 import android.app.Activity;
 import android.os.Bundle;
@@ -66,7 +65,7 @@ public class BaseListFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        inventory = checkout.loadInventory(SkuIds.create());
+        inventory = checkout.makeInventory();
     }
 
     @Override

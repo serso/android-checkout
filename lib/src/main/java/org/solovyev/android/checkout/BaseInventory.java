@@ -23,77 +23,81 @@
 package org.solovyev.android.checkout;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.GuardedBy;
 
+/**
+ * Base class for all {@link Inventory} implementations. Contains the last loaded
+ * {@link Inventory.Products}.
+ */
 public abstract class BaseInventory implements Inventory {
 
     @Nonnull
-    protected final Object lock;
-
+    protected final Object mLock;
     @Nonnull
-    protected final Checkout checkout;
-    @GuardedBy("lock")
+    protected final Checkout mCheckout;
+    @GuardedBy("mLock")
     @Nonnull
-    protected final InventoryListeners listeners;
-    @GuardedBy("lock")
+    protected Products mProducts = Products.EMPTY;
+    @GuardedBy("mLock")
     @Nonnull
-    protected Products products = Products.EMPTY;
-    @GuardedBy("lock")
-    @Nonnull
-    private SkuIds skus;
+    private SkuIds mSkus;
+    @GuardedBy("mLock")
+    @Nullable
+    private Callback mCallback;
 
     protected BaseInventory(@Nonnull Checkout checkout) {
-        this.checkout = checkout;
-        this.lock = checkout.mLock;
-        this.listeners = new InventoryListeners(this.lock);
-        this.skus = SkuIds.create();
+        mCheckout = checkout;
+        mLock = checkout.mLock;
+        mSkus = SkuIds.create();
     }
 
-    protected final boolean setSkus(@Nonnull SkuIds skus) {
-        Check.isTrue(Thread.holdsLock(lock), "Must be locked");
+    protected final void setSkus(@Nonnull SkuIds skus, @Nonnull Callback callback) {
+        Check.isTrue(Thread.holdsLock(mLock), "Must be locked");
         Check.isTrue(!skus.isEmpty(), "Skus must not be empty");
-        if (this.skus.equals(skus)) {
-            return false;
-        }
-        this.skus = skus;
-        return true;
+        mSkus = skus;
+        mCallback = callback;
     }
 
     @Nonnull
     protected final SkuIds getSkus() {
-        Check.isTrue(Thread.holdsLock(lock), "Must be locked");
-        return skus;
+        Check.isTrue(Thread.holdsLock(mLock), "Must be locked");
+        return mSkus;
+    }
+
+    @Override
+    public void cancel() {
+        synchronized (mLock) {
+            mCallback = null;
+        }
     }
 
     @Override
     @Nonnull
     public final Products getProducts() {
         Check.isMainThread();
-        synchronized (lock) {
+        synchronized (mLock) {
             if (!isLoaded()) {
                 Billing.warning("Inventory is not loaded yet. Use Inventory#whenLoaded");
             }
-            return products;
+            return mProducts;
         }
+    }
+
+    protected void onLoaded() {
+        Check.isTrue(Thread.holdsLock(mLock), "Must be locked");
+        Check.isTrue(isLoaded(), "Must be loaded");
+        if (mCallback == null) {
+            return;
+        }
+        mCallback.onLoaded(mProducts);
+        mCallback = null;
     }
 
     /**
      * Note that this method should be called from inside of the synchronized block
      *
-     * @return true if {@link #products} are loaded
+     * @return true if {@link #mProducts} are loaded
      */
     abstract boolean isLoaded();
-
-    @Override
-    public final void whenLoaded(@Nonnull Listener listener) {
-        Check.isMainThread();
-        synchronized (lock) {
-            if (isLoaded()) {
-                listener.onLoaded(products);
-            } else {
-                // still waiting
-                listeners.add(listener);
-            }
-        }
-    }
 }

@@ -239,11 +239,23 @@ public class Checkout {
      * Creates an {@link Inventory} object according to the {@link Billing.Configuration}. This
      * method also starts loading a list of {@link Sku}s in the created {@link Inventory}
      *
-     * @param skuIds list of SKU ids to be loaded in the inventory
+     * @param skus list of SKU ids to be loaded in the inventory
+     * @param callback inventory listener
      * @return inventory
      */
     @Nonnull
-    public Inventory loadInventory(@Nonnull SkuIds skuIds) {
+    public Inventory loadInventory(@Nonnull SkuIds skus, @Nonnull Inventory.Callback callback) {
+        final Inventory inventory = makeInventory();
+        inventory.load(skus, callback);
+        return inventory;
+    }
+
+    /**
+     * Creates an {@link Inventory} object according to the {@link Billing.Configuration}.
+     * @return inventory
+     */
+    @Nonnull
+    public Inventory makeInventory() {
         Check.isMainThread();
 
         synchronized (mLock) {
@@ -257,7 +269,6 @@ public class Checkout {
         } else {
             inventory = new FallingBackInventory(this, fallbackInventory);
         }
-        inventory.load(skuIds);
         return inventory;
     }
 

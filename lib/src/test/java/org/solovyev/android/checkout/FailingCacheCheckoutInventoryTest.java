@@ -92,9 +92,9 @@ public class FailingCacheCheckoutInventoryTest {
         populatePurchases();
 
         final CheckoutInventory inventory = new CheckoutInventory(checkout);
-        final InventoryTestBase.TestListener listener = new InventoryTestBase.TestListener();
+        final InventoryTestBase.TestCallback listener = new InventoryTestBase.TestCallback();
         checkout.start();
-        inventory.load(skuIds).whenLoaded(listener);
+        inventory.load(skuIds, listener);
 
         waitWhileLoading(inventory);
 

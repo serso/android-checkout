@@ -33,30 +33,26 @@ import javax.annotation.concurrent.GuardedBy;
 public final class RobotmediaInventory extends BaseInventory {
 
     @Nonnull
-    private final Executor background = Executors.newSingleThreadExecutor();
-
+    private final Executor mBackground = Executors.newSingleThreadExecutor();
     @Nonnull
-    private final Executor onLoadExecutor;
-
-    @GuardedBy("lock")
+    private final Executor mOnLoadExecutor;
+    @GuardedBy("mLock")
     @Nonnull
-    private State state = State.INITIAL;
+    private State mState = State.INITIAL;
 
     public RobotmediaInventory(@Nonnull Checkout checkout, @Nonnull Executor onLoadExecutor) {
         super(checkout);
-        this.onLoadExecutor = onLoadExecutor;
+        mOnLoadExecutor = onLoadExecutor;
     }
 
     @Nonnull
     @Override
-    public Inventory load(@Nonnull SkuIds skus) {
-        synchronized (lock) {
-            if (!setSkus(skus)) {
-                return this;
-            }
-            state = State.LOADING;
-            if (RobotmediaDatabase.exists(checkout.getContext())) {
-                background.execute(new Loader(skus));
+    public Inventory load(@Nonnull SkuIds skus, @Nonnull Callback callback) {
+        synchronized (mLock) {
+            setSkus(skus, callback);
+            mState = State.LOADING;
+            if (RobotmediaDatabase.exists(mCheckout.getContext())) {
+                mBackground.execute(new Loader(skus));
             } else {
                 onLoaded(RobotmediaDatabase.toInventoryProducts(skus.getProducts()));
             }
@@ -66,29 +62,29 @@ public final class RobotmediaInventory extends BaseInventory {
     }
 
     private void onLoaded(@Nonnull final Inventory.Products products) {
-        synchronized (lock) {
-            if (this.state == State.LOADED) {
+        synchronized (mLock) {
+            if (mState == State.LOADED) {
                 return;
             }
-            this.state = State.LOADED;
-            this.products = products;
+            mState = State.LOADED;
+            mProducts = products;
         }
-        onLoadExecutor.execute(new Runnable() {
+        mOnLoadExecutor.execute(new Runnable() {
             @Override
             public void run() {
-                synchronized (lock) {
-                    if (state != State.LOADED) {
+                synchronized (mLock) {
+                    if (mState != State.LOADED) {
                         return;
                     }
-                    listeners.onLoaded(products);
+                    onLoaded();
                 }
             }
         });
     }
 
     boolean isLoaded() {
-        synchronized (lock) {
-            return state == State.LOADED;
+        synchronized (mLock) {
+            return mState == State.LOADED;
         }
     }
 
@@ -99,23 +95,23 @@ public final class RobotmediaInventory extends BaseInventory {
     }
 
     private class Loader implements Runnable {
-        private final SkuIds skus;
+        private final SkuIds mSkus;
 
         public Loader(SkuIds skus) {
-            this.skus = skus;
+            this.mSkus = skus;
         }
 
         @Override
         public void run() {
-            final Context context = checkout.getContext();
+            final Context context = mCheckout.getContext();
             final RobotmediaDatabase database = new RobotmediaDatabase(context);
-            final Products products = database.load(skus);
-            synchronized (lock) {
-                if (!getSkus().equals(skus)) {
+            final Products products = database.load(mSkus);
+            synchronized (mLock) {
+                if (!getSkus().equals(mSkus)) {
                     return;
                 }
-                onLoaded(products);
             }
+            onLoaded(products);
         }
     }
 }

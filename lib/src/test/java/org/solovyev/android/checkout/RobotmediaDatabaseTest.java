@@ -72,8 +72,8 @@ public class RobotmediaDatabaseTest {
         RuntimeEnvironment.application.deleteDatabase(RobotmediaDatabase.NAME);
 
         final RobotmediaInventory inventory = new RobotmediaInventory(checkout, sameThreadExecutor());
-        final CountDownListener l = new CountDownListener();
-        inventory.load(skuIds).whenLoaded(l);
+        final CountDownCallback l = new CountDownCallback();
+        inventory.load(skuIds, l);
 
         final Inventory.Products products = l.waitProducts();
         final Inventory.Product product = products.get(IN_APP);
@@ -91,8 +91,8 @@ public class RobotmediaDatabaseTest {
         db.insert(newTransaction(5));
 
         final RobotmediaInventory inventory = new RobotmediaInventory(checkout, sameThreadExecutor());
-        final CountDownListener l = new CountDownListener();
-        inventory.load(skuIds).whenLoaded(l);
+        final CountDownCallback l = new CountDownCallback();
+        inventory.load(skuIds, l);
 
         final Inventory.Products products = l.waitProducts();
         final Inventory.Product product = products.get(IN_APP);
@@ -109,8 +109,8 @@ public class RobotmediaDatabaseTest {
     @Test
     public void testShouldReadEmptyList() throws Exception {
         final RobotmediaInventory inventory = new RobotmediaInventory(checkout, sameThreadExecutor());
-        final CountDownListener l = new CountDownListener();
-        inventory.load(skuIds).whenLoaded(l);
+        final CountDownCallback l = new CountDownCallback();
+        inventory.load(skuIds, l);
 
         final Inventory.Products products = l.waitProducts();
         final Inventory.Product product = products.get(IN_APP);
@@ -171,7 +171,7 @@ public class RobotmediaDatabaseTest {
         return t;
     }
 
-    private static class CountDownListener implements Inventory.Listener {
+    private static class CountDownCallback implements Inventory.Callback {
         @Nonnull
         private final CountDownLatch latch = new CountDownLatch(1);
         private Inventory.Products products;
