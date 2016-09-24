@@ -224,7 +224,7 @@ public interface Inventory {
     }
 
     final class Request {
-        private final Map<String, List<String>> map = new HashMap<>();
+        private final Map<String, List<String>> mMap = new HashMap<>();
 
         private Request() {
         }
@@ -237,7 +237,7 @@ public interface Inventory {
         @Nonnull
         Request copy() {
             final Request copy = new Request();
-            copy.map.putAll(map);
+            copy.mMap.putAll(mMap);
             return copy;
         }
 
@@ -254,10 +254,10 @@ public interface Inventory {
             Check.isNotEmpty(product);
             Check.isNotEmpty(sku);
 
-            List<String> list = map.get(product);
+            List<String> list = mMap.get(product);
             if (list == null) {
                 list = new ArrayList<>();
-                map.put(product, list);
+                mMap.put(product, list);
             }
             Check.isTrue(!list.contains(sku), "Adding same SKU is not allowed");
             list.add(sku);
@@ -266,22 +266,22 @@ public interface Inventory {
 
         @Nonnull
         public Collection<String> getProducts() {
-            return unmodifiableCollection(map.keySet());
+            return unmodifiableCollection(mMap.keySet());
         }
 
         @Nonnull
         public List<String> getSkus(@Nonnull String product) {
-            final List<String> list = map.get(product);
+            final List<String> list = mMap.get(product);
             return list == null ? Collections.<String>emptyList() : list;
         }
 
         public int getProductsCount() {
-            return map.size();
+            return mMap.size();
         }
 
         @Override
         public int hashCode() {
-            return map.hashCode();
+            return mMap.hashCode();
         }
 
         @Override
@@ -291,12 +291,12 @@ public interface Inventory {
 
             final Request that = (Request) o;
 
-            return map.equals(that.map);
+            return mMap.equals(that.mMap);
 
         }
 
         public boolean isEmpty() {
-            return map.isEmpty();
+            return mMap.isEmpty();
         }
     }
 }
