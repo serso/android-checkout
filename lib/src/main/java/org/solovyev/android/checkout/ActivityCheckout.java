@@ -23,12 +23,14 @@
 package org.solovyev.android.checkout;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.util.SparseArray;
 
 import java.util.Collection;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /**
  * Variant of {@link Checkout} that can initiate a purchase. {@link ActivityCheckout} lives in the
@@ -75,6 +77,10 @@ public final class ActivityCheckout extends Checkout {
 
     ActivityCheckout(@Nonnull final Activity activity, @Nonnull Billing billing, @Nonnull Collection<String> products) {
         super(activity, billing, products);
+    }
+
+    ActivityCheckout(@Nullable Context context, @Nonnull Billing billing) {
+        super(context, billing);
     }
 
     @Override

@@ -40,8 +40,8 @@ import static java.util.Collections.unmodifiableList;
  * Class which contains information about products, SKUs and purchases. This class can't be
  * instantiated manually but only through {@link Checkout#loadInventory(SkuIds, Callback)} or
  * {@link Checkout#makeInventory()} method calls.
- * Note that this class doesn't reflect a real-time billing stats. It is not updated or notified if
- * an item is purchased or cancelled; its contents are static and changed only when
+ * Note that this class doesn't reflect a real-time billing info. It is not updated or notified if
+ * an item is purchased or cancelled; its contents are static and updated only when
  * {@link #load(SkuIds, Callback)} is called.
  * This class lifecycle is bound to the lifecycle of {@link Checkout} in which it was created. If
  * {@link Checkout} stops this class loading also stops and no
@@ -51,8 +51,8 @@ public interface Inventory {
 
     /**
      * Loads a list of SKUs and asynchronously delivers it to the provided {@link Callback}.
-     * Multiple simultaneous loadings are not supported, each new call of {@link #load(SkuIds,
-     * Callback)} cancels all previous requests.
+     * Multiple simultaneous loadings are not supported, each new call of this method cancels all
+     * previous requests.
      *
      * @param skus list of SKUs to be loaded
      * @return instance of this {@link Inventory}

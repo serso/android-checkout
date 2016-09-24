@@ -27,6 +27,7 @@ import android.app.Service;
 import android.content.Context;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -130,6 +131,10 @@ public class Checkout {
         mProducts = new ArrayList<>(products);
     }
 
+    Checkout(@Nullable Context context, @Nonnull Billing billing) {
+        this(context, billing, Arrays.asList(ProductTypes.IN_APP, ProductTypes.SUBSCRIPTION));
+    }
+
     /**
      * {@link ActivityCheckout#onActivityResult(int, int, android.content.Intent)} must be called
      * from the appropriate activity method.
@@ -137,6 +142,11 @@ public class Checkout {
     @Nonnull
     public static ActivityCheckout forActivity(@Nonnull Activity activity, @Nonnull Billing billing, @Nonnull Collection<String> products) {
         return new ActivityCheckout(activity, billing, products);
+    }
+
+    @Nonnull
+    public static ActivityCheckout forActivity(@Nonnull Activity activity, @Nonnull Billing billing) {
+        return new ActivityCheckout(activity, billing);
     }
 
     @Nonnull
@@ -150,9 +160,20 @@ public class Checkout {
     }
 
     @Nonnull
+    public static Checkout forService(@Nonnull Service service, @Nonnull Billing billing) {
+        return new Checkout(service, billing);
+    }
+
+    @Nonnull
     public static Checkout forApplication(@Nonnull Billing billing, @Nonnull Collection<String> products) {
         return new Checkout(null, billing, products);
     }
+
+    @Nonnull
+    public static Checkout forApplication(@Nonnull Billing billing) {
+        return new Checkout(null, billing);
+    }
+
 
     @Nonnull
     Context getContext() {
