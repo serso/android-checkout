@@ -55,13 +55,13 @@ public class RobotmediaDatabaseTest {
     private BillingDB db;
 
     @Nonnull
-    private SkuIds skuIds;
+    private Inventory.SkuIds skuIds;
 
     @Before
     public void setUp() throws Exception {
         final Billing billing = Tests.newBilling();
         billing.setMainThread(sameThreadExecutor());
-        skuIds = SkuIds.create().add(IN_APP, asList("sku_0", "sku_1", "sku_2", "sku_3", "sku_4", "sku_6"));
+        skuIds = Inventory.SkuIds.create().add(IN_APP, asList("sku_0", "sku_1", "sku_2", "sku_3", "sku_4", "sku_6"));
         checkout = Checkout.forApplication(billing, skuIds.getProducts());
         db = new BillingDB(RuntimeEnvironment.application);
     }

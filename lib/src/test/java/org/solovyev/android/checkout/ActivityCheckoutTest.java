@@ -60,11 +60,11 @@ public class ActivityCheckoutTest {
     private ActivityCheckout checkout;
 
     @Nonnull
-    private SkuIds skuIds;
+    private Inventory.SkuIds skuIds;
 
     @Before
     public void setUp() throws Exception {
-        skuIds = SkuIds.create().
+        skuIds = Inventory.SkuIds.create().
                 add("product", asList("sku1", "sku2", "sku3")).
                 add("subscription", asList("sku1", "sku2", "sku3"));
         billing = Tests.newBilling();

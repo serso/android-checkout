@@ -67,7 +67,7 @@ public class CheckoutTest {
         final IInAppBillingService service = ((TestServiceConnector) billing.getConnector()).service;
         when(service.isBillingSupported(eq(3), anyString(), eq(IN_APP))).thenReturn(OK);
         when(service.isBillingSupported(eq(3), anyString(), eq(SUBSCRIPTION))).thenReturn(OK);
-        final SkuIds skuIds = SkuIds.create()
+        final Inventory.SkuIds skuIds = Inventory.SkuIds.create()
                 .add(IN_APP, asList("1", "2", "3", "4", "6"))
                 .add(SUBSCRIPTION, asList("sub1", "sub2", "sub3", "sub4"));
         checkout = Checkout.forApplication(billing, skuIds.getProducts());

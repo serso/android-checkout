@@ -87,7 +87,7 @@ public final class RobotmediaDatabase {
     }
 
     @Nonnull
-    Inventory.Products load(@Nonnull SkuIds skus) {
+    Inventory.Products load(@Nonnull Inventory.SkuIds skus) {
         SQLiteDatabase db = null;
         try {
             final String databasePath = RobotmediaDatabase.getDatabasePath(context);
@@ -104,7 +104,7 @@ public final class RobotmediaDatabase {
     }
 
     @Nonnull
-    private Inventory.Products loadProducts(@Nonnull SkuIds skuDefs, @Nonnull SQLiteDatabase db) {
+    private Inventory.Products loadProducts(@Nonnull Inventory.SkuIds skuDefs, @Nonnull SQLiteDatabase db) {
         final Inventory.Products result = new Inventory.Products();
         for (String productId : skuDefs.getProducts()) {
             final Inventory.Product product = new Inventory.Product(productId, true);

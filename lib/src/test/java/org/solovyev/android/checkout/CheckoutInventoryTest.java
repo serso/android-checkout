@@ -81,7 +81,7 @@ public class CheckoutInventoryTest extends InventoryTestBase {
     public void testIsLoadedWithEmptySkusList() throws Exception {
         populatePurchases();
 
-        final SkuIds skuIds = SkuIds.create()
+        final Inventory.SkuIds skuIds = Inventory.SkuIds.create()
                 .add(IN_APP, "in_app_01")
                 .add(SUBSCRIPTION, "sub_01");
         final Checkout checkout = Checkout.forApplication(billing, skuIds.getProducts());
@@ -105,7 +105,7 @@ public class CheckoutInventoryTest extends InventoryTestBase {
     public void testShouldContinueAfterListenerException() throws Exception {
         populatePurchases();
 
-        final SkuIds skuIds = SkuIds.create()
+        final Inventory.SkuIds skuIds = Inventory.SkuIds.create()
                 .add(IN_APP, "in_app_01")
                 .add(SUBSCRIPTION, "sub_01");
         final Checkout checkout = Checkout.forApplication(billing, skuIds.getProducts());

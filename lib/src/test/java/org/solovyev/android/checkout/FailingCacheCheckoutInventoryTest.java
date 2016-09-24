@@ -56,13 +56,13 @@ public class FailingCacheCheckoutInventoryTest {
     @Nonnull
     private Inventory inventory;
     @Nonnull
-    private SkuIds skuIds;
+    private Inventory.SkuIds skuIds;
 
     @Before
     public void setUp() throws Exception {
         failingCache = new FailingCache();
         billing = newBilling();
-        skuIds = SkuIds.create()
+        skuIds = Inventory.SkuIds.create()
                 .add(IN_APP, asList("1", "2", "3", "4", "6"))
                 .add(SUBSCRIPTION, asList("sub1", "sub2", "sub3", "sub4"));
         checkout = Checkout.forApplication(billing, skuIds.getProducts());
