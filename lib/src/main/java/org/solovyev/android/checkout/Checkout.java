@@ -265,7 +265,7 @@ public class Checkout {
      * @return inventory
      */
     @Nonnull
-    public Inventory loadInventory(@Nonnull Inventory.SkuIds skus, @Nonnull Inventory.Callback callback) {
+    public Inventory loadInventory(@Nonnull Inventory.Request skus, @Nonnull Inventory.Callback callback) {
         final Inventory inventory = makeInventory();
         inventory.load(skus, callback);
         return inventory;

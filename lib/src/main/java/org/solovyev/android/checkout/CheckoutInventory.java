@@ -44,16 +44,16 @@ final class CheckoutInventory extends BaseInventory {
 
     @Nonnull
     @Override
-    public Inventory load(@Nonnull SkuIds skus, @Nonnull Callback callback) {
+    public Inventory load(@Nonnull Request request, @Nonnull Callback callback) {
         Check.isMainThread();
 
         synchronized (mLock) {
-            setSkus(skus, callback);
+            setRequest(request, callback);
             // for each product we wait for:
             // 1. onReady to be called
             // 2. loadPurchased to be finished
             // 3. loadSkus to be finished
-            final int size = skus.getProductsCount();
+            final int size = request.getProductsCount();
             final long id = mCounter.newAttempt(size * 3);
 
             // clear all previously loaded data
@@ -101,7 +101,7 @@ final class CheckoutInventory extends BaseInventory {
     }
 
     private void loadSkus(@Nonnull BillingRequests requests, @Nonnull final Product product, long id) {
-        final List<String> skuIds = getSkus().getSkus(product.id);
+        final List<String> skuIds = getRequest().getSkus(product.id);
         if (!skuIds.isEmpty()) {
             requests.getSkus(product.id, skuIds, new ProductRequestListener<Skus>(product, id) {
                 @Override

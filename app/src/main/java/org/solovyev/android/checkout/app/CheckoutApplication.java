@@ -55,7 +55,7 @@ import static org.solovyev.android.checkout.ProductTypes.SUBSCRIPTION;
 public class CheckoutApplication extends Application {
 
     @Nonnull
-    public static final Inventory.SkuIds skus;
+    public static final Inventory.Request skus;
     @Nonnull
     static final String MAIL = "se.solovyev@gmail.com";
     @Nonnull
@@ -72,7 +72,7 @@ public class CheckoutApplication extends Application {
         final List<String> subs = new ArrayList<>();
         subs.add("sub_01");
         subs.add("sub_02");
-        skus = Inventory.SkuIds.create().add(IN_APP, inApps).add(SUBSCRIPTION, subs);
+        skus = Inventory.Request.create().add(IN_APP, inApps).add(SUBSCRIPTION, subs);
     }
 
     /**

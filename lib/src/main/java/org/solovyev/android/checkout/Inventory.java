@@ -40,11 +40,11 @@ import static java.util.Collections.unmodifiableList;
 
 /**
  * Class which contains information about products, SKUs and purchases. This class can't be
- * instantiated manually but only through {@link Checkout#loadInventory(SkuIds, Callback)} or
+ * instantiated manually but only through {@link Checkout#loadInventory(Request, Callback)} or
  * {@link Checkout#makeInventory()} method calls.
  * Note that this class doesn't reflect a real-time billing info. It is not updated or notified if
  * an item is purchased or cancelled; its contents are static and updated only when
- * {@link #load(SkuIds, Callback)} is called.
+ * {@link #load(Request, Callback)} is called.
  * This class lifecycle is bound to the lifecycle of {@link Checkout} in which it was created. If
  * {@link Checkout} stops this class loading also stops and no
  * {@link Callback#onLoaded(Inventory.Products)} method is called.
@@ -56,11 +56,11 @@ public interface Inventory {
      * Multiple simultaneous loadings are not supported, each new call of this method cancels all
      * previous requests.
      *
-     * @param skus list of SKUs to be loaded
+     * @param request list of SKUs to be loaded
      * @return instance of this {@link Inventory}
      */
     @Nonnull
-    Inventory load(@Nonnull SkuIds skus, @Nonnull Callback callback);
+    Inventory load(@Nonnull Request request, @Nonnull Callback callback);
 
     /**
      * Cancels current loading, if any.
@@ -77,7 +77,7 @@ public interface Inventory {
     Inventory.Products getProducts();
 
     /**
-     * A callback of {@link #load(SkuIds, Callback)} method.
+     * A callback of {@link #load(Request, Callback)} method.
      */
     interface Callback {
         /**
@@ -142,7 +142,7 @@ public interface Inventory {
 
     /**
      * One product in the inventory. Contains list of purchases and optionally list of SKUs (if
-     * {@link SkuIds} contains information about SKUs)
+     * {@link Request} contains information about SKUs)
      */
     @Immutable
     final class Product {
@@ -223,26 +223,26 @@ public interface Inventory {
         }
     }
 
-    final class SkuIds {
+    final class Request {
         private final Map<String, List<String>> map = new HashMap<>();
 
-        private SkuIds() {
+        private Request() {
         }
 
         @Nonnull
-        public static SkuIds create() {
-            return new SkuIds();
+        public static Request create() {
+            return new Request();
         }
 
         @Nonnull
-        SkuIds copy() {
-            final SkuIds copy = new SkuIds();
+        Request copy() {
+            final Request copy = new Request();
             copy.map.putAll(map);
             return copy;
         }
 
         @Nonnull
-        public SkuIds add(@Nonnull String product, @Nonnull List<String> skus) {
+        public Request add(@Nonnull String product, @Nonnull List<String> skus) {
             for (String sku : skus) {
                 add(product, sku);
             }
@@ -250,7 +250,7 @@ public interface Inventory {
         }
 
         @Nonnull
-        public SkuIds add(@Nonnull String product, @Nonnull String sku) {
+        public Request add(@Nonnull String product, @Nonnull String sku) {
             Check.isNotEmpty(product);
             Check.isNotEmpty(sku);
 
@@ -287,9 +287,9 @@ public interface Inventory {
         @Override
         public boolean equals(Object o) {
             if (this == o) return true;
-            if (!(o instanceof SkuIds)) return false;
+            if (!(o instanceof Request)) return false;
 
-            final SkuIds that = (SkuIds) o;
+            final Request that = (Request) o;
 
             return map.equals(that.map);
 

@@ -81,15 +81,15 @@ public class CheckoutInventoryTest extends InventoryTestBase {
     public void testIsLoadedWithEmptySkusList() throws Exception {
         populatePurchases();
 
-        final Inventory.SkuIds skuIds = Inventory.SkuIds.create()
+        final Inventory.Request request = Inventory.Request.create()
                 .add(IN_APP, "in_app_01")
                 .add(SUBSCRIPTION, "sub_01");
-        final Checkout checkout = Checkout.forApplication(billing, skuIds.getProducts());
+        final Checkout checkout = Checkout.forApplication(billing, request.getProducts());
 
         final CheckoutInventory inventory = new CheckoutInventory(checkout);
         final TestCallback listener = new TestCallback();
         checkout.start();
-        inventory.load(skuIds, listener);
+        inventory.load(request, listener);
 
         waitWhileLoading(inventory);
 
@@ -105,15 +105,15 @@ public class CheckoutInventoryTest extends InventoryTestBase {
     public void testShouldContinueAfterListenerException() throws Exception {
         populatePurchases();
 
-        final Inventory.SkuIds skuIds = Inventory.SkuIds.create()
+        final Inventory.Request request = Inventory.Request.create()
                 .add(IN_APP, "in_app_01")
                 .add(SUBSCRIPTION, "sub_01");
-        final Checkout checkout = Checkout.forApplication(billing, skuIds.getProducts());
+        final Checkout checkout = Checkout.forApplication(billing, request.getProducts());
 
         final CrashingCallback listener = new CrashingCallback();
         final CheckoutInventory inventory = new CheckoutInventory(checkout);
         checkout.start();
-        inventory.load(skuIds, listener);
+        inventory.load(request, listener);
 
         waitWhileLoading(inventory);
 

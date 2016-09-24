@@ -49,10 +49,10 @@ class FallingBackInventory extends BaseInventory {
 
     @Nonnull
     @Override
-    public Inventory load(@Nonnull SkuIds skus, @Nonnull Callback callback) {
+    public Inventory load(@Nonnull Request request, @Nonnull Callback callback) {
         synchronized (mLock) {
-            setSkus(skus, callback);
-            mMainCallback.load(skus);
+            setRequest(request, callback);
+            mMainCallback.load(request);
         }
         return this;
     }
@@ -87,7 +87,7 @@ class FallingBackInventory extends BaseInventory {
                     onProductsLoaded(products);
                     return;
                 }
-                mFallbackCallback.load(products, getSkus());
+                mFallbackCallback.load(products, getRequest());
             }
         }
 
@@ -101,7 +101,7 @@ class FallingBackInventory extends BaseInventory {
             return false;
         }
 
-        public void load(SkuIds skus) {
+        public void load(Request skus) {
             Check.isTrue(Thread.holdsLock(mLock), "Must be synchronized");
             mProducts = null;
             mMainInventory.load(skus, this);
@@ -125,7 +125,7 @@ class FallingBackInventory extends BaseInventory {
             }
         }
 
-        public void load(Products products, SkuIds skus) {
+        public void load(Products products, Request skus) {
             Check.isTrue(Thread.holdsLock(mLock), "Must be synchronized");
             mProducts = products;
             mFallbackInventory.load(skus, this);

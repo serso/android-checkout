@@ -47,14 +47,14 @@ public final class RobotmediaInventory extends BaseInventory {
 
     @Nonnull
     @Override
-    public Inventory load(@Nonnull SkuIds skus, @Nonnull Callback callback) {
+    public Inventory load(@Nonnull Request request, @Nonnull Callback callback) {
         synchronized (mLock) {
-            setSkus(skus, callback);
+            setRequest(request, callback);
             mState = State.LOADING;
             if (RobotmediaDatabase.exists(mCheckout.getContext())) {
-                mBackground.execute(new Loader(skus));
+                mBackground.execute(new Loader(request));
             } else {
-                onLoaded(RobotmediaDatabase.toInventoryProducts(skus.getProducts()));
+                onLoaded(RobotmediaDatabase.toInventoryProducts(request.getProducts()));
             }
         }
 
@@ -95,9 +95,9 @@ public final class RobotmediaInventory extends BaseInventory {
     }
 
     private class Loader implements Runnable {
-        private final SkuIds mSkus;
+        private final Request mSkus;
 
-        public Loader(SkuIds skus) {
+        public Loader(Request skus) {
             this.mSkus = skus;
         }
 
@@ -107,7 +107,7 @@ public final class RobotmediaInventory extends BaseInventory {
             final RobotmediaDatabase database = new RobotmediaDatabase(context);
             final Products products = database.load(mSkus);
             synchronized (mLock) {
-                if (!getSkus().equals(mSkus)) {
+                if (!getRequest().equals(mSkus)) {
                     return;
                 }
             }

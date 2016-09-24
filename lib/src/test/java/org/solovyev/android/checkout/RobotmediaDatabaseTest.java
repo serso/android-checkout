@@ -55,14 +55,14 @@ public class RobotmediaDatabaseTest {
     private BillingDB db;
 
     @Nonnull
-    private Inventory.SkuIds skuIds;
+    private Inventory.Request mRequest;
 
     @Before
     public void setUp() throws Exception {
         final Billing billing = Tests.newBilling();
         billing.setMainThread(sameThreadExecutor());
-        skuIds = Inventory.SkuIds.create().add(IN_APP, asList("sku_0", "sku_1", "sku_2", "sku_3", "sku_4", "sku_6"));
-        checkout = Checkout.forApplication(billing, skuIds.getProducts());
+        mRequest = Inventory.Request.create().add(IN_APP, asList("sku_0", "sku_1", "sku_2", "sku_3", "sku_4", "sku_6"));
+        checkout = Checkout.forApplication(billing, mRequest.getProducts());
         db = new BillingDB(RuntimeEnvironment.application);
     }
 
@@ -73,7 +73,7 @@ public class RobotmediaDatabaseTest {
 
         final RobotmediaInventory inventory = new RobotmediaInventory(checkout, sameThreadExecutor());
         final CountDownCallback l = new CountDownCallback();
-        inventory.load(skuIds, l);
+        inventory.load(mRequest, l);
 
         final Inventory.Products products = l.waitProducts();
         final Inventory.Product product = products.get(IN_APP);
@@ -92,7 +92,7 @@ public class RobotmediaDatabaseTest {
 
         final RobotmediaInventory inventory = new RobotmediaInventory(checkout, sameThreadExecutor());
         final CountDownCallback l = new CountDownCallback();
-        inventory.load(skuIds, l);
+        inventory.load(mRequest, l);
 
         final Inventory.Products products = l.waitProducts();
         final Inventory.Product product = products.get(IN_APP);
@@ -110,7 +110,7 @@ public class RobotmediaDatabaseTest {
     public void testShouldReadEmptyList() throws Exception {
         final RobotmediaInventory inventory = new RobotmediaInventory(checkout, sameThreadExecutor());
         final CountDownCallback l = new CountDownCallback();
-        inventory.load(skuIds, l);
+        inventory.load(mRequest, l);
 
         final Inventory.Products products = l.waitProducts();
         final Inventory.Product product = products.get(IN_APP);

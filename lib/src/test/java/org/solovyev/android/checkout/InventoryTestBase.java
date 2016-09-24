@@ -62,15 +62,15 @@ public abstract class InventoryTestBase {
     private Inventory inventory;
 
     @Nonnull
-    private Inventory.SkuIds skuIds;
+    private Inventory.Request mRequest;
 
     @Before
     public void setUp() throws Exception {
         billing = newBilling();
-        skuIds = Inventory.SkuIds.create()
+        mRequest = Inventory.Request.create()
                 .add(IN_APP, asList("1", "2", "3", "4", "6"))
                 .add(SUBSCRIPTION, asList("sub1", "sub2", "sub3", "sub4"));
-        checkout = Checkout.forApplication(billing, skuIds.getProducts());
+        checkout = Checkout.forApplication(billing, mRequest.getProducts());
         inventory = newInventory(checkout);
     }
 
@@ -88,7 +88,7 @@ public abstract class InventoryTestBase {
 
         final TestCallback listener = new TestCallback();
         checkout.start();
-        inventory.load(skuIds, listener);
+        inventory.load(mRequest, listener);
 
         waitWhileLoading(inventory);
 
@@ -142,7 +142,7 @@ public abstract class InventoryTestBase {
         final Inventory.Callback l1 = mock(Inventory.Callback.class);
 
         checkout.start();
-        inventory.load(skuIds, l1);
+        inventory.load(mRequest, l1);
         waitWhileLoading(inventory);
 
         verify(l1, times(1)).onLoaded(anyProducts());
@@ -157,12 +157,12 @@ public abstract class InventoryTestBase {
     public void testListenerShouldBeCalledOnlyOnce() throws Exception {
         final Inventory.Callback l = mock(Inventory.Callback.class);
         checkout.start();
-        inventory.load(skuIds, mock(Inventory.Callback.class));
-        inventory.load(skuIds, mock(Inventory.Callback.class));
-        inventory.load(skuIds, l);
+        inventory.load(mRequest, mock(Inventory.Callback.class));
+        inventory.load(mRequest, mock(Inventory.Callback.class));
+        inventory.load(mRequest, l);
         waitWhileLoading(inventory);
-        inventory.load(skuIds, mock(Inventory.Callback.class));
-        inventory.load(skuIds, mock(Inventory.Callback.class));
+        inventory.load(mRequest, mock(Inventory.Callback.class));
+        inventory.load(mRequest, mock(Inventory.Callback.class));
         verify(l, times(1)).onLoaded(anyProducts());
     }
 

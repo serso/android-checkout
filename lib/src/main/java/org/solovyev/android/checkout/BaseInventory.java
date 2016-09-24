@@ -41,7 +41,7 @@ public abstract class BaseInventory implements Inventory {
     protected Products mProducts = Products.EMPTY;
     @GuardedBy("mLock")
     @Nonnull
-    private SkuIds mSkus;
+    private Request mRequest;
     @GuardedBy("mLock")
     @Nullable
     private Callback mCallback;
@@ -49,20 +49,20 @@ public abstract class BaseInventory implements Inventory {
     protected BaseInventory(@Nonnull Checkout checkout) {
         mCheckout = checkout;
         mLock = checkout.mLock;
-        mSkus = SkuIds.create();
+        mRequest = Request.create();
     }
 
-    protected final void setSkus(@Nonnull SkuIds skus, @Nonnull Callback callback) {
+    protected final void setRequest(@Nonnull Request request, @Nonnull Callback callback) {
         Check.isTrue(Thread.holdsLock(mLock), "Must be locked");
-        Check.isTrue(!skus.isEmpty(), "Skus must not be empty");
-        mSkus = skus;
+        Check.isTrue(!request.isEmpty(), "Skus must not be empty");
+        mRequest = request;
         mCallback = callback;
     }
 
     @Nonnull
-    protected final SkuIds getSkus() {
+    protected final Request getRequest() {
         Check.isTrue(Thread.holdsLock(mLock), "Must be locked");
-        return mSkus;
+        return mRequest;
     }
 
     @Override
