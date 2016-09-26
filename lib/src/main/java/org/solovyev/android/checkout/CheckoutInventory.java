@@ -76,35 +76,33 @@ final class CheckoutInventory extends BaseInventory {
         }
 
         private void countDown() {
+            Check.isTrue(Thread.holdsLock(mLock), "Must be synchronized");
             countDown(1);
         }
 
         private void countDown(int count) {
-            synchronized (mLock) {
-                mCount -= count;
-                Check.isTrue(mCount >= 0, "Can't be negative");
-                if (mCount == 0) {
-                    onDone();
-                }
+            Check.isTrue(Thread.holdsLock(mLock), "Must be synchronized");
+            mCount -= count;
+            Check.isTrue(mCount >= 0, "Can't be negative");
+            if (mCount == 0) {
+                onDone();
             }
         }
 
         private void loadPurchases(@Nonnull final BillingRequests requests,
                 @Nonnull final Product product) {
-            requests.getAllPurchases(product.id, new RequestListener<Purchases>() {
+            requests.getAllPurchases(product.id, synchronizedListener(new RequestListener<Purchases>() {
                 @Override
                 public void onSuccess(@Nonnull Purchases purchases) {
-                    synchronized (mLock) {
-                        product.setPurchases(purchases.list);
-                        countDown();
-                    }
+                    product.setPurchases(purchases.list);
+                    countDown();
                 }
 
                 @Override
                 public void onError(int response, @Nonnull Exception e) {
                     countDown();
                 }
-            });
+            }));
         }
 
         private void loadSkus(@Nonnull BillingRequests requests, @Nonnull final Product product) {
@@ -112,23 +110,23 @@ final class CheckoutInventory extends BaseInventory {
             if (skuIds.isEmpty()) {
                 Billing.warning("There are no SKUs for \"" + product.id
                         + "\" product. No SKU information will be loaded");
-                countDown();
+                synchronized (mLock) {
+                    countDown();
+                }
                 return;
             }
-            requests.getSkus(product.id, skuIds, new RequestListener<Skus>() {
+            requests.getSkus(product.id, skuIds, synchronizedListener(new RequestListener<Skus>() {
                 @Override
                 public void onSuccess(@Nonnull Skus skus) {
-                    synchronized (mLock) {
-                        product.setSkus(skus.list);
-                        countDown();
-                    }
+                    product.setSkus(skus.list);
+                    countDown();
                 }
 
                 @Override
                 public void onError(int response, @Nonnull Exception e) {
                     countDown();
                 }
-            });
+            }));
         }
     }
 

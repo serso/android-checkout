@@ -109,6 +109,10 @@ public abstract class BaseInventory implements Inventory {
         }
     }
 
+    protected final <R> RequestListener<R> synchronizedListener(@Nonnull final RequestListener<R> l) {
+        return new SynchronizedRequestListener<>(l);
+    }
+
     protected abstract Task createTask(@Nonnull Request request, @Nonnull Callback callback);
 
     protected abstract class Task implements Runnable {
@@ -149,6 +153,28 @@ public abstract class BaseInventory implements Inventory {
             synchronized (mLock) {
                 mCallback = null;
                 mTasks.remove(this);
+            }
+        }
+    }
+
+    private final class SynchronizedRequestListener<R> implements RequestListener<R> {
+        private final RequestListener<R> mListener;
+
+        public SynchronizedRequestListener(RequestListener<R> listener) {
+            mListener = listener;
+        }
+
+        @Override
+        public void onSuccess(@Nonnull R result) {
+            synchronized (mLock) {
+                mListener.onSuccess(result);
+            }
+        }
+
+        @Override
+        public void onError(int response, @Nonnull Exception e) {
+            synchronized (mLock) {
+                mListener.onError(response, e);
             }
         }
     }
