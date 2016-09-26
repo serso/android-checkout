@@ -57,6 +57,7 @@ public abstract class BaseInventory implements Inventory {
         Check.isTrue(Thread.holdsLock(mLock), "Must be locked");
         mRequest = request.copy();
         mCallback = callback;
+        mProducts = new Products();
         return mRequest;
     }
 

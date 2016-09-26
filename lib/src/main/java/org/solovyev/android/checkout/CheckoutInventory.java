@@ -63,10 +63,6 @@ final class CheckoutInventory extends BaseInventory {
                 }
             }
             final long id = mCounter.newAttempt(count);
-
-            // clear all previously loaded data
-            mProducts = new Products();
-
             mCheckout.whenReady(new CheckoutListener(id));
         }
 
