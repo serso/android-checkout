@@ -112,7 +112,7 @@ class FallingBackInventory extends BaseInventory {
 
         @GuardedBy("mLock")
         @Nonnull
-        private Products mProducts;
+        private Products mProducts = Products.EMPTY;
 
         @Override
         public void onLoaded(@Nonnull Products products) {
@@ -125,10 +125,10 @@ class FallingBackInventory extends BaseInventory {
             }
         }
 
-        public void load(Products products, Request skus) {
+        public void load(Products products, Request request) {
             Check.isTrue(Thread.holdsLock(mLock), "Must be synchronized");
             mProducts = products;
-            mFallbackInventory.load(skus, this);
+            mFallbackInventory.load(request, this);
         }
     }
 }

@@ -260,6 +260,16 @@ public interface Inventory {
         }
 
         @Nonnull
+        public Request loadInAppPurchases() {
+            return loadPurchases(ProductTypes.IN_APP);
+        }
+
+        @Nonnull
+        public Request loadSubscriptionPurchases() {
+            return loadPurchases(ProductTypes.SUBSCRIPTION);
+        }
+
+        @Nonnull
         public Request loadPurchases(@Nonnull String product) {
             ProductTypes.checkSupported(product);
             mProducts.add(product);

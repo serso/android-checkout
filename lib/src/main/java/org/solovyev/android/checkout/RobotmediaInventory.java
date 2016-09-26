@@ -49,7 +49,7 @@ public final class RobotmediaInventory extends BaseInventory {
     @Override
     public Inventory load(@Nonnull Request request, @Nonnull Callback callback) {
         synchronized (mLock) {
-            setRequest(request, callback);
+            request = setRequest(request, callback);
             mState = State.LOADING;
             if (RobotmediaDatabase.exists(mCheckout.getContext())) {
                 mBackground.execute(new Loader(request));
@@ -95,19 +95,19 @@ public final class RobotmediaInventory extends BaseInventory {
     }
 
     private class Loader implements Runnable {
-        private final Request mSkus;
+        private final Request mRequest;
 
-        public Loader(Request skus) {
-            this.mSkus = skus;
+        Loader(Request request) {
+            mRequest = request;
         }
 
         @Override
         public void run() {
             final Context context = mCheckout.getContext();
             final RobotmediaDatabase database = new RobotmediaDatabase(context);
-            final Products products = database.load(mSkus);
+            final Products products = database.load(mRequest);
             synchronized (mLock) {
-                if (!getRequest().equals(mSkus)) {
+                if (!getRequest().equals(mRequest)) {
                     return;
                 }
             }

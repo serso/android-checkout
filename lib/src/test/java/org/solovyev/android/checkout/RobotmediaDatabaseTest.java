@@ -22,6 +22,15 @@
 
 package org.solovyev.android.checkout;
 
+import static java.util.Arrays.asList;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.solovyev.android.checkout.ProductTypes.IN_APP;
+import static org.solovyev.android.checkout.RobotmediaDatabase.makeInClause;
+import static org.solovyev.android.checkout.Tests.sameThreadExecutor;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -34,15 +43,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Nonnull;
-
-import static java.util.Arrays.asList;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static org.solovyev.android.checkout.ProductTypes.IN_APP;
-import static org.solovyev.android.checkout.RobotmediaDatabase.makeInClause;
-import static org.solovyev.android.checkout.Tests.sameThreadExecutor;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
@@ -61,7 +61,7 @@ public class RobotmediaDatabaseTest {
     public void setUp() throws Exception {
         final Billing billing = Tests.newBilling();
         billing.setMainThread(sameThreadExecutor());
-        mRequest = Inventory.Request.create().loadSkus(IN_APP, asList("sku_0", "sku_1", "sku_2", "sku_3", "sku_4", "sku_6"));
+        mRequest = Inventory.Request.create().loadSkus(IN_APP, asList("sku_0", "sku_1", "sku_2", "sku_3", "sku_4", "sku_6")).loadAllPurchases();
         checkout = Checkout.forApplication(billing);
         db = new BillingDB(RuntimeEnvironment.application);
     }

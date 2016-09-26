@@ -53,8 +53,16 @@ final class CheckoutInventory extends BaseInventory {
             // 1. onReady to be called
             // 2. loadPurchased to be finished
             // 3. loadSkus to be finished
-            final int size = ProductTypes.ALL.size();
-            final long id = mCounter.newAttempt(size * 3);
+            int count = ProductTypes.ALL.size();
+            for (String product : ProductTypes.ALL) {
+                if (request.shouldLoadPurchases(product)) {
+                    count++;
+                }
+                if (request.shouldLoadSkus(product)) {
+                    count++;
+                }
+            }
+            final long id = mCounter.newAttempt(count);
 
             // clear all previously loaded data
             mProducts = new Products();
@@ -194,11 +202,16 @@ final class CheckoutInventory extends BaseInventory {
                     return;
                 }
                 mProducts.add(product);
-                if (product.supported) {
+                final Request request = getRequest();
+                if (product.supported && request.shouldLoadPurchases(productId)) {
                     loadPurchases(requests, product, mId);
+                } else {
+                    onFinished(1, mId);
+                }
+                if (product.supported && request.shouldLoadSkus(productId)) {
                     loadSkus(requests, product, mId);
                 } else {
-                    onFinished(2, mId);
+                    onFinished(1, mId);
                 }
             }
         }

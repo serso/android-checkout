@@ -22,16 +22,6 @@
 
 package org.solovyev.android.checkout;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
-import org.robolectric.annotation.Config;
-
-import java.util.List;
-
-import javax.annotation.Nonnull;
-
 import static java.util.Arrays.asList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertSame;
@@ -47,6 +37,16 @@ import static org.solovyev.android.checkout.Purchase.State.EXPIRED;
 import static org.solovyev.android.checkout.Purchase.State.PURCHASED;
 import static org.solovyev.android.checkout.Purchase.State.REFUNDED;
 import static org.solovyev.android.checkout.PurchaseTest.verifyPurchase;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.robolectric.RobolectricTestRunner;
+import org.robolectric.annotation.Config;
+
+import java.util.List;
+
+import javax.annotation.Nonnull;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
@@ -68,8 +68,9 @@ public abstract class InventoryTestBase {
     public void setUp() throws Exception {
         billing = newBilling();
         mRequest = Inventory.Request.create()
-                .loadSkus(IN_APP, asList("1", "2", "3", "4", "6"))
-                .loadSkus(SUBSCRIPTION, asList("sub1", "sub2", "sub3", "sub4"));
+                .loadAllPurchases()
+                .loadInAppSkus(asList("1", "2", "3", "4", "6"))
+                .loadSubscriptionSkus(asList("sub1", "sub2", "sub3", "sub4"));
         checkout = Checkout.forApplication(billing);
         inventory = newInventory(checkout);
     }

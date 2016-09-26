@@ -22,19 +22,6 @@
 
 package org.solovyev.android.checkout;
 
-import com.android.vending.billing.IInAppBillingService;
-
-import org.junit.Assert;
-import org.junit.Test;
-
-import android.os.Bundle;
-import android.os.RemoteException;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.annotation.Nonnull;
-
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
@@ -44,6 +31,19 @@ import static org.solovyev.android.checkout.ProductTypes.IN_APP;
 import static org.solovyev.android.checkout.ProductTypes.SUBSCRIPTION;
 import static org.solovyev.android.checkout.RequestTestBase.newBundle;
 import static org.solovyev.android.checkout.ResponseCodes.OK;
+
+import android.os.Bundle;
+import android.os.RemoteException;
+
+import com.android.vending.billing.IInAppBillingService;
+
+import org.junit.Assert;
+import org.junit.Test;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.annotation.Nonnull;
 
 public class CheckoutInventoryTest extends InventoryTestBase {
 
@@ -82,6 +82,7 @@ public class CheckoutInventoryTest extends InventoryTestBase {
         populatePurchases();
 
         final Inventory.Request request = Inventory.Request.create()
+                .loadAllPurchases()
                 .loadSkus(IN_APP, "in_app_01")
                 .loadSkus(SUBSCRIPTION, "sub_01");
         final Checkout checkout = Checkout.forApplication(billing);

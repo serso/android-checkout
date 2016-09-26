@@ -52,10 +52,12 @@ public abstract class BaseInventory implements Inventory {
         mRequest = Request.create();
     }
 
-    protected final void setRequest(@Nonnull Request request, @Nonnull Callback callback) {
+    @Nonnull
+    protected final Request setRequest(@Nonnull Request request, @Nonnull Callback callback) {
         Check.isTrue(Thread.holdsLock(mLock), "Must be locked");
         mRequest = request.copy();
         mCallback = callback;
+        return mRequest;
     }
 
     @Nonnull

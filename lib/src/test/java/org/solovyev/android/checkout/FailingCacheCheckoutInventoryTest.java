@@ -22,6 +22,16 @@
 
 package org.solovyev.android.checkout;
 
+import static java.util.Arrays.asList;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.solovyev.android.checkout.ProductTypes.IN_APP;
+import static org.solovyev.android.checkout.ProductTypes.SUBSCRIPTION;
+import static org.solovyev.android.checkout.Purchase.State.CANCELLED;
+import static org.solovyev.android.checkout.Purchase.State.EXPIRED;
+import static org.solovyev.android.checkout.Purchase.State.PURCHASED;
+import static org.solovyev.android.checkout.Purchase.State.REFUNDED;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -33,16 +43,6 @@ import java.util.concurrent.Executor;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-
-import static java.util.Arrays.asList;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static org.solovyev.android.checkout.ProductTypes.IN_APP;
-import static org.solovyev.android.checkout.ProductTypes.SUBSCRIPTION;
-import static org.solovyev.android.checkout.Purchase.State.CANCELLED;
-import static org.solovyev.android.checkout.Purchase.State.EXPIRED;
-import static org.solovyev.android.checkout.Purchase.State.PURCHASED;
-import static org.solovyev.android.checkout.Purchase.State.REFUNDED;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
@@ -63,6 +63,7 @@ public class FailingCacheCheckoutInventoryTest {
         failingCache = new FailingCache();
         billing = newBilling();
         mRequest = Inventory.Request.create()
+                .loadAllPurchases()
                 .loadSkus(IN_APP, asList("1", "2", "3", "4", "6"))
                 .loadSkus(SUBSCRIPTION, asList("sub1", "sub2", "sub3", "sub4"));
         checkout = Checkout.forApplication(billing);
