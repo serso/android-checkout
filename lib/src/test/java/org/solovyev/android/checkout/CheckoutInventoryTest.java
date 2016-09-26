@@ -73,10 +73,6 @@ public class CheckoutInventoryTest extends InventoryTestBase {
         insertPurchases(billing, product, purchases);
     }
 
-    protected boolean isLoaded(@Nonnull Inventory inventory) {
-        return ((BaseInventory) inventory).isLoaded();
-    }
-
     @Test
     public void testIsLoadedWithEmptySkusList() throws Exception {
         populatePurchases();

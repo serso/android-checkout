@@ -56,18 +56,21 @@ public interface Inventory {
     /**
      * Loads a {@link Products} object and asynchronously delivers it to the provided
      * {@link Callback}. The data to be loaded is defined by {@link Request} argument.
-     * Multiple simultaneous loadings are not supported, each new call of this method cancels all
-     * previous requests.
-     * @param request list of SKUs to be loaded
-     * @return instance of this {@link Inventory}
+     * @param request request definition
+     * @return task identifier
      */
-    @Nonnull
-    Inventory load(@Nonnull Request request, @Nonnull Callback callback);
+    int load(@Nonnull Request request, @Nonnull Callback callback);
 
     /**
-     * Cancels current loading, if any.
+     * Cancels all pending load requests, if any.
      */
     void cancel();
+
+    /**
+     * Cancels a task by id. Id can be obtained from {@link #load(Request, Callback)} method.
+     * @param id task id
+     */
+    void cancel(int id);
 
     /**
      * Note that this method may return different instances of {@link Inventory.Products} with
@@ -75,7 +78,9 @@ public interface Inventory {
      * @return the last loaded set of products
      */
     @Nonnull
-    Inventory.Products getProducts();
+    Inventory.Products getLastLoadedProducts();
+
+    boolean hasLastLoadedProducts();
 
     /**
      * A callback of {@link #load(Request, Callback)} method.
@@ -266,8 +271,8 @@ public interface Inventory {
         /**
          * Creates an empty load request. Only {@link Product#supported} flag is set in
          * {@link #load(Request, Callback)} for all available for billing products.
-         * @see ProductTypes
          * @return empty request
+         * @see ProductTypes
          */
         @Nonnull
         public static Request create() {
@@ -317,7 +322,7 @@ public interface Inventory {
          * SKU identifier is unique only in product <var>product</var> id must be also provided to
          * this method.
          * @param product product
-         * @param skus list of SKU identifiers for which SKU details should be loaded
+         * @param skus    list of SKU identifiers for which SKU details should be loaded
          * @return this request
          */
         @Nonnull

@@ -113,7 +113,7 @@ public abstract class InventoryTestBase {
         verifyPurchase(actualSubs.get(2), 2, CANCELLED, complete, true);
         verifyPurchase(actualSubs.get(3), 1, PURCHASED, complete, true);
 
-        assertSame(listener.products, inventory.getProducts());
+        assertSame(listener.products, inventory.getLastLoadedProducts());
     }
 
     protected void populatePurchases() throws Exception {
@@ -169,7 +169,7 @@ public abstract class InventoryTestBase {
 
     void waitWhileLoading(@Nonnull Inventory inventory) throws InterruptedException {
         int sleeping = 0;
-        while (!isLoaded(inventory)) {
+        while (!inventory.hasLastLoadedProducts()) {
             Thread.sleep(50L);
             sleeping += 50L;
             if (sleeping > 1000L) {
@@ -177,8 +177,6 @@ public abstract class InventoryTestBase {
             }
         }
     }
-
-    protected abstract boolean isLoaded(Inventory inventory);
 
     static class TestCallback implements Inventory.Callback {
         @Nonnull

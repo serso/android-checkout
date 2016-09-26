@@ -23,8 +23,6 @@
 package org.solovyev.android.checkout;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import javax.annotation.concurrent.GuardedBy;
 
 /**
  * Inventory which falls back to fallback {@link Inventory} if one of the products is not
@@ -32,14 +30,72 @@ import javax.annotation.concurrent.GuardedBy;
  */
 class FallingBackInventory extends BaseInventory {
 
+    private class MyTask extends Task {
+
+        @Nonnull
+        private final MainCallback mMainCallback = new MainCallback();
+        @Nonnull
+        private final FallbackCallback mFallbackCallback = new FallbackCallback();
+
+        MyTask(Request request, Callback callback) {
+            super(request, callback);
+        }
+
+        @Override
+        public void run() {
+            mMainCallback.load();
+        }
+
+        private class MainCallback implements Callback {
+
+            @Override
+            public void onLoaded(@Nonnull Products products) {
+                synchronized (mLock) {
+                    mProducts.merge(products);
+                    if (!existsUnsupported()) {
+                        onDone();
+                        return;
+                    }
+                    mFallbackCallback.load();
+                }
+            }
+
+            private boolean existsUnsupported() {
+                Check.isTrue(Thread.holdsLock(mLock), "Must be synchronized");
+                for (Product product : mProducts) {
+                    if (!product.supported) {
+                        return true;
+                    }
+                }
+
+                return false;
+            }
+
+            public void load() {
+                mMainInventory.load(mRequest, this);
+            }
+        }
+
+        private class FallbackCallback implements Callback {
+
+            @Override
+            public void onLoaded(@Nonnull Products products) {
+                synchronized (mLock) {
+                    mProducts.merge(products);
+                    onDone();
+                }
+            }
+
+            public void load() {
+                mFallbackInventory.load(mRequest, this);
+            }
+        }
+    }
+
     @Nonnull
     private final CheckoutInventory mMainInventory;
     @Nonnull
     private final Inventory mFallbackInventory;
-    @Nonnull
-    private final MainCallback mMainCallback = new MainCallback();
-    @Nonnull
-    private final FallbackCallback mFallbackCallback = new FallbackCallback();
 
     public FallingBackInventory(@Nonnull Checkout checkout, @Nonnull Inventory fallbackInventory) {
         super(checkout);
@@ -47,88 +103,8 @@ class FallingBackInventory extends BaseInventory {
         mFallbackInventory = fallbackInventory;
     }
 
-    @Nonnull
     @Override
-    public Inventory load(@Nonnull Request request, @Nonnull Callback callback) {
-        synchronized (mLock) {
-            setRequest(request, callback);
-            mMainCallback.load(request);
-        }
-        return this;
-    }
-
-    boolean isLoaded() {
-        synchronized (mLock) {
-            return mProducts == mMainCallback.mProducts;
-        }
-    }
-
-    private void onProductsLoaded(@Nonnull Products products) {
-        synchronized (mLock) {
-            mMainCallback.mProducts = products;
-            mProducts = products;
-            onLoaded();
-        }
-    }
-
-    private class MainCallback implements Callback {
-
-        @GuardedBy("mLock")
-        @Nullable
-        private Products mProducts;
-
-        @Override
-        public void onLoaded(@Nonnull Products products) {
-            synchronized (mLock) {
-                if (mProducts != null) {
-                    return;
-                }
-                if (!existsUnsupported(products)) {
-                    onProductsLoaded(products);
-                    return;
-                }
-                mFallbackCallback.load(products, getRequest());
-            }
-        }
-
-        private boolean existsUnsupported(@Nonnull Products products) {
-            for (Product product : products) {
-                if (!product.supported) {
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
-        public void load(Request skus) {
-            Check.isTrue(Thread.holdsLock(mLock), "Must be synchronized");
-            mProducts = null;
-            mMainInventory.load(skus, this);
-        }
-    }
-
-    private class FallbackCallback implements Callback {
-
-        @GuardedBy("mLock")
-        @Nonnull
-        private Products mProducts = Products.EMPTY;
-
-        @Override
-        public void onLoaded(@Nonnull Products products) {
-            synchronized (mLock) {
-                if (mMainCallback.mProducts != null) {
-                    return;
-                }
-                mProducts.merge(products);
-                onProductsLoaded(mProducts);
-            }
-        }
-
-        public void load(Products products, Request request) {
-            Check.isTrue(Thread.holdsLock(mLock), "Must be synchronized");
-            mProducts = products;
-            mFallbackInventory.load(request, this);
-        }
+    protected Task createTask(@Nonnull Request request, @Nonnull Callback callback) {
+        return new MyTask(request, callback);
     }
 }

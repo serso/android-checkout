@@ -22,18 +22,6 @@
 
 package org.solovyev.android.checkout;
 
-import com.android.vending.billing.IInAppBillingService;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.robolectric.RuntimeEnvironment;
-
-import android.database.sqlite.SQLiteDatabase;
-
-import java.util.List;
-
-import javax.annotation.Nonnull;
-
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
@@ -41,6 +29,18 @@ import static org.mockito.Mockito.when;
 import static org.solovyev.android.checkout.ProductTypes.IN_APP;
 import static org.solovyev.android.checkout.ProductTypes.SUBSCRIPTION;
 import static org.solovyev.android.checkout.Tests.sameThreadExecutor;
+
+import android.database.sqlite.SQLiteDatabase;
+
+import com.android.vending.billing.IInAppBillingService;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.robolectric.RuntimeEnvironment;
+
+import java.util.List;
+
+import javax.annotation.Nonnull;
 
 public class FallingBackInventoryTest extends InventoryTestBase {
 
@@ -67,7 +67,7 @@ public class FallingBackInventoryTest extends InventoryTestBase {
     @Nonnull
     @Override
     protected FallingBackInventory newInventory(@Nonnull Checkout checkout) {
-        return new FallingBackInventory(checkout, new RobotmediaInventory(checkout, sameThreadExecutor()));
+        return new FallingBackInventory(checkout, new RobotmediaInventory(checkout, sameThreadExecutor(), sameThreadExecutor()));
     }
 
     @Override
@@ -82,11 +82,6 @@ public class FallingBackInventoryTest extends InventoryTestBase {
         } else {
             RobotmediaInventoryTest.insertPurchases(new BillingDB(RuntimeEnvironment.application), purchases);
         }
-    }
-
-    @Override
-    protected boolean isLoaded(Inventory inventory) {
-        return ((FallingBackInventory) inventory).isLoaded();
     }
 
     @Test

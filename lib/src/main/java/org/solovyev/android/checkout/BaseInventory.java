@@ -22,6 +22,10 @@
 
 package org.solovyev.android.checkout;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.GuardedBy;
@@ -38,68 +42,114 @@ public abstract class BaseInventory implements Inventory {
     protected final Checkout mCheckout;
     @GuardedBy("mLock")
     @Nonnull
-    protected Products mProducts = Products.EMPTY;
+    private Products mLastProducts = Products.EMPTY;
     @GuardedBy("mLock")
     @Nonnull
-    private Request mRequest;
-    @GuardedBy("mLock")
-    @Nullable
-    private Callback mCallback;
+    private final List<Task> mTasks = new ArrayList<>();
+    private final AtomicInteger mTaskIdGenerator = new AtomicInteger();
 
     protected BaseInventory(@Nonnull Checkout checkout) {
         mCheckout = checkout;
         mLock = checkout.mLock;
-        mRequest = Request.create();
-    }
-
-    @Nonnull
-    protected final Request setRequest(@Nonnull Request request, @Nonnull Callback callback) {
-        Check.isTrue(Thread.holdsLock(mLock), "Must be locked");
-        mRequest = request.copy();
-        mCallback = callback;
-        mProducts = new Products();
-        return mRequest;
-    }
-
-    @Nonnull
-    protected final Request getRequest() {
-        Check.isTrue(Thread.holdsLock(mLock), "Must be locked");
-        return mRequest;
     }
 
     @Override
     public void cancel() {
-        synchronized (mLock) {
-            mCallback = null;
+        for (Task task : getTasksCopy()) {
+            task.cancel();
         }
     }
 
     @Override
+    public void cancel(int id) {
+        synchronized (mLock) {
+            for (Task task : mTasks) {
+                if (task.mId == id) {
+                    task.cancel();
+                    break;
+                }
+            }
+        }
+    }
+
     @Nonnull
-    public final Products getProducts() {
+    private List<Task> getTasksCopy() {
+        synchronized (mLock) {
+            return new ArrayList<>(mTasks);
+        }
+    }
+
+    @Nonnull
+    public final Products getLastLoadedProducts() {
         Check.isMainThread();
         synchronized (mLock) {
-            if (!isLoaded()) {
-                Billing.warning("Inventory is not loaded yet. Use Inventory#whenLoaded");
+            if (!hasLastLoadedProducts()) {
+                Billing.warning(
+                        "Inventory is not loaded yet. Use Inventory#load(Request, Callback) instead");
             }
-            return mProducts;
+            return mLastProducts;
         }
     }
 
-    protected void onLoaded() {
-        Check.isTrue(Thread.holdsLock(mLock), "Must be locked");
-        Check.isTrue(isLoaded(), "Must be loaded");
-        if (mCallback == null) {
-            return;
+    @Override
+    public boolean hasLastLoadedProducts() {
+        Check.isMainThread();
+        synchronized (mLock) {
+            return mLastProducts != Products.EMPTY;
         }
-        mCallback.onLoaded(mProducts);
-        mCallback = null;
     }
 
-    /**
-     * Note that this method should be called from inside of the synchronized block
-     *
-     * @return true if {@link #mProducts} are loaded
-     */
-    abstract boolean isLoaded();
+    @Override
+    public int load(@Nonnull Request request, @Nonnull Callback callback) {
+        synchronized (mLock) {
+            final Task task = createTask(request, callback);
+            mTasks.add(task);
+            task.run();
+            return task.mId;
+        }
+    }
+
+    protected abstract Task createTask(@Nonnull Request request, @Nonnull Callback callback);
+
+    protected abstract class Task implements Runnable {
+
+        protected final int mId = mTaskIdGenerator.getAndIncrement();
+        @Nonnull
+        protected final Request mRequest;
+        @GuardedBy("mLock")
+        @Nullable
+        private Callback mCallback;
+        @GuardedBy("mLock")
+        protected final Products mProducts = new Products();
+
+        public Task(@Nonnull Request request, @Nonnull Callback callback) {
+            mRequest = request.copy();
+            mCallback = callback;
+        }
+
+        protected final void onDone() {
+            synchronized (mLock) {
+                mLastProducts = mProducts;
+                if (mCallback == null) {
+                    return;
+                }
+                mTasks.remove(this);
+                mCallback.onLoaded(mProducts);
+                mCallback = null;
+            }
+        }
+
+        final boolean isCancelled() {
+            synchronized (mLock) {
+                return mCallback == null;
+            }
+        }
+
+        final void cancel() {
+            synchronized (mLock) {
+                mCallback = null;
+                mTasks.remove(this);
+            }
+        }
+    }
 }

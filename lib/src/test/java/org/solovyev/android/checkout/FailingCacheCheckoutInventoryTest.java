@@ -104,7 +104,7 @@ public class FailingCacheCheckoutInventoryTest {
 
     void waitWhileLoading(@Nonnull CheckoutInventory inventory) throws InterruptedException {
         int sleeping = 0;
-        while (!inventory.isLoaded()) {
+        while (!inventory.hasLastLoadedProducts()) {
             Thread.sleep(50L);
             sleeping += 50L;
             if (sleeping > 1000L) {

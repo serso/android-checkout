@@ -71,7 +71,7 @@ public class RobotmediaDatabaseTest {
         db.close();
         RuntimeEnvironment.application.deleteDatabase(RobotmediaDatabase.NAME);
 
-        final RobotmediaInventory inventory = new RobotmediaInventory(checkout, sameThreadExecutor());
+        final RobotmediaInventory inventory = new RobotmediaInventory(checkout, sameThreadExecutor(), sameThreadExecutor());
         final CountDownCallback l = new CountDownCallback();
         inventory.load(mRequest, l);
 
@@ -90,7 +90,7 @@ public class RobotmediaDatabaseTest {
         db.insert(newTransaction(4));
         db.insert(newTransaction(5));
 
-        final RobotmediaInventory inventory = new RobotmediaInventory(checkout, sameThreadExecutor());
+        final RobotmediaInventory inventory = new RobotmediaInventory(checkout, sameThreadExecutor(), sameThreadExecutor());
         final CountDownCallback l = new CountDownCallback();
         inventory.load(mRequest, l);
 
@@ -108,7 +108,7 @@ public class RobotmediaDatabaseTest {
 
     @Test
     public void testShouldReadEmptyList() throws Exception {
-        final RobotmediaInventory inventory = new RobotmediaInventory(checkout, sameThreadExecutor());
+        final RobotmediaInventory inventory = new RobotmediaInventory(checkout, sameThreadExecutor(), sameThreadExecutor());
         final CountDownCallback l = new CountDownCallback();
         inventory.load(mRequest, l);
 

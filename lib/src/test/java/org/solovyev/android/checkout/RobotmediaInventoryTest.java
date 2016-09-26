@@ -22,14 +22,14 @@
 
 package org.solovyev.android.checkout;
 
+import static org.solovyev.android.checkout.Tests.sameThreadExecutor;
+
 import org.junit.Before;
 import org.robolectric.RuntimeEnvironment;
 
 import java.util.List;
 
 import javax.annotation.Nonnull;
-
-import static org.solovyev.android.checkout.Tests.sameThreadExecutor;
 
 public class RobotmediaInventoryTest extends InventoryTestBase {
 
@@ -67,7 +67,7 @@ public class RobotmediaInventoryTest extends InventoryTestBase {
     @Nonnull
     @Override
     protected Inventory newInventory(@Nonnull Checkout checkout) {
-        return new RobotmediaInventory(checkout, sameThreadExecutor());
+        return new RobotmediaInventory(checkout, sameThreadExecutor(), sameThreadExecutor());
     }
 
     @Override
@@ -78,10 +78,5 @@ public class RobotmediaInventoryTest extends InventoryTestBase {
     @Override
     protected void insertPurchases(@Nonnull String product, @Nonnull List<Purchase> purchases) throws Exception {
         insertPurchases(db, purchases);
-    }
-
-    @Override
-    protected boolean isLoaded(Inventory inventory) {
-        return ((RobotmediaInventory) inventory).isLoaded();
     }
 }

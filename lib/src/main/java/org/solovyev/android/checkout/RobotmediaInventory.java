@@ -28,90 +28,65 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
 import javax.annotation.Nonnull;
-import javax.annotation.concurrent.GuardedBy;
 
 public final class RobotmediaInventory extends BaseInventory {
 
-    @Nonnull
-    private final Executor mBackground = Executors.newSingleThreadExecutor();
-    @Nonnull
-    private final Executor mOnLoadExecutor;
-    @GuardedBy("mLock")
-    @Nonnull
-    private State mState = State.INITIAL;
+    private class MyTask extends Task {
+        public MyTask(@Nonnull Request request, @Nonnull Callback callback) {
+            super(request, callback);
+        }
 
-    public RobotmediaInventory(@Nonnull Checkout checkout, @Nonnull Executor onLoadExecutor) {
-        super(checkout);
-        mOnLoadExecutor = onLoadExecutor;
-    }
-
-    @Nonnull
-    @Override
-    public Inventory load(@Nonnull Request request, @Nonnull Callback callback) {
-        synchronized (mLock) {
-            request = setRequest(request, callback);
-            mState = State.LOADING;
+        @Override
+        public void run() {
             if (RobotmediaDatabase.exists(mCheckout.getContext())) {
-                mBackground.execute(new Loader(request));
+                mBackground.execute(new Loader());
             } else {
                 onLoaded(RobotmediaDatabase.toInventoryProducts(ProductTypes.ALL));
             }
         }
 
-        return this;
-    }
-
-    private void onLoaded(@Nonnull final Inventory.Products products) {
-        synchronized (mLock) {
-            if (mState == State.LOADED) {
-                return;
-            }
-            mState = State.LOADED;
-            mProducts = products;
-        }
-        mOnLoadExecutor.execute(new Runnable() {
+        private class Loader implements Runnable {
             @Override
             public void run() {
-                synchronized (mLock) {
-                    if (mState != State.LOADED) {
-                        return;
-                    }
-                    onLoaded();
-                }
+                final Context context = mCheckout.getContext();
+                final RobotmediaDatabase database = new RobotmediaDatabase(context);
+                final Products products = database.load(mRequest);
+                onLoaded(products);
             }
-        });
-    }
-
-    boolean isLoaded() {
-        synchronized (mLock) {
-            return mState == State.LOADED;
-        }
-    }
-
-    private enum State {
-        INITIAL,
-        LOADING,
-        LOADED
-    }
-
-    private class Loader implements Runnable {
-        private final Request mRequest;
-
-        Loader(Request request) {
-            mRequest = request;
         }
 
-        @Override
-        public void run() {
-            final Context context = mCheckout.getContext();
-            final RobotmediaDatabase database = new RobotmediaDatabase(context);
-            final Products products = database.load(mRequest);
+        private void onLoaded(Products products) {
             synchronized (mLock) {
-                if (!getRequest().equals(mRequest)) {
-                    return;
-                }
+                mProducts.merge(products);
             }
-            onLoaded(products);
+            mOnLoadExecutor.execute(new Runnable() {
+                @Override
+                public void run() {
+                    onDone();
+                }
+            });
         }
+    }
+
+    @Nonnull
+    private final Executor mBackground;
+    @Nonnull
+    private final Executor mOnLoadExecutor;
+
+    public RobotmediaInventory(@Nonnull Checkout checkout, @Nonnull Executor onLoadExecutor) {
+        this(checkout, Executors.newSingleThreadExecutor(), onLoadExecutor);
+    }
+
+    public RobotmediaInventory(@Nonnull Checkout checkout, @Nonnull Executor background,
+            @Nonnull Executor onLoadExecutor) {
+        super(checkout);
+        mBackground = background;
+        mOnLoadExecutor = onLoadExecutor;
+    }
+
+
+    @Override
+    protected Task createTask(@Nonnull Request request, @Nonnull Callback callback) {
+        return new MyTask(request, callback);
     }
 }
