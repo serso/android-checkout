@@ -54,7 +54,7 @@ public final class RobotmediaInventory extends BaseInventory {
             if (RobotmediaDatabase.exists(mCheckout.getContext())) {
                 mBackground.execute(new Loader(request));
             } else {
-                onLoaded(RobotmediaDatabase.toInventoryProducts(request.getProducts()));
+                onLoaded(RobotmediaDatabase.toInventoryProducts(ProductTypes.ALL));
             }
         }
 

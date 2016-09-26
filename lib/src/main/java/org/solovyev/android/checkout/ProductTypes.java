@@ -22,6 +22,9 @@
 
 package org.solovyev.android.checkout;
 
+import java.util.Arrays;
+import java.util.List;
+
 /**
  * Types of products available in Billing API
  */
@@ -38,6 +41,8 @@ public final class ProductTypes {
      * docs
      */
     public static final String SUBSCRIPTION = "subs";
+
+    public static final List<String> ALL = Arrays.asList(IN_APP, SUBSCRIPTION);
 
     private ProductTypes() {
         throw new AssertionError();

@@ -36,7 +36,7 @@ import javax.annotation.Nonnull;
 public class BaseActivity extends FragmentActivity {
 
     @Nonnull
-    protected final ActivityCheckout checkout = Checkout.forActivity(this, CheckoutApplication.get().getCheckout());
+    protected final ActivityCheckout checkout = Checkout.forActivity(this, CheckoutApplication.get().getBilling());
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

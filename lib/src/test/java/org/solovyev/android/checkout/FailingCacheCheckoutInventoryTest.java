@@ -63,9 +63,9 @@ public class FailingCacheCheckoutInventoryTest {
         failingCache = new FailingCache();
         billing = newBilling();
         mRequest = Inventory.Request.create()
-                .add(IN_APP, asList("1", "2", "3", "4", "6"))
-                .add(SUBSCRIPTION, asList("sub1", "sub2", "sub3", "sub4"));
-        checkout = Checkout.forApplication(billing, mRequest.getProducts());
+                .loadSkus(IN_APP, asList("1", "2", "3", "4", "6"))
+                .loadSkus(SUBSCRIPTION, asList("sub1", "sub2", "sub3", "sub4"));
+        checkout = Checkout.forApplication(billing);
         inventory = new CheckoutInventory(checkout);
     }
 

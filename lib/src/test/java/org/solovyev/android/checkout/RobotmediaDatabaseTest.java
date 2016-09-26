@@ -61,8 +61,8 @@ public class RobotmediaDatabaseTest {
     public void setUp() throws Exception {
         final Billing billing = Tests.newBilling();
         billing.setMainThread(sameThreadExecutor());
-        mRequest = Inventory.Request.create().add(IN_APP, asList("sku_0", "sku_1", "sku_2", "sku_3", "sku_4", "sku_6"));
-        checkout = Checkout.forApplication(billing, mRequest.getProducts());
+        mRequest = Inventory.Request.create().loadSkus(IN_APP, asList("sku_0", "sku_1", "sku_2", "sku_3", "sku_4", "sku_6"));
+        checkout = Checkout.forApplication(billing);
         db = new BillingDB(RuntimeEnvironment.application);
     }
 

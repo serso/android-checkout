@@ -27,8 +27,6 @@ import android.app.Service;
 import android.content.Context;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -108,8 +106,6 @@ public class Checkout {
     protected final Billing mBilling;
     @Nonnull
     final Object mLock = new Object();
-    @Nonnull
-    private final List<String> mProducts;
     @GuardedBy("mLock")
     @Nonnull
     private final Map<String, Boolean> mSupportedProducts = new HashMap<>();
@@ -124,24 +120,9 @@ public class Checkout {
     @Nonnull
     private State mState = State.INITIAL;
 
-    Checkout(@Nullable Context context, @Nonnull Billing billing, @Nonnull Collection<String> products) {
-        Check.isNotEmpty(products);
+    Checkout(@Nullable Context context, @Nonnull Billing billing) {
         mBilling = billing;
         mContext = context;
-        mProducts = new ArrayList<>(products);
-    }
-
-    Checkout(@Nullable Context context, @Nonnull Billing billing) {
-        this(context, billing, Arrays.asList(ProductTypes.IN_APP, ProductTypes.SUBSCRIPTION));
-    }
-
-    /**
-     * {@link ActivityCheckout#onActivityResult(int, int, android.content.Intent)} must be called
-     * from the appropriate activity method.
-     */
-    @Nonnull
-    public static ActivityCheckout forActivity(@Nonnull Activity activity, @Nonnull Billing billing, @Nonnull Collection<String> products) {
-        return new ActivityCheckout(activity, billing, products);
     }
 
     @Nonnull
@@ -150,23 +131,8 @@ public class Checkout {
     }
 
     @Nonnull
-    public static ActivityCheckout forActivity(@Nonnull Activity activity, @Nonnull Checkout checkout) {
-        return new ActivityCheckout(activity, checkout.mBilling, checkout.mProducts);
-    }
-
-    @Nonnull
-    public static Checkout forService(@Nonnull Service service, @Nonnull Billing billing, @Nonnull Collection<String> products) {
-        return new Checkout(service, billing, products);
-    }
-
-    @Nonnull
     public static Checkout forService(@Nonnull Service service, @Nonnull Billing billing) {
         return new Checkout(service, billing);
-    }
-
-    @Nonnull
-    public static Checkout forApplication(@Nonnull Billing billing, @Nonnull Collection<String> products) {
-        return new Checkout(null, billing, products);
     }
 
     @Nonnull
@@ -178,11 +144,6 @@ public class Checkout {
     @Nonnull
     Context getContext() {
         return mBilling.getContext();
-    }
-
-    @Nonnull
-    List<String> getProducts() {
-        return mProducts;
     }
 
     public void start() {
@@ -201,7 +162,7 @@ public class Checkout {
             if (listener != null) {
                 mListeners.add(listener);
             }
-            for (final String product : mProducts) {
+            for (final String product : ProductTypes.ALL) {
                 mRequests.isBillingSupported(product, new RequestListener<Object>() {
                     @Override
                     public void onSuccess(@Nonnull Object result) {
@@ -242,7 +203,7 @@ public class Checkout {
 
     private boolean isReady() {
         Check.isTrue(Thread.holdsLock(mLock), "Should be called from synchronized block");
-        return mSupportedProducts.size() == mProducts.size();
+        return mSupportedProducts.size() == ProductTypes.ALL.size();
     }
 
     private void onBillingSupported(@Nonnull String product, boolean supported) {
@@ -318,7 +279,7 @@ public class Checkout {
     }
 
     public boolean isBillingSupported(@Nonnull String product) {
-        Check.isTrue(mProducts.contains(product), "Product should be added to the products list");
+        Check.isTrue(ProductTypes.ALL.contains(product), "Product should be added to the products list");
         Check.isTrue(mSupportedProducts.containsKey(product), "Billing information is not ready yet");
         return mSupportedProducts.get(product);
     }

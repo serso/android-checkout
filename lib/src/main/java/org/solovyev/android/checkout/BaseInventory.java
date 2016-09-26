@@ -54,7 +54,6 @@ public abstract class BaseInventory implements Inventory {
 
     protected final void setRequest(@Nonnull Request request, @Nonnull Callback callback) {
         Check.isTrue(Thread.holdsLock(mLock), "Must be locked");
-        Check.isTrue(!request.isEmpty(), "Skus must not be empty");
         mRequest = request;
         mCallback = callback;
     }

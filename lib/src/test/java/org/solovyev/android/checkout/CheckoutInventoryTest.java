@@ -82,9 +82,9 @@ public class CheckoutInventoryTest extends InventoryTestBase {
         populatePurchases();
 
         final Inventory.Request request = Inventory.Request.create()
-                .add(IN_APP, "in_app_01")
-                .add(SUBSCRIPTION, "sub_01");
-        final Checkout checkout = Checkout.forApplication(billing, request.getProducts());
+                .loadSkus(IN_APP, "in_app_01")
+                .loadSkus(SUBSCRIPTION, "sub_01");
+        final Checkout checkout = Checkout.forApplication(billing);
 
         final CheckoutInventory inventory = new CheckoutInventory(checkout);
         final TestCallback listener = new TestCallback();
@@ -106,9 +106,9 @@ public class CheckoutInventoryTest extends InventoryTestBase {
         populatePurchases();
 
         final Inventory.Request request = Inventory.Request.create()
-                .add(IN_APP, "in_app_01")
-                .add(SUBSCRIPTION, "sub_01");
-        final Checkout checkout = Checkout.forApplication(billing, request.getProducts());
+                .loadSkus(IN_APP, "in_app_01")
+                .loadSkus(SUBSCRIPTION, "sub_01");
+        final Checkout checkout = Checkout.forApplication(billing);
 
         final CrashingCallback listener = new CrashingCallback();
         final CheckoutInventory inventory = new CheckoutInventory(checkout);

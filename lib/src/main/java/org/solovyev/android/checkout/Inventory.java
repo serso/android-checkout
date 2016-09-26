@@ -23,12 +23,13 @@
 package org.solovyev.android.checkout;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -224,7 +225,10 @@ public interface Inventory {
     }
 
     final class Request {
-        private final Map<String, List<String>> mMap = new HashMap<>();
+        // list of SKUs for which the details are loaded
+        private final Map<String, List<String>> mSkus = new HashMap<>();
+        // set of products for which purchase information is loaded
+        private final Set<String> mProducts = new HashSet<>();
 
         private Request() {
         }
@@ -235,68 +239,47 @@ public interface Inventory {
         }
 
         @Nonnull
-        Request copy() {
-            final Request copy = new Request();
-            copy.mMap.putAll(mMap);
-            return copy;
+        public Request loadPurchases(@Nonnull String product) {
+            mProducts.add(product);
+            return this;
+        }
+
+        boolean shouldLoadPurchases(@Nonnull String product) {
+            return mProducts.contains(product);
         }
 
         @Nonnull
-        public Request add(@Nonnull String product, @Nonnull List<String> skus) {
+        public Request loadSkus(@Nonnull String product, @Nonnull List<String> skus) {
             for (String sku : skus) {
-                add(product, sku);
+                loadSkus(product, sku);
             }
             return this;
         }
 
         @Nonnull
-        public Request add(@Nonnull String product, @Nonnull String sku) {
+        public Request loadSkus(@Nonnull String product, @Nonnull String sku) {
             Check.isNotEmpty(product);
             Check.isNotEmpty(sku);
 
-            List<String> list = mMap.get(product);
+            List<String> list = mSkus.get(product);
             if (list == null) {
                 list = new ArrayList<>();
-                mMap.put(product, list);
+                mSkus.put(product, list);
             }
             Check.isTrue(!list.contains(sku), "Adding same SKU is not allowed");
             list.add(sku);
             return this;
         }
 
-        @Nonnull
-        public Collection<String> getProducts() {
-            return unmodifiableCollection(mMap.keySet());
+        boolean shouldLoadSkus(@Nonnull String product) {
+            final List<String> skus = mSkus.get(product);
+            return skus != null && !skus.isEmpty();
         }
 
         @Nonnull
         public List<String> getSkus(@Nonnull String product) {
-            final List<String> list = mMap.get(product);
+            final List<String> list = mSkus.get(product);
             return list == null ? Collections.<String>emptyList() : list;
-        }
-
-        public int getProductsCount() {
-            return mMap.size();
-        }
-
-        @Override
-        public int hashCode() {
-            return mMap.hashCode();
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (!(o instanceof Request)) return false;
-
-            final Request that = (Request) o;
-
-            return mMap.equals(that.mMap);
-
-        }
-
-        public boolean isEmpty() {
-            return mMap.isEmpty();
         }
     }
 }

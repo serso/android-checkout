@@ -68,9 +68,9 @@ public class CheckoutTest {
         when(service.isBillingSupported(eq(3), anyString(), eq(IN_APP))).thenReturn(OK);
         when(service.isBillingSupported(eq(3), anyString(), eq(SUBSCRIPTION))).thenReturn(OK);
         final Inventory.Request request = Inventory.Request.create()
-                .add(IN_APP, asList("1", "2", "3", "4", "6"))
-                .add(SUBSCRIPTION, asList("sub1", "sub2", "sub3", "sub4"));
-        checkout = Checkout.forApplication(billing, request.getProducts());
+                .loadSkus(IN_APP, asList("1", "2", "3", "4", "6"))
+                .loadSkus(SUBSCRIPTION, asList("sub1", "sub2", "sub3", "sub4"));
+        checkout = Checkout.forApplication(billing);
     }
 
     @Test

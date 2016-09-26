@@ -53,7 +53,7 @@ final class CheckoutInventory extends BaseInventory {
             // 1. onReady to be called
             // 2. loadPurchased to be finished
             // 3. loadSkus to be finished
-            final int size = request.getProductsCount();
+            final int size = ProductTypes.ALL.size();
             final long id = mCounter.newAttempt(size * 3);
 
             // clear all previously loaded data

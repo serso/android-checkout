@@ -72,7 +72,7 @@ public class CheckoutApplication extends Application {
         final List<String> subs = new ArrayList<>();
         subs.add("sub_01");
         subs.add("sub_02");
-        skus = Inventory.Request.create().add(IN_APP, inApps).add(SUBSCRIPTION, subs);
+        skus = Inventory.Request.create().loadSkus(IN_APP, inApps).loadSkus(SUBSCRIPTION, subs);
     }
 
     /**
@@ -110,14 +110,6 @@ public class CheckoutApplication extends Application {
             }
         }
     });
-    /**
-     * Application wide {@link org.solovyev.android.checkout.Checkout} instance (can be used
-     * anywhere in the app).
-     * This instance contains all available products in the app.
-     */
-    @Nonnull
-    private final Checkout checkout = Checkout.forApplication(billing, skus.getProducts());
-
     public CheckoutApplication() {
         instance = this;
     }
@@ -186,7 +178,7 @@ public class CheckoutApplication extends Application {
     }
 
     @Nonnull
-    public Checkout getCheckout() {
-        return checkout;
+    public Billing getBilling() {
+        return billing;
     }
 }

@@ -75,10 +75,6 @@ public final class ActivityCheckout extends Checkout {
     @Nonnull
     private final SparseArray<PurchaseFlow> mFlows = new SparseArray<>();
 
-    ActivityCheckout(@Nonnull final Activity activity, @Nonnull Billing billing, @Nonnull Collection<String> products) {
-        super(activity, billing, products);
-    }
-
     ActivityCheckout(@Nullable Context context, @Nonnull Billing billing) {
         super(context, billing);
     }

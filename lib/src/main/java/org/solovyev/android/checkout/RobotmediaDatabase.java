@@ -87,12 +87,12 @@ public final class RobotmediaDatabase {
     }
 
     @Nonnull
-    Inventory.Products load(@Nonnull Inventory.Request skus) {
+    Inventory.Products load(@Nonnull Inventory.Request request) {
         SQLiteDatabase db = null;
         try {
             final String databasePath = RobotmediaDatabase.getDatabasePath(context);
             db = openDatabase(databasePath, null, OPEN_READONLY);
-            return loadProducts(skus, db);
+            return loadProducts(request, db);
         } catch (RuntimeException e) {
             Billing.error(e);
         } finally {
@@ -100,16 +100,16 @@ public final class RobotmediaDatabase {
                 db.close();
             }
         }
-        return toInventoryProducts(skus.getProducts());
+        return toInventoryProducts(ProductTypes.ALL);
     }
 
     @Nonnull
-    private Inventory.Products loadProducts(@Nonnull Inventory.Request skuDefs, @Nonnull SQLiteDatabase db) {
+    private Inventory.Products loadProducts(@Nonnull Inventory.Request request, @Nonnull SQLiteDatabase db) {
         final Inventory.Products result = new Inventory.Products();
-        for (String productId : skuDefs.getProducts()) {
+        for (String productId : ProductTypes.ALL) {
             final Inventory.Product product = new Inventory.Product(productId, true);
 
-            final List<String> skus = skuDefs.getSkus(productId);
+            final List<String> skus = request.getSkus(productId);
             if (!skus.isEmpty()) {
                 product.setPurchases(loadPurchases(skus, db));
             } else {
