@@ -1,10 +1,10 @@
 package org.solovyev.android.checkout;
 
+import com.android.vending.billing.IInAppBillingService;
+
 import android.app.PendingIntent;
 import android.os.Bundle;
 import android.os.RemoteException;
-
-import com.android.vending.billing.IInAppBillingService;
 
 import java.util.ArrayList;
 import java.util.List;

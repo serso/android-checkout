@@ -22,5 +22,6 @@
   -->
 
 <resources>
-	<style name="ThemeHoloLightNoActionBar" parent="android:Theme.Holo.Light.NoActionBar"/>
+
+    <style name="ThemeHoloLightNoActionBar" parent="android:Theme.Holo.Light.NoActionBar" />
 </resources>

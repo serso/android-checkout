@@ -25,35 +25,34 @@ package org.solovyev.android.checkout;
 import javax.annotation.Nonnull;
 
 enum RequestType {
-	BILLING_SUPPORTED("supported", Billing.DAY),
-	GET_PURCHASES("purchases", 20L * Billing.MINUTE),
-	GET_SKU_DETAILS("skus", Billing.DAY),
-	PURCHASE("purchase", 0L),
-	CHANGE_PURCHASE("change", 0L),
-	CONSUME_PURCHASE("consume", 0L);
+    BILLING_SUPPORTED("supported", Billing.DAY),
+    GET_PURCHASES("purchases", 20L * Billing.MINUTE),
+    GET_SKU_DETAILS("skus", Billing.DAY),
+    PURCHASE("purchase", 0L),
+    CHANGE_PURCHASE("change", 0L),
+    CONSUME_PURCHASE("consume", 0L);
 
-	@Nonnull
-	private final String cacheKeyName;
+    final long expiresIn;
+    @Nonnull
+    private final String cacheKeyName;
 
-	final long expiresIn;
+    RequestType(@Nonnull String cacheKeyName, long expiresIn) {
+        this.cacheKeyName = cacheKeyName;
+        this.expiresIn = expiresIn;
+    }
 
-	RequestType(@Nonnull String cacheKeyName, long expiresIn) {
-		this.cacheKeyName = cacheKeyName;
-		this.expiresIn = expiresIn;
-	}
+    @Nonnull
+    static String getCacheKeyName(int keyType) {
+        return values()[keyType].cacheKeyName;
+    }
 
-	@Nonnull
-	Cache.Key getCacheKey(@Nonnull String key) {
-		final int keyType = getCacheKeyType();
-		return new Cache.Key(keyType, key);
-	}
+    @Nonnull
+    Cache.Key getCacheKey(@Nonnull String key) {
+        final int keyType = getCacheKeyType();
+        return new Cache.Key(keyType, key);
+    }
 
-	int getCacheKeyType() {
-		return ordinal();
-	}
-
-	@Nonnull
-	static String getCacheKeyName(int keyType) {
-		return values()[keyType].cacheKeyName;
-	}
+    int getCacheKeyType() {
+        return ordinal();
+    }
 }

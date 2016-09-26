@@ -22,11 +22,11 @@
   -->
 
 <manifest
-	package="org.solovyev.android.checkout"
-	xmlns:android="http://schemas.android.com/apk/res/android">
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    package="org.solovyev.android.checkout">
 
-	<uses-permission android:name="com.android.vending.BILLING" />
+    <uses-permission android:name="com.android.vending.BILLING" />
 
-	<application android:allowBackup="true"/>
+    <application android:allowBackup="true" />
 
 </manifest>

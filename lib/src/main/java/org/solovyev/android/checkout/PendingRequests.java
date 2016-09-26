@@ -22,178 +22,179 @@
 
 package org.solovyev.android.checkout;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import javax.annotation.concurrent.GuardedBy;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import javax.annotation.concurrent.GuardedBy;
 
 /**
  * List of requests to be executed when connection with service is established.
  */
 final class PendingRequests implements Runnable {
 
-	@GuardedBy("list")
-	@Nonnull
-	private final List<RequestRunnable> list = new ArrayList<RequestRunnable>();
+    @GuardedBy("list")
+    @Nonnull
+    private final List<RequestRunnable> list = new ArrayList<RequestRunnable>();
 
-	/**
-	 * Adds <var>runnable</var> to the end of waiting list.
-	 *
-	 * @param runnable runnable to be executed when connection is established
-	 */
-	void add(@Nonnull RequestRunnable runnable) {
-		synchronized (list) {
-			Billing.debug("Adding pending request: " + runnable);
-			list.add(runnable);
-		}
-	}
+    /**
+     * Adds <var>runnable</var> to the end of waiting list.
+     *
+     * @param runnable runnable to be executed when connection is established
+     */
+    void add(@Nonnull RequestRunnable runnable) {
+        synchronized (list) {
+            Billing.debug("Adding pending request: " + runnable);
+            list.add(runnable);
+        }
+    }
 
-	/**
-	 * Method cancels all pending requests
-	 */
-	void cancelAll() {
-		synchronized (list) {
-			Billing.debug("Cancelling all pending requests");
-			final Iterator<RequestRunnable> iterator = list.iterator();
-			while (iterator.hasNext()) {
-				final RequestRunnable request = iterator.next();
-				request.cancel();
-				iterator.remove();
-			}
-		}
-	}
+    /**
+     * Method cancels all pending requests
+     */
+    void cancelAll() {
+        synchronized (list) {
+            Billing.debug("Cancelling all pending requests");
+            final Iterator<RequestRunnable> iterator = list.iterator();
+            while (iterator.hasNext()) {
+                final RequestRunnable request = iterator.next();
+                request.cancel();
+                iterator.remove();
+            }
+        }
+    }
 
-	/**
-	 * Method cancels all pending requests with specified <var>tag</var>
-	 *
-	 * @param tag request tag
-	 */
-	void cancelAll(@Nullable Object tag) {
-		synchronized (list) {
-			Billing.debug("Cancelling all pending requests with tag=" + tag);
-			final Iterator<RequestRunnable> iterator = list.iterator();
-			while (iterator.hasNext()) {
-				final RequestRunnable request = iterator.next();
-				final Object requestTag = request.getTag();
-				if (requestTag == tag) {
-					request.cancel();
-					iterator.remove();
-					continue;
-				}
+    /**
+     * Method cancels all pending requests with specified <var>tag</var>
+     *
+     * @param tag request tag
+     */
+    void cancelAll(@Nullable Object tag) {
+        synchronized (list) {
+            Billing.debug("Cancelling all pending requests with tag=" + tag);
+            final Iterator<RequestRunnable> iterator = list.iterator();
+            while (iterator.hasNext()) {
+                final RequestRunnable request = iterator.next();
+                final Object requestTag = request.getTag();
+                if (requestTag == tag) {
+                    request.cancel();
+                    iterator.remove();
+                    continue;
+                }
 
-				if (requestTag != null && tag == null) {
-					continue;
-				}
+                if (requestTag != null && tag == null) {
+                    continue;
+                }
 
-				if (requestTag != null && requestTag.equals(tag)) {
-					request.cancel();
-					iterator.remove();
-				}
-			}
-		}
-	}
+                if (requestTag != null && requestTag.equals(tag)) {
+                    request.cancel();
+                    iterator.remove();
+                }
+            }
+        }
+    }
 
-	/**
-	 * Method cancels pending request with specified <var>requestId</var>
-	 *
-	 * @param requestId id of request to be cancelled
-	 */
-	void cancel(int requestId) {
-		synchronized (list) {
-			Billing.debug("Cancelling pending request with id=" + requestId);
-			final Iterator<RequestRunnable> iterator = list.iterator();
-			while (iterator.hasNext()) {
-				final RequestRunnable request = iterator.next();
-				if (request.getId() == requestId) {
-					request.cancel();
-					iterator.remove();
-					break;
-				}
-			}
-		}
-	}
+    /**
+     * Method cancels pending request with specified <var>requestId</var>
+     *
+     * @param requestId id of request to be cancelled
+     */
+    void cancel(int requestId) {
+        synchronized (list) {
+            Billing.debug("Cancelling pending request with id=" + requestId);
+            final Iterator<RequestRunnable> iterator = list.iterator();
+            while (iterator.hasNext()) {
+                final RequestRunnable request = iterator.next();
+                if (request.getId() == requestId) {
+                    request.cancel();
+                    iterator.remove();
+                    break;
+                }
+            }
+        }
+    }
 
-	/**
-	 * Method removes first element from the waiting list
-	 *
-	 * @return first list element or null if waiting list is empty
-	 */
-	@Nullable
-	RequestRunnable pop() {
-		synchronized (list) {
-			final RequestRunnable runnable = !list.isEmpty() ? list.remove(0) : null;
-			if (runnable != null) {
-				Billing.debug("Removing pending request: " + runnable);
-			}
-			return runnable;
-		}
-	}
+    /**
+     * Method removes first element from the waiting list
+     *
+     * @return first list element or null if waiting list is empty
+     */
+    @Nullable
+    RequestRunnable pop() {
+        synchronized (list) {
+            final RequestRunnable runnable = !list.isEmpty() ? list.remove(0) : null;
+            if (runnable != null) {
+                Billing.debug("Removing pending request: " + runnable);
+            }
+            return runnable;
+        }
+    }
 
-	/**
-	 * Method gets first element from the waiting list
-	 *
-	 * @return first list element or null if waiting list is empty
-	 */
-	@Nullable
-	RequestRunnable peek() {
-		synchronized (list) {
-			return !list.isEmpty() ? list.get(0) : null;
-		}
-	}
+    /**
+     * Method gets first element from the waiting list
+     *
+     * @return first list element or null if waiting list is empty
+     */
+    @Nullable
+    RequestRunnable peek() {
+        synchronized (list) {
+            return !list.isEmpty() ? list.get(0) : null;
+        }
+    }
 
-	/**
-	 * Executes all pending runnable.
-	 * Note: this method must be called only on one thread.
-	 */
-	@Override
-	public void run() {
-		RequestRunnable runnable = peek();
-		while (runnable != null) {
-			Billing.debug("Running pending request: " + runnable);
-			if (runnable.run()) {
-				remove(runnable);
-				runnable = peek();
-			} else {
-				// request can't be run because service is not connected => no need to run other requests (they will be
-				// executed when service is connected)
-				break;
-			}
-		}
-	}
+    /**
+     * Executes all pending runnable.
+     * Note: this method must be called only on one thread.
+     */
+    @Override
+    public void run() {
+        RequestRunnable runnable = peek();
+        while (runnable != null) {
+            Billing.debug("Running pending request: " + runnable);
+            if (runnable.run()) {
+                remove(runnable);
+                runnable = peek();
+            } else {
+                // request can't be run because service is not connected => no need to run other requests (they will be
+                // executed when service is connected)
+                break;
+            }
+        }
+    }
 
-	/**
-	 * Method removes instance of <var>runnable</var> from the waiting list
-	 *
-	 * @param runnable runnable to be removed from the waiting list
-	 */
-	private void remove(@Nonnull RequestRunnable runnable) {
-		synchronized (list) {
-			final Iterator<RequestRunnable> iterator = list.iterator();
-			while (iterator.hasNext()) {
-				if (iterator.next() == runnable) {
-					Billing.debug("Removing pending request: " + runnable);
-					iterator.remove();
-					break;
-				}
-			}
-		}
-	}
+    /**
+     * Method removes instance of <var>runnable</var> from the waiting list
+     *
+     * @param runnable runnable to be removed from the waiting list
+     */
+    private void remove(@Nonnull RequestRunnable runnable) {
+        synchronized (list) {
+            final Iterator<RequestRunnable> iterator = list.iterator();
+            while (iterator.hasNext()) {
+                if (iterator.next() == runnable) {
+                    Billing.debug("Removing pending request: " + runnable);
+                    iterator.remove();
+                    break;
+                }
+            }
+        }
+    }
 
-	/**
-	 * Cancels all pending requests with {@link ResponseCodes#SERVICE_NOT_CONNECTED} error code.
-	 */
-	void onConnectionFailed() {
-		Check.isMainThread();
-		RequestRunnable requestRunnable = pop();
-		while (requestRunnable != null) {
-			final Request request = requestRunnable.getRequest();
-			if (request != null) {
-				request.onError(ResponseCodes.SERVICE_NOT_CONNECTED);
-				requestRunnable.cancel();
-			}
-			requestRunnable = pop();
-		}
-	}
+    /**
+     * Cancels all pending requests with {@link ResponseCodes#SERVICE_NOT_CONNECTED} error code.
+     */
+    void onConnectionFailed() {
+        Check.isMainThread();
+        RequestRunnable requestRunnable = pop();
+        while (requestRunnable != null) {
+            final Request request = requestRunnable.getRequest();
+            if (request != null) {
+                request.onError(ResponseCodes.SERVICE_NOT_CONNECTED);
+                requestRunnable.cancel();
+            }
+            requestRunnable = pop();
+        }
+    }
 }

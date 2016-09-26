@@ -31,51 +31,51 @@ import javax.annotation.Nullable;
 
 public class MainActivity extends BaseActivity {
 
-	@Nullable
-	private AlertDialog infoDialog;
+    @Nullable
+    private AlertDialog infoDialog;
 
-	@Override
-	protected void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-		setContentView(R.layout.activity_main);
-		if (savedInstanceState == null) {
-			addFragment(new SkusFragment(), R.id.fragment_skus, false);
-		}
-		final View infoButton = findViewById(R.id.info_button);
-		infoButton.setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				showInfoDialog();
-			}
-		});
-	}
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+        if (savedInstanceState == null) {
+            addFragment(new SkusFragment(), R.id.fragment_skus, false);
+        }
+        final View infoButton = findViewById(R.id.info_button);
+        infoButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showInfoDialog();
+            }
+        });
+    }
 
-	private void showInfoDialog() {
-		final AlertDialog.Builder b = new AlertDialog.Builder(this);
-		b.setMessage(getString(R.string.msg_info));
-		b.setPositiveButton(R.string.join, new DialogInterface.OnClickListener() {
-			@Override
-			public void onClick(DialogInterface dialog, int which) {
-				CheckoutApplication.openUri(MainActivity.this, "https://plus.google.com/communities/115918337136768532130");
-			}
-		});
+    private void showInfoDialog() {
+        final AlertDialog.Builder b = new AlertDialog.Builder(this);
+        b.setMessage(getString(R.string.msg_info));
+        b.setPositiveButton(R.string.join, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                CheckoutApplication.openUri(MainActivity.this, "https://plus.google.com/communities/115918337136768532130");
+            }
+        });
 
-		infoDialog = b.create();
-		infoDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
-			@Override
-			public void onDismiss(DialogInterface dialog) {
-				infoDialog = null;
-			}
-		});
-		infoDialog.show();
-	}
+        infoDialog = b.create();
+        infoDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+            @Override
+            public void onDismiss(DialogInterface dialog) {
+                infoDialog = null;
+            }
+        });
+        infoDialog.show();
+    }
 
-	@Override
-	protected void onDestroy() {
-		if (infoDialog != null) {
-			infoDialog.dismiss();
-			infoDialog = null;
-		}
-		super.onDestroy();
-	}
+    @Override
+    protected void onDestroy() {
+        if (infoDialog != null) {
+            infoDialog.dismiss();
+            infoDialog = null;
+        }
+        super.onDestroy();
+    }
 }

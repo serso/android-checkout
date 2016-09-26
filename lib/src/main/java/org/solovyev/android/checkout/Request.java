@@ -22,11 +22,11 @@
 
 package org.solovyev.android.checkout;
 
+import com.android.vending.billing.IInAppBillingService;
+
 import android.os.Bundle;
 import android.os.RemoteException;
 import android.text.TextUtils;
-
-import com.android.vending.billing.IInAppBillingService;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -42,171 +42,169 @@ import static org.solovyev.android.checkout.ResponseCodes.OK;
  */
 abstract class Request<R> {
 
-	@Nonnull
-	private static final AtomicInteger counter = new AtomicInteger(0);
+    @Nonnull
+    private static final AtomicInteger counter = new AtomicInteger(0);
+    protected final int apiVersion;
+    private final int id;
+    @Nonnull
+    private final RequestType type;
 
-	private final int id;
-	protected final int apiVersion;
+    @Nullable
+    private Object tag;
 
-	@Nonnull
-	private final RequestType type;
+    @GuardedBy("this")
+    @Nullable
+    private RequestListener<R> listener;
 
-	@Nullable
-	private Object tag;
+    @GuardedBy("this")
+    private boolean listenerCalled;
 
-	@GuardedBy("this")
-	@Nullable
-	private RequestListener<R> listener;
+    Request(@Nonnull RequestType type) {
+        this(type, Billing.V3);
+    }
 
-	@GuardedBy("this")
-	private boolean listenerCalled;
+    Request(@Nonnull RequestType type, int apiVersion) {
+        this.type = type;
+        this.apiVersion = apiVersion;
+        this.id = counter.getAndIncrement();
+    }
 
-	Request(@Nonnull RequestType type) {
-		this(type, Billing.V3);
-	}
+    Request(@Nonnull RequestType type, @Nonnull Request<R> request) {
+        this.type = type;
+        this.id = request.id;
+        this.apiVersion = request.apiVersion;
+        synchronized (request) {
+            this.listener = request.listener;
+        }
+    }
 
-	Request(@Nonnull RequestType type, int apiVersion) {
-		this.type = type;
-		this.apiVersion = apiVersion;
-		this.id = counter.getAndIncrement();
-	}
+    /**
+     * @return request id, unique identifier of the request in the application
+     */
+    protected int getId() {
+        return id;
+    }
 
-	Request(@Nonnull RequestType type, @Nonnull Request<R> request) {
-		this.type = type;
-		this.id = request.id;
-		this.apiVersion = request.apiVersion;
-		synchronized (request) {
-			this.listener = request.listener;
-		}
-	}
+    abstract void start(@Nonnull IInAppBillingService service, @Nonnull String packageName)
+            throws RemoteException, RequestException;
 
-	/**
-	 * @return request id, unique identifier of the request in the application
-	 */
-	protected int getId() {
-		return id;
-	}
+    /**
+     * @return request tag, object which is associated with this request
+     */
+    @Nullable
+    Object getTag() {
+        return tag;
+    }
 
-	abstract void start(@Nonnull IInAppBillingService service, @Nonnull String packageName)
-			throws RemoteException, RequestException;
+    void setTag(@Nullable Object tag) {
+        this.tag = tag;
+    }
 
-	/**
-	 * @return request tag, object which is associated with this request
-	 */
-	@Nullable
-	Object getTag() {
-		return tag;
-	}
+    @Nonnull
+    RequestType getType() {
+        return type;
+    }
 
-	void setTag(@Nullable Object tag) {
-		this.tag = tag;
-	}
+    /**
+     * Cancels this request, after this method is called request listener method will not be called
+     */
+    void cancel() {
+        synchronized (this) {
+            if (listener != null) {
+                Billing.cancel(listener);
+            }
+            listener = null;
+        }
+    }
 
-	@Nonnull
-	RequestType getType() {
-		return type;
-	}
+    /**
+     * @return true if request is cancelled
+     */
+    boolean isCancelled() {
+        synchronized (this) {
+            return listener == null;
+        }
+    }
 
-	/**
-	 * Cancels this request, after this method is called request listener method will not be called
-	 */
-	void cancel() {
-		synchronized (this) {
-			if (listener != null) {
-				Billing.cancel(listener);
-			}
-			listener = null;
-		}
-	}
+    protected void onSuccess(@Nonnull R result) {
+        final RequestListener<R> l = getListener();
+        if (l != null) {
+            if (checkListenerCalled()) return;
+            l.onSuccess(result);
+        }
+    }
 
-	/**
-	 * @return true if request is cancelled
-	 */
-	boolean isCancelled() {
-		synchronized (this) {
-			return listener == null;
-		}
-	}
+    private boolean checkListenerCalled() {
+        synchronized (this) {
+            if (listenerCalled) {
+                return true;
+            }
+            listenerCalled = true;
+        }
+        return false;
+    }
 
-	void setListener(@Nullable RequestListener<R> listener) {
-		synchronized (this) {
-			Check.isNull(this.listener);
-			this.listener = listener;
-		}
-	}
+    protected void onError(int response) {
+        Billing.error("Error response: " + response + " in " + this + " request");
+        onError(response, new BillingException(response));
+    }
 
-	protected void onSuccess(@Nonnull R result) {
-		final RequestListener<R> l = getListener();
-		if (l != null) {
-			if (checkListenerCalled()) return;
-			l.onSuccess(result);
-		}
-	}
+    public void onError(@Nonnull Exception e) {
+        Check.isFalse(e instanceof BillingException, "Use onError(int) instead");
+        Billing.error("Exception in " + this + " request: ", e);
+        onError(EXCEPTION, e);
+    }
 
-	private boolean checkListenerCalled() {
-		synchronized (this) {
-			if (listenerCalled) {
-				return true;
-			}
-			listenerCalled = true;
-		}
-		return false;
-	}
+    private void onError(int response, @Nonnull Exception e) {
+        Check.notEquals(OK, response);
+        final RequestListener<R> l = getListener();
+        if (l != null) {
+            if (checkListenerCalled()) return;
+            l.onError(response, e);
+        }
+    }
 
-	protected void onError(int response) {
-		Billing.error("Error response: " + response + " in " + this + " request");
-		onError(response, new BillingException(response));
-	}
+    protected final boolean handleError(@Nullable Bundle bundle) {
+        final int response = bundle != null ? bundle.getInt("RESPONSE_CODE") : ResponseCodes.ERROR;
+        return handleError(response);
+    }
 
-	public void onError(@Nonnull Exception e) {
-		Check.isFalse(e instanceof BillingException, "Use onError(int) instead");
-		Billing.error("Exception in " + this + " request: ", e);
-		onError(EXCEPTION, e);
-	}
+    protected final boolean handleError(int response) {
+        if (response != OK) {
+            onError(response);
+            return true;
+        }
+        return false;
+    }
 
-	private void onError(int response, @Nonnull Exception e) {
-		Check.notEquals(OK, response);
-		final RequestListener<R> l = getListener();
-		if (l != null) {
-			if (checkListenerCalled()) return;
-			l.onError(response, e);
-		}
-	}
+    @Nullable
+    RequestListener<R> getListener() {
+        synchronized (this) {
+            return listener;
+        }
+    }
 
-	protected final boolean handleError(@Nullable Bundle bundle) {
-		final int response = bundle != null ? bundle.getInt("RESPONSE_CODE") : ResponseCodes.ERROR;
-		return handleError(response);
-	}
+    void setListener(@Nullable RequestListener<R> listener) {
+        synchronized (this) {
+            Check.isNull(this.listener);
+            this.listener = listener;
+        }
+    }
 
-	protected final boolean handleError(int response) {
-		if (response != OK) {
-			onError(response);
-			return true;
-		}
-		return false;
-	}
+    @Override
+    public String toString() {
+        final String cacheKey = getCacheKey();
+        if (!TextUtils.isEmpty(cacheKey)) {
+            return getClass().getSimpleName() + "(" + cacheKey + ")";
+        } else {
+            return getClass().getSimpleName();
+        }
+    }
 
-	@Nullable
-	RequestListener<R> getListener() {
-		synchronized (this) {
-			return listener;
-		}
-	}
-
-	@Override
-	public String toString() {
-		final String cacheKey = getCacheKey();
-		if (!TextUtils.isEmpty(cacheKey)) {
-			return getClass().getSimpleName() + "(" + cacheKey + ")";
-		} else {
-			return getClass().getSimpleName();
-		}
-	}
-
-	/**
-	 * @return key to be used in the cache, null if request should not be cached
-	 */
-	@Nullable
-	abstract String getCacheKey();
+    /**
+     * @return key to be used in the cache, null if request should not be cached
+     */
+    @Nullable
+    abstract String getCacheKey();
 
 }

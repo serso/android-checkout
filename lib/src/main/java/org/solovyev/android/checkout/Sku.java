@@ -22,9 +22,10 @@
 
 package org.solovyev.android.checkout;
 
-import android.text.TextUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import android.text.TextUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.concurrent.Immutable;
@@ -35,96 +36,111 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 public final class Sku {
 
-	// value must be “inapp” for an in-app product or "subs" for subscriptions.
-	@Nonnull
-	public final String product;
+    @Nonnull
+    public final Id id;
 
-	// the product ID for the product
-	@Nonnull
-	public final String id;
+    // formatted price of the item, including its currency sign. The price does not include tax.
+    // See #detailedPrice for parsed values
+    @Nonnull
+    public final String price;
 
-	// formatted price of the item, including its currency sign. The price does not include tax.
-	// See #detailedPrice for parsed values
-	@Nonnull
-	public final String price;
+    @Nonnull
+    public final Price detailedPrice;
 
-	@Nonnull
-	public final Price detailedPrice;
+    // title of the product
+    @Nonnull
+    public final String title;
 
-	// title of the product
-	@Nonnull
-	public final String title;
+    // description of the product
+    @Nonnull
+    public final String description;
 
-	// description of the product
-	@Nonnull
-	public final String description;
+    Sku(@Nonnull String product, @Nonnull String code, @Nonnull String price, @Nonnull Price detailedPrice, @Nonnull String title, @Nonnull String description) {
+        this.id = new Id(product, code);
+        this.price = price;
+        this.detailedPrice = detailedPrice;
+        this.title = title;
+        this.description = description;
+    }
 
-	Sku(@Nonnull String product, @Nonnull String id, @Nonnull String price, @Nonnull Price detailedPrice, @Nonnull String title, @Nonnull String description) {
-		this.product = product;
-		this.id = id;
-		this.price = price;
-		this.detailedPrice = detailedPrice;
-		this.title = title;
-		this.description = description;
-	}
+    @Nonnull
+    static Sku fromJson(@Nonnull String json, @Nonnull String product) throws JSONException {
+        final JSONObject object = new JSONObject(json);
+        final String sku = object.getString("productId");
+        final String price = object.getString("price");
+        final Price detailedPrice = Price.fromJson(object);
+        final String title = object.getString("title");
+        final String description = object.optString("description");
+        return new Sku(product, sku, price, detailedPrice, title, description);
+    }
 
-	@Nonnull
-	static Sku fromJson(@Nonnull String json, @Nonnull String product) throws JSONException {
-		final JSONObject object = new JSONObject(json);
-		final String sku = object.getString("productId");
-		final String price = object.getString("price");
-		final Price detailedPrice = Price.fromJson(object);
-		final String title = object.getString("title");
-		final String description = object.optString("description");
-		return new Sku(product, sku, price, detailedPrice, title, description);
-	}
+    public boolean isInApp() {
+        return id.isInApp();
+    }
 
-	public boolean isInApp() {
-		return product.equals(ProductTypes.IN_APP);
-	}
+    public boolean isSubscription() {
+        return id.isSubscription();
+    }
 
-	public boolean isSubscription() {
-		return product.equals(ProductTypes.SUBSCRIPTION);
-	}
+    public static final class Id {
+        // either “inapp” for in-apps or "subs" for subscriptions.
+        public final String product;
+        // SKU code
+        public final String code;
 
-	/**
-	 * Contains detailed information about SKU's price as described <a href="http://developer.android.com/google/play/billing/billing_reference.html#getSkuDetails">here</a>
-	 */
-	public static final class Price {
+        public Id(String product, String code) {
+            this.product = product;
+            this.code = code;
+        }
 
-		@Nonnull
-		static final Price EMPTY = new Price(0, "");
+        public boolean isInApp() {
+            return product.equals(ProductTypes.IN_APP);
+        }
 
-		// price in micro-units, where 1,000,000 micro-units equal one unit of the currency.
-		// For example, if price is "€7.99", price_amount_micros is "7990000"
-		public final long amount;
+        public boolean isSubscription() {
+            return product.equals(ProductTypes.SUBSCRIPTION);
+        }
+    }
 
-		// ISO 4217 currency code for price. For example, if price is specified in British pounds
-		// sterling, price_currency_code is "GBP"
-		@Nonnull
-		public final String currency;
+        /**
+     * Contains detailed information about SKU's price as described <a
+     * href="http://developer.android.com/google/play/billing/billing_reference.html#getSkuDetails">here</a>
+     */
+    public static final class Price {
 
-		private Price(long amount, @Nonnull String currency) {
-			this.amount = amount;
-			this.currency = currency;
-		}
+        @Nonnull
+        static final Price EMPTY = new Price(0, "");
 
-		@Nonnull
-		private static Price fromJson(@Nonnull JSONObject json) throws JSONException {
-			final long amount = json.optLong("price_amount_micros");
-			final String currency = json.optString("price_currency_code");
-			if (amount == 0 || TextUtils.isEmpty(currency)) {
-				return EMPTY;
-			} else {
-				return new Price(amount, currency);
-			}
-		}
+        // price in micro-units, where 1,000,000 micro-units equal one unit of the currency.
+        // For example, if price is "€7.99", price_amount_micros is "7990000"
+        public final long amount;
 
-		/**
-		 * @return true if both {@link #amount} and {@link #currency} are valid (non empty)
-		 */
-		public boolean isValid() {
-			return amount > 0 && !TextUtils.isEmpty(currency);
-		}
-	}
+        // ISO 4217 currency code for price. For example, if price is specified in British pounds
+        // sterling, price_currency_code is "GBP"
+        @Nonnull
+        public final String currency;
+
+        private Price(long amount, @Nonnull String currency) {
+            this.amount = amount;
+            this.currency = currency;
+        }
+
+        @Nonnull
+        private static Price fromJson(@Nonnull JSONObject json) throws JSONException {
+            final long amount = json.optLong("price_amount_micros");
+            final String currency = json.optString("price_currency_code");
+            if (amount == 0 || TextUtils.isEmpty(currency)) {
+                return EMPTY;
+            } else {
+                return new Price(amount, currency);
+            }
+        }
+
+        /**
+         * @return true if both {@link #amount} and {@link #currency} are valid (non empty)
+         */
+        public boolean isValid() {
+            return amount > 0 && !TextUtils.isEmpty(currency);
+        }
+    }
 }

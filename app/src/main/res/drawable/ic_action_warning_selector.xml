@@ -24,7 +24,7 @@
 
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
 
-	<item android:state_pressed="true" android:drawable="@drawable/ic_action_warning_pressed"/>
-	<item android:drawable="@drawable/ic_action_warning"/>
+    <item android:drawable="@drawable/ic_action_warning_pressed" android:state_pressed="true" />
+    <item android:drawable="@drawable/ic_action_warning" />
 
 </selector>

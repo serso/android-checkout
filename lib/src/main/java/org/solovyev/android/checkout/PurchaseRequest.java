@@ -22,46 +22,47 @@
 
 package org.solovyev.android.checkout;
 
+import com.android.vending.billing.IInAppBillingService;
+
 import android.app.PendingIntent;
 import android.os.Bundle;
 import android.os.RemoteException;
-import com.android.vending.billing.IInAppBillingService;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 final class PurchaseRequest extends Request<PendingIntent> {
 
-	@Nonnull
-	private final String product;
+    @Nonnull
+    private final String product;
 
-	@Nonnull
-	private final String sku;
+    @Nonnull
+    private final String sku;
 
-	@Nullable
-	private final String payload;
+    @Nullable
+    private final String payload;
 
-	PurchaseRequest(@Nonnull String product, @Nonnull String sku, @Nullable String payload) {
-		super(RequestType.PURCHASE);
-		this.product = product;
-		this.sku = sku;
-		this.payload = payload;
-	}
+    PurchaseRequest(@Nonnull String product, @Nonnull String sku, @Nullable String payload) {
+        super(RequestType.PURCHASE);
+        this.product = product;
+        this.sku = sku;
+        this.payload = payload;
+    }
 
-	@Override
-	void start(@Nonnull IInAppBillingService service, @Nonnull String packageName) throws RemoteException, RequestException {
-		final Bundle bundle = service.getBuyIntent(apiVersion, packageName, sku, product, payload == null ? "" : payload);
-		if (handleError(bundle)) {
-			return;
-		}
-		final PendingIntent pendingIntent = bundle.getParcelable("BUY_INTENT");
-		Check.isNotNull(pendingIntent);
-		onSuccess(pendingIntent);
-	}
+    @Override
+    void start(@Nonnull IInAppBillingService service, @Nonnull String packageName) throws RemoteException, RequestException {
+        final Bundle bundle = service.getBuyIntent(apiVersion, packageName, sku, product, payload == null ? "" : payload);
+        if (handleError(bundle)) {
+            return;
+        }
+        final PendingIntent pendingIntent = bundle.getParcelable("BUY_INTENT");
+        Check.isNotNull(pendingIntent);
+        onSuccess(pendingIntent);
+    }
 
-	@Nullable
-	@Override
-	protected String getCacheKey() {
-		return null;
-	}
+    @Nullable
+    @Override
+    protected String getCacheKey() {
+        return null;
+    }
 }

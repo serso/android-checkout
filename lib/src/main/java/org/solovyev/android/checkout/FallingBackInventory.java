@@ -24,94 +24,111 @@ package org.solovyev.android.checkout;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.annotation.concurrent.GuardedBy;
 
 /**
- * Inventory which falls back to fallback {@link Inventory} if one of the products is not supported.
+ * Inventory which falls back to fallback {@link Inventory} if one of the products is not
+ * supported.
  */
 class FallingBackInventory extends BaseInventory {
 
-	@Nonnull
-	private final CheckoutInventory mainInventory;
+    @Nonnull
+    private final CheckoutInventory mMainInventory;
+    @Nonnull
+    private final Inventory mFallbackInventory;
+    @Nonnull
+    private final MainCallback mMainCallback = new MainCallback();
+    @Nonnull
+    private final FallbackCallback mFallbackCallback = new FallbackCallback();
 
-	@Nonnull
-	private final Inventory fallbackInventory;
+    public FallingBackInventory(@Nonnull Checkout checkout, @Nonnull Inventory fallbackInventory) {
+        super(checkout);
+        mMainInventory = new CheckoutInventory(checkout);
+        mFallbackInventory = fallbackInventory;
+    }
 
-	@Nonnull
-	private final MainListener mainListener = new MainListener();
+    @Nonnull
+    @Override
+    public Inventory load(@Nonnull Request request, @Nonnull Callback callback) {
+        synchronized (mLock) {
+            setRequest(request, callback);
+            mMainCallback.load(request);
+        }
+        return this;
+    }
 
-	@Nonnull
-	private final FallbackListener fallbackListener = new FallbackListener();
+    boolean isLoaded() {
+        synchronized (mLock) {
+            return mProducts == mMainCallback.mProducts;
+        }
+    }
 
-	public FallingBackInventory(@Nonnull Checkout checkout, @Nonnull Inventory fallbackInventory) {
-		super(checkout);
-		this.mainInventory = new CheckoutInventory(checkout);
-		this.fallbackInventory = fallbackInventory;
-	}
+    private void onProductsLoaded(@Nonnull Products products) {
+        synchronized (mLock) {
+            mMainCallback.mProducts = products;
+            mProducts = products;
+            onLoaded();
+        }
+    }
 
-	@Nonnull
-	@Override
-	public Inventory load() {
-		mainListener.onLoad();
-		mainInventory.load().whenLoaded(mainListener);
-		return this;
-	}
+    private class MainCallback implements Callback {
 
-	boolean isLoaded() {
-		synchronized (lock) {
-			return products == mainListener.myProducts;
-		}
-	}
+        @GuardedBy("mLock")
+        @Nullable
+        private Products mProducts;
 
-	private class MainListener implements Listener {
+        @Override
+        public void onLoaded(@Nonnull Products products) {
+            synchronized (mLock) {
+                if (mProducts != null) {
+                    return;
+                }
+                if (!existsUnsupported(products)) {
+                    onProductsLoaded(products);
+                    return;
+                }
+                mFallbackCallback.load(products, getRequest());
+            }
+        }
 
-		@Nullable
-		private volatile Products myProducts;
+        private boolean existsUnsupported(@Nonnull Products products) {
+            for (Product product : products) {
+                if (!product.supported) {
+                    return true;
+                }
+            }
 
-		@Override
-		public void onLoaded(@Nonnull Products products) {
-			if (myProducts != null) {
-				return;
-			}
-			if (existsUnsupported(products)) {
-				fallbackListener.products = products;
-				fallbackInventory.load().whenLoaded(fallbackListener);
-			} else {
-				onProductsLoaded(products);
-			}
-		}
+            return false;
+        }
 
-		private boolean existsUnsupported(@Nonnull Products products) {
-			for (Product product : products) {
-				if (!product.supported) {
-					return true;
-				}
-			}
+        public void load(Request skus) {
+            Check.isTrue(Thread.holdsLock(mLock), "Must be synchronized");
+            mProducts = null;
+            mMainInventory.load(skus, this);
+        }
+    }
 
-			return false;
-		}
+    private class FallbackCallback implements Callback {
 
-		public void onLoad() {
-			myProducts = null;
-		}
-	}
+        @GuardedBy("mLock")
+        @Nonnull
+        private Products mProducts;
 
-	private class FallbackListener implements Listener {
+        @Override
+        public void onLoaded(@Nonnull Products products) {
+            synchronized (mLock) {
+                if (mMainCallback.mProducts != null) {
+                    return;
+                }
+                mProducts.merge(products);
+                onProductsLoaded(mProducts);
+            }
+        }
 
-		@Nonnull
-		private volatile Products products;
-
-		@Override
-		public void onLoaded(@Nonnull Products products) {
-			this.products.merge(products);
-			onProductsLoaded(this.products);
-		}
-	}
-
-	private void onProductsLoaded(@Nonnull Products products) {
-		synchronized (lock) {
-			this.mainListener.myProducts = products;
-			this.products = products;
-			listeners.onLoaded(products);
-		}
-	}
+        public void load(Products products, Request skus) {
+            Check.isTrue(Thread.holdsLock(mLock), "Must be synchronized");
+            mProducts = products;
+            mFallbackInventory.load(skus, this);
+        }
+    }
 }

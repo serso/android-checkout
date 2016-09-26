@@ -32,36 +32,38 @@ import javax.annotation.Nonnull;
  */
 final class MainThread implements CancellableExecutor {
 
-	@Nonnull
-	private final Handler mainHandler;
+    @Nonnull
+    private final Handler mainHandler;
 
-	MainThread(@Nonnull Handler mainHandler) {
-		Check.isTrue(mainHandler.getLooper() == Looper.getMainLooper(), "Should be main application thread handler");
-		this.mainHandler = mainHandler;
-	}
+    MainThread(@Nonnull Handler mainHandler) {
+        Check.isTrue(mainHandler.getLooper() == Looper.getMainLooper(), "Should be main application thread handler");
+        this.mainHandler = mainHandler;
+    }
 
-	static boolean isMainThread() {
-		return Looper.getMainLooper() == Looper.myLooper();
-	}
+    static boolean isMainThread() {
+        return Looper.getMainLooper() == Looper.myLooper();
+    }
 
-	/**
-	 * Method executes <var>runnable</var> on the main application thread. If method is called on the main application thread
-	 * then <var>runnable</var> is executed synchronously. Otherwise, it is posted to be executed on the next loop of
-	 * the main thread looper.
-	 *
-	 * @param runnable runnable to be executed on the main application thread
-	 */
-	@Override
-	public void execute(@Nonnull Runnable runnable) {
-		if (MainThread.isMainThread()) {
-			runnable.run();
-		} else {
-			mainHandler.post(runnable);
-		}
-	}
+    /**
+     * Method executes <var>runnable</var> on the main application thread. If method is called on
+     * the main application thread
+     * then <var>runnable</var> is executed synchronously. Otherwise, it is posted to be executed on
+     * the next loop of
+     * the main thread looper.
+     *
+     * @param runnable runnable to be executed on the main application thread
+     */
+    @Override
+    public void execute(@Nonnull Runnable runnable) {
+        if (MainThread.isMainThread()) {
+            runnable.run();
+        } else {
+            mainHandler.post(runnable);
+        }
+    }
 
-	@Override
-	public void cancel(@Nonnull Runnable runnable) {
-		this.mainHandler.removeCallbacks(runnable);
-	}
+    @Override
+    public void cancel(@Nonnull Runnable runnable) {
+        this.mainHandler.removeCallbacks(runnable);
+    }
 }

@@ -21,8 +21,8 @@
   -->
 
 <lint>
-	<!-- suppress assertions in external classes -->
-	<issue id="Assert">
-		<ignore path="src/main/java/org/solovyev/android/checkout/Base64.java" />
-	</issue>
+    <!-- suppress assertions in external classes -->
+    <issue id="Assert">
+        <ignore path="src/main/java/org/solovyev/android/checkout/Base64.java" />
+    </issue>
 </lint>

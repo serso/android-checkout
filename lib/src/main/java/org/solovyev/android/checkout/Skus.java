@@ -22,15 +22,17 @@
 
 package org.solovyev.android.checkout;
 
-import android.os.Bundle;
 import org.json.JSONException;
+
+import android.os.Bundle;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
 /**
  * List of SKUs
@@ -38,56 +40,56 @@ import java.util.List;
 @Immutable
 public final class Skus {
 
-	@Nonnull
-	static final String BUNDLE_LIST = "DETAILS_LIST";
+    @Nonnull
+    static final String BUNDLE_LIST = "DETAILS_LIST";
 
-	/**
-	 * Product type
-	 */
-	@Nonnull
-	public final String product;
+    /**
+     * Product type
+     */
+    @Nonnull
+    public final String product;
 
-	@Nonnull
-	public final List<Sku> list;
+    @Nonnull
+    public final List<Sku> list;
 
-	Skus(@Nonnull String product, @Nonnull List<Sku> list) {
-		this.product = product;
-		this.list = Collections.unmodifiableList(list);
-	}
+    Skus(@Nonnull String product, @Nonnull List<Sku> list) {
+        this.product = product;
+        this.list = Collections.unmodifiableList(list);
+    }
 
-	@Nonnull
-	static Skus fromBundle(@Nonnull Bundle bundle, @Nonnull String product) throws RequestException {
-		final List<String> list = extractList(bundle);
+    @Nonnull
+    static Skus fromBundle(@Nonnull Bundle bundle, @Nonnull String product) throws RequestException {
+        final List<String> list = extractList(bundle);
 
-		final List<Sku> skus = new ArrayList<Sku>(list.size());
-		for (String response : list) {
-			try {
-				skus.add(Sku.fromJson(response, product));
-			} catch (JSONException e) {
-				throw new RequestException(e);
-			}
+        final List<Sku> skus = new ArrayList<Sku>(list.size());
+        for (String response : list) {
+            try {
+                skus.add(Sku.fromJson(response, product));
+            } catch (JSONException e) {
+                throw new RequestException(e);
+            }
 
-		}
-		return new Skus(product, skus);
-	}
+        }
+        return new Skus(product, skus);
+    }
 
-	@Nonnull
-	private static List<String> extractList(@Nonnull Bundle bundle) {
-		final List<String> list = bundle.getStringArrayList(BUNDLE_LIST);
-		return list != null ? list : Collections.<String>emptyList();
-	}
+    @Nonnull
+    private static List<String> extractList(@Nonnull Bundle bundle) {
+        final List<String> list = bundle.getStringArrayList(BUNDLE_LIST);
+        return list != null ? list : Collections.<String>emptyList();
+    }
 
-	@Nullable
-	public Sku getSku(@Nonnull String sku) {
-		for (Sku s : list) {
-			if (s.id.equals(sku)) {
-				return s;
-			}
-		}
-		return null;
-	}
+    @Nullable
+    public Sku getSku(@Nonnull String sku) {
+        for (Sku s : list) {
+            if (s.id.code.equals(sku)) {
+                return s;
+            }
+        }
+        return null;
+    }
 
-	public boolean hasSku(@Nonnull String sku) {
-		return getSku(sku) != null;
-	}
+    public boolean hasSku(@Nonnull String sku) {
+        return getSku(sku) != null;
+    }
 }

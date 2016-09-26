@@ -24,86 +24,94 @@ package org.solovyev.android.checkout;
 
 import android.content.Context;
 
-import javax.annotation.Nonnull;
-import javax.annotation.concurrent.GuardedBy;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
+import javax.annotation.Nonnull;
+import javax.annotation.concurrent.GuardedBy;
+
 public final class RobotmediaInventory extends BaseInventory {
 
-	@Nonnull
-	private final Executor background = Executors.newSingleThreadExecutor();
+    @Nonnull
+    private final Executor mBackground = Executors.newSingleThreadExecutor();
+    @Nonnull
+    private final Executor mOnLoadExecutor;
+    @GuardedBy("mLock")
+    @Nonnull
+    private State mState = State.INITIAL;
 
-	@Nonnull
-	private final Executor onLoadExecutor;
+    public RobotmediaInventory(@Nonnull Checkout checkout, @Nonnull Executor onLoadExecutor) {
+        super(checkout);
+        mOnLoadExecutor = onLoadExecutor;
+    }
 
-	@GuardedBy("lock")
-	@Nonnull
-	private State state = State.INITIAL;
+    @Nonnull
+    @Override
+    public Inventory load(@Nonnull Request request, @Nonnull Callback callback) {
+        synchronized (mLock) {
+            setRequest(request, callback);
+            mState = State.LOADING;
+            if (RobotmediaDatabase.exists(mCheckout.getContext())) {
+                mBackground.execute(new Loader(request));
+            } else {
+                onLoaded(RobotmediaDatabase.toInventoryProducts(ProductTypes.ALL));
+            }
+        }
 
-	public RobotmediaInventory(@Nonnull Checkout checkout, @Nonnull Executor onLoadExecutor) {
-		super(checkout);
-		this.onLoadExecutor = onLoadExecutor;
-	}
+        return this;
+    }
 
-	@Nonnull
-	@Override
-	public Inventory load() {
-		synchronized (lock) {
-			if (state != State.INITIAL) {
-				return this;
-			}
-			state = State.LOADING;
-			if (RobotmediaDatabase.exists(checkout.getContext())) {
-				background.execute(new Loader());
-			} else {
-				onLoaded(RobotmediaDatabase.toInventoryProducts(checkout.getProducts()));
-			}
-		}
+    private void onLoaded(@Nonnull final Inventory.Products products) {
+        synchronized (mLock) {
+            if (mState == State.LOADED) {
+                return;
+            }
+            mState = State.LOADED;
+            mProducts = products;
+        }
+        mOnLoadExecutor.execute(new Runnable() {
+            @Override
+            public void run() {
+                synchronized (mLock) {
+                    if (mState != State.LOADED) {
+                        return;
+                    }
+                    onLoaded();
+                }
+            }
+        });
+    }
 
-		return this;
-	}
+    boolean isLoaded() {
+        synchronized (mLock) {
+            return mState == State.LOADED;
+        }
+    }
 
-	private void onLoaded(@Nonnull final Inventory.Products products) {
-		synchronized (lock) {
-			if(this.state == State.LOADED) {
-				return;
-			}
-			this.state = State.LOADED;
-			this.products = products;
-		}
-		onLoadExecutor.execute(new Runnable() {
-			@Override
-			public void run() {
-				synchronized (lock) {
-					if(state != State.LOADED) {
-						return;
-					}
-					listeners.onLoaded(products);
-				}
-			}
-		});
-	}
+    private enum State {
+        INITIAL,
+        LOADING,
+        LOADED
+    }
 
-	boolean isLoaded() {
-		synchronized (lock) {
-			return state == State.LOADED;
-		}
-	}
+    private class Loader implements Runnable {
+        private final Request mSkus;
 
-	private enum State {
-		INITIAL,
-		LOADING,
-		LOADED
-	}
+        public Loader(Request skus) {
+            this.mSkus = skus;
+        }
 
-	private class Loader implements Runnable {
-		@Override
-		public void run() {
-			final Context context = checkout.getContext();
-			final RobotmediaDatabase database = new RobotmediaDatabase(context);
-			final Products products = database.load(checkout.getProducts());
-			onLoaded(products);
-		}
-	}
+        @Override
+        public void run() {
+            final Context context = mCheckout.getContext();
+            final RobotmediaDatabase database = new RobotmediaDatabase(context);
+            final Products products = database.load(mSkus);
+            synchronized (mLock) {
+                if (!getRequest().equals(mSkus)) {
+                    return;
+                }
+            }
+            onLoaded(products);
+        }
+    }
 }
