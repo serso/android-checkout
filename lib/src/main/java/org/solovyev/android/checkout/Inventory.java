@@ -27,6 +27,7 @@ import static java.util.Collections.unmodifiableCollection;
 import static java.util.Collections.unmodifiableList;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -49,10 +50,12 @@ import javax.annotation.concurrent.Immutable;
  * {@link Checkout} stops this class loading also stops and no
  * {@link Callback#onLoaded(Inventory.Products)} method is called.
  */
+@SuppressWarnings({"WeakerAccess", "unused"})
 public interface Inventory {
 
     /**
-     * Loads a list of SKUs and asynchronously delivers it to the provided {@link Callback}.
+     * Loads a {@link Products} object and asynchronously delivers it to the provided
+     * {@link Callback}. The data to be loaded is defined by {@link Request} argument.
      * Multiple simultaneous loadings are not supported, each new call of this method cancels all
      * previous requests.
      * @param request list of SKUs to be loaded
@@ -165,9 +168,17 @@ public interface Inventory {
          */
         public final boolean supported;
 
+        /**
+         * This list is loaded only if {@link Request#loadPurchases(String)} was called for this
+         * product.
+         */
         @Nonnull
         final List<Purchase> mPurchases = new ArrayList<>();
 
+        /**
+         * This list is loaded only if {@link Request#loadSkus(String, List)} was called for this
+         * product and contains only SKUs listed in the original request.
+         */
         @Nonnull
         final List<Sku> mSkus = new ArrayList<>();
 
@@ -228,6 +239,10 @@ public interface Inventory {
         }
     }
 
+    /**
+     * This class defines what data should be loaded into the {@link Products} after
+     * {@link #load(Request, Callback)} finishes.
+     */
     final class Request {
         // list of SKUs for which the details are loaded
         private final Map<String, List<String>> mSkus = new HashMap<>();
@@ -248,27 +263,35 @@ public interface Inventory {
             return copy;
         }
 
+        /**
+         * Creates an empty load request. Only {@link Product#supported} flag is set in
+         * {@link #load(Request, Callback)} for all available for billing products.
+         * @see ProductTypes
+         * @return empty request
+         */
         @Nonnull
         public static Request create() {
             return new Request();
         }
 
+        /**
+         * Makes {@link Inventory} to load purchases for all available for billing products,
+         * see {@link ProductTypes#ALL}.
+         * @return this request
+         * @see BillingRequests#getAllPurchases(String, RequestListener)
+         */
         @Nonnull
         public Request loadAllPurchases() {
             mProducts.addAll(ProductTypes.ALL);
             return this;
         }
 
-        @Nonnull
-        public Request loadInAppPurchases() {
-            return loadPurchases(ProductTypes.IN_APP);
-        }
-
-        @Nonnull
-        public Request loadSubscriptionPurchases() {
-            return loadPurchases(ProductTypes.SUBSCRIPTION);
-        }
-
+        /**
+         * Makes {@link Inventory} to load all purchases for the given <var>product</var>.
+         * @param product product
+         * @return this request
+         * @see BillingRequests#getAllPurchases(String, RequestListener)
+         */
         @Nonnull
         public Request loadPurchases(@Nonnull String product) {
             ProductTypes.checkSupported(product);
@@ -280,18 +303,23 @@ public interface Inventory {
             return mProducts.contains(product);
         }
 
+        /**
+         * Same as {@link #loadSkus(String, List)}.
+         */
         @Nonnull
-        public Request loadInAppSkus(@Nonnull List<String> skus) {
-            loadSkus(ProductTypes.IN_APP, skus);
-            return this;
+        public Request loadSkus(@Nonnull String product, @Nonnull String... skus) {
+            Check.isTrue(skus.length > 0, "No SKUs listed, can't load them");
+            return loadSkus(product, Arrays.asList(skus));
         }
 
-        @Nonnull
-        public Request loadSubscriptionSkus(@Nonnull List<String> skus) {
-            loadSkus(ProductTypes.SUBSCRIPTION, skus);
-            return this;
-        }
-
+        /**
+         * Makes {@link Inventory} to load SKU details for the given list of <var>skus</var>. As
+         * SKU identifier is unique only in product <var>product</var> id must be also provided to
+         * this method.
+         * @param product product
+         * @param skus list of SKU identifiers for which SKU details should be loaded
+         * @return this request
+         */
         @Nonnull
         public Request loadSkus(@Nonnull String product, @Nonnull List<String> skus) {
             for (String sku : skus) {
@@ -300,6 +328,9 @@ public interface Inventory {
             return this;
         }
 
+        /**
+         * Same as {@link #loadSkus(String, List)} with one element in the list.
+         */
         @Nonnull
         public Request loadSkus(@Nonnull String product, @Nonnull String sku) {
             ProductTypes.checkSupported(product);
@@ -317,7 +348,7 @@ public interface Inventory {
         }
 
         @Nonnull
-        public List<String> getSkus(@Nonnull String product) {
+        List<String> getSkus(@Nonnull String product) {
             return mSkus.get(product);
         }
     }

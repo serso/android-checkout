@@ -69,8 +69,8 @@ public abstract class InventoryTestBase {
         billing = newBilling();
         mRequest = Inventory.Request.create()
                 .loadAllPurchases()
-                .loadInAppSkus(asList("1", "2", "3", "4", "6"))
-                .loadSubscriptionSkus(asList("sub1", "sub2", "sub3", "sub4"));
+                .loadSkus(IN_APP, asList("1", "2", "3", "4", "6"))
+                .loadSkus(SUBSCRIPTION, asList("sub1", "sub2", "sub3", "sub4"));
         checkout = Checkout.forApplication(billing);
         inventory = newInventory(checkout);
     }

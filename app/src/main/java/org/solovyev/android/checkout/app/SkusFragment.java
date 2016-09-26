@@ -80,8 +80,8 @@ public class SkusFragment extends BaseListFragment {
     private void reloadInventory() {
         inventory.load(Inventory.Request.create()
                         .loadAllPurchases()
-                        .loadInAppSkus(IN_APPS)
-                        .loadSubscriptionSkus(SUBSCRIPTIONS),
+                        .loadSkus(IN_APP, IN_APPS)
+                        .loadSkus(SUBSCRIPTION, SUBSCRIPTIONS),
                 new InventoryLoadedCallback());
     }
 
