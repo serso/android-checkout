@@ -22,15 +22,15 @@
 
 package org.solovyev.android.checkout;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
-import org.robolectric.annotation.Config;
-
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.solovyev.android.checkout.Purchase.State.CANCELLED;
 import static org.solovyev.android.checkout.Purchase.State.REFUNDED;
+
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.robolectric.RobolectricTestRunner;
+import org.robolectric.annotation.Config;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
@@ -38,7 +38,7 @@ public class InventoryProductTest {
 
     @Test
     public void testShouldAddPurchases() throws Exception {
-        final Inventory.Product product = new Inventory.Product("test", true);
+        final Inventory.Product product = new Inventory.Product(ProductTypes.IN_APP, true);
         product.mPurchases.add(Purchase.fromJson(PurchaseTest.newJson(0, Purchase.State.PURCHASED), null));
         product.mPurchases.add(Purchase.fromJson(PurchaseTest.newJson(1, CANCELLED), null));
 

@@ -25,6 +25,8 @@ package org.solovyev.android.checkout;
 import java.util.Arrays;
 import java.util.List;
 
+import javax.annotation.Nonnull;
+
 /**
  * Types of products available in Billing API
  */
@@ -46,5 +48,9 @@ public final class ProductTypes {
 
     private ProductTypes() {
         throw new AssertionError();
+    }
+
+    static void checkSupported(@Nonnull String product) {
+        Check.isTrue(ALL.contains(product), "Unsupported product: " + product);
     }
 }

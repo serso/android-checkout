@@ -22,6 +22,9 @@
 
 package org.solovyev.android.checkout;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -29,10 +32,6 @@ import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
 import javax.annotation.Nonnull;
-
-import static java.util.Arrays.asList;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
@@ -44,29 +43,26 @@ public class InventoryProductsTest {
     @Before
     public void setUp() throws Exception {
         products = new Inventory.Products();
-        products.add(new Inventory.Product("0", true));
-        products.add(new Inventory.Product("1", false));
-        products.add(new Inventory.Product("2", true));
     }
 
     @Test
     public void testShouldAddProduct() throws Exception {
-        products.add(new Inventory.Product("2", true));
+        products.add(new Inventory.Product(ProductTypes.IN_APP, true));
+        products.add(new Inventory.Product(ProductTypes.SUBSCRIPTION, true));
 
-        assertEquals(3, products.size());
-        assertEquals("0", products.get("0").id);
-        assertEquals("1", products.get("1").id);
-        assertEquals("2", products.get("2").id);
+        assertEquals(2, products.size());
+        assertEquals(ProductTypes.IN_APP, products.get(ProductTypes.IN_APP).id);
+        assertEquals(ProductTypes.SUBSCRIPTION, products.get(ProductTypes.SUBSCRIPTION).id);
     }
 
     @Test
     public void testShouldIterateOverAllProducts() throws Exception {
         int count = 0;
         for (Inventory.Product product : products) {
-            assertTrue(asList("0", "1", "2").contains(product.id));
+            assertTrue(ProductTypes.ALL.contains(product.id));
             count++;
         }
 
-        assertEquals(3, count);
+        assertEquals(2, count);
     }
 }

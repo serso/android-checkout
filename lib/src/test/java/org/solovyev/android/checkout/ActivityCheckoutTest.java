@@ -22,22 +22,6 @@
 
 package org.solovyev.android.checkout;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
-import org.robolectric.annotation.Config;
-
-import android.app.Activity;
-
-import java.util.List;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
-
-import javax.annotation.Nonnull;
-
 import static java.util.Arrays.asList;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
@@ -48,6 +32,22 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.solovyev.android.checkout.PurchaseFlowTest.newOkIntent;
 import static org.solovyev.android.checkout.ResponseCodes.NULL_INTENT;
+
+import android.app.Activity;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.robolectric.RobolectricTestRunner;
+import org.robolectric.annotation.Config;
+
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+
+import javax.annotation.Nonnull;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
@@ -65,8 +65,8 @@ public class ActivityCheckoutTest {
     @Before
     public void setUp() throws Exception {
         mRequest = Inventory.Request.create().
-                loadSkus("product", asList("sku1", "sku2", "sku3")).
-                loadSkus("subscription", asList("sku1", "sku2", "sku3"));
+                loadSkus(ProductTypes.IN_APP, asList("sku1", "sku2", "sku3")).
+                loadSkus(ProductTypes.SUBSCRIPTION, asList("sku1", "sku2", "sku3"));
         billing = Tests.newBilling();
         checkout = Checkout.forActivity(new Activity(), billing);
     }

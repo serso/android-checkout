@@ -22,13 +22,10 @@
 
 package org.solovyev.android.checkout.app;
 
-import org.solovyev.android.checkout.BillingRequests;
-import org.solovyev.android.checkout.Checkout;
-import org.solovyev.android.checkout.Inventory;
-import org.solovyev.android.checkout.Purchase;
-import org.solovyev.android.checkout.RequestListener;
-import org.solovyev.android.checkout.ResponseCodes;
-import org.solovyev.android.checkout.Sku;
+import static org.solovyev.android.checkout.ProductTypes.IN_APP;
+import static org.solovyev.android.checkout.ProductTypes.SUBSCRIPTION;
+import static org.solovyev.android.checkout.app.CheckoutApplication.IN_APPS;
+import static org.solovyev.android.checkout.app.CheckoutApplication.SUBSCRIPTIONS;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -41,14 +38,19 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Toast;
 
+import org.solovyev.android.checkout.BillingRequests;
+import org.solovyev.android.checkout.Checkout;
+import org.solovyev.android.checkout.Inventory;
+import org.solovyev.android.checkout.Purchase;
+import org.solovyev.android.checkout.RequestListener;
+import org.solovyev.android.checkout.ResponseCodes;
+import org.solovyev.android.checkout.Sku;
+
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
 import javax.annotation.Nonnull;
-
-import static org.solovyev.android.checkout.ProductTypes.IN_APP;
-import static org.solovyev.android.checkout.ProductTypes.SUBSCRIPTION;
 
 public class SkusFragment extends BaseListFragment {
 
@@ -70,9 +72,17 @@ public class SkusFragment extends BaseListFragment {
         titleView.setText(R.string.items_for_purchase);
         emptyView.setText(R.string.skus_empty);
 
-        inventory.load(CheckoutApplication.skus, new InventoryLoadedCallback());
+        reloadInventory();
 
         return view;
+    }
+
+    private void reloadInventory() {
+        inventory.load(Inventory.Request.create()
+                        .loadAllPurchases()
+                        .loadInAppSkus(IN_APPS)
+                        .loadSubscriptionSkus(SUBSCRIPTIONS),
+                new InventoryLoadedCallback());
     }
 
     @Override
@@ -136,7 +146,7 @@ public class SkusFragment extends BaseListFragment {
 
         private void onPurchased() {
             // let's update purchase information in local inventory
-            inventory.load(CheckoutApplication.skus, new InventoryLoadedCallback());
+            reloadInventory();
             Toast.makeText(getActivity(), R.string.msg_thank_you_for_purchase, Toast.LENGTH_SHORT).show();
         }
 
@@ -225,7 +235,7 @@ public class SkusFragment extends BaseListFragment {
         }
 
         private void onConsumed() {
-            inventory.load(CheckoutApplication.skus, new InventoryLoadedCallback());
+            reloadInventory();
             Toast.makeText(getActivity(), R.string.msg_item_consumed, Toast.LENGTH_SHORT).show();
         }
 

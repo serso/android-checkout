@@ -22,13 +22,7 @@
 
 package org.solovyev.android.checkout.app;
 
-import org.acra.ReportingInteractionMode;
-import org.acra.annotation.ReportsCrashes;
-import org.solovyev.android.checkout.Billing;
-import org.solovyev.android.checkout.Checkout;
-import org.solovyev.android.checkout.Inventory;
-import org.solovyev.android.checkout.RobotmediaDatabase;
-import org.solovyev.android.checkout.RobotmediaInventory;
+import static android.content.Intent.ACTION_VIEW;
 
 import android.app.Activity;
 import android.app.Application;
@@ -38,6 +32,14 @@ import android.net.Uri;
 import android.util.Base64;
 import android.util.Log;
 
+import org.acra.ReportingInteractionMode;
+import org.acra.annotation.ReportsCrashes;
+import org.solovyev.android.checkout.Billing;
+import org.solovyev.android.checkout.Checkout;
+import org.solovyev.android.checkout.Inventory;
+import org.solovyev.android.checkout.RobotmediaDatabase;
+import org.solovyev.android.checkout.RobotmediaInventory;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -46,33 +48,28 @@ import java.util.concurrent.Executor;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-import static android.content.Intent.ACTION_VIEW;
-import static org.solovyev.android.checkout.ProductTypes.IN_APP;
-import static org.solovyev.android.checkout.ProductTypes.SUBSCRIPTION;
-
 @ReportsCrashes(mailTo = CheckoutApplication.MAIL,
         mode = ReportingInteractionMode.SILENT)
 public class CheckoutApplication extends Application {
 
     @Nonnull
-    public static final Inventory.Request skus;
+    public static final List<String> IN_APPS = new ArrayList<>();
+    @Nonnull
+    public static final List<String> SUBSCRIPTIONS = new ArrayList<>();
     @Nonnull
     static final String MAIL = "se.solovyev@gmail.com";
     @Nonnull
     private static CheckoutApplication instance;
 
     static {
-        final List<String> inApps = new ArrayList<>();
-        inApps.addAll(Arrays.asList("coffee", "beer", "cake", "hamburger"));
+        IN_APPS.addAll(Arrays.asList("coffee", "beer", "cake", "hamburger"));
         for (int i = 0; i < 20; i++) {
             final int id = i + 1;
             final String sku = id < 10 ? "item_0" + id : "item_" + id;
-            inApps.add(sku);
+            IN_APPS.add(sku);
         }
-        final List<String> subs = new ArrayList<>();
-        subs.add("sub_01");
-        subs.add("sub_02");
-        skus = Inventory.Request.create().loadSkus(IN_APP, inApps).loadSkus(SUBSCRIPTION, subs);
+        SUBSCRIPTIONS.add("sub_01");
+        SUBSCRIPTIONS.add("sub_02");
     }
 
     /**

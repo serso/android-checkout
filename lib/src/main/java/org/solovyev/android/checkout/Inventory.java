@@ -22,8 +22,11 @@
 
 package org.solovyev.android.checkout;
 
+import static java.util.Collections.sort;
+import static java.util.Collections.unmodifiableCollection;
+import static java.util.Collections.unmodifiableList;
+
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -34,10 +37,6 @@ import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
-
-import static java.util.Collections.sort;
-import static java.util.Collections.unmodifiableCollection;
-import static java.util.Collections.unmodifiableList;
 
 /**
  * Class which contains information about products, SKUs and purchases. This class can't be
@@ -56,7 +55,6 @@ public interface Inventory {
      * Loads a list of SKUs and asynchronously delivers it to the provided {@link Callback}.
      * Multiple simultaneous loadings are not supported, each new call of this method cancels all
      * previous requests.
-     *
      * @param request list of SKUs to be loaded
      * @return instance of this {@link Inventory}
      */
@@ -71,7 +69,6 @@ public interface Inventory {
     /**
      * Note that this method may return different instances of {@link Inventory.Products} with
      * different contents
-     *
      * @return the last loaded set of products
      */
     @Nonnull
@@ -84,7 +81,6 @@ public interface Inventory {
         /**
          * Called when all the products were loaded. Note that this method is called even if the
          * loading fails.
-         *
          * @param products loaded products
          */
         void onLoaded(@Nonnull Inventory.Products products);
@@ -102,6 +98,12 @@ public interface Inventory {
         @Nonnull
         private final Map<String, Inventory.Product> mMap = new HashMap<>();
 
+        Products() {
+            for (String product : ProductTypes.ALL) {
+                mMap.put(product, new Product(product, false));
+            }
+        }
+
         void add(@Nonnull Inventory.Product product) {
             mMap.put(product.id, product);
         }
@@ -110,7 +112,9 @@ public interface Inventory {
          * @param productId product id
          * @return product by id
          */
+        @Nonnull
         public Inventory.Product get(@Nonnull String productId) {
+            ProductTypes.checkSupported(productId);
             return mMap.get(productId);
         }
 
@@ -168,6 +172,7 @@ public interface Inventory {
         final List<Sku> mSkus = new ArrayList<>();
 
         Product(@Nonnull String id, boolean supported) {
+            ProductTypes.checkSupported(id);
             this.id = id;
             this.supported = supported;
         }
@@ -196,7 +201,6 @@ public interface Inventory {
 
         /**
          * This list doesn't contain duplicates, i.e. each element in the list has unique SKU
-         *
          * @return unmodifiable list of purchases sorted by purchase date (latest first)
          */
         @Nonnull
@@ -231,6 +235,17 @@ public interface Inventory {
         private final Set<String> mProducts = new HashSet<>();
 
         private Request() {
+            for (String product : ProductTypes.ALL) {
+                mSkus.put(product, new ArrayList<String>(5));
+            }
+        }
+
+        @Nonnull
+        Request copy() {
+            final Request copy = new Request();
+            copy.mSkus.putAll(mSkus);
+            copy.mProducts.addAll(mProducts);
+            return copy;
         }
 
         @Nonnull
@@ -239,13 +254,32 @@ public interface Inventory {
         }
 
         @Nonnull
+        public Request loadAllPurchases() {
+            mProducts.addAll(ProductTypes.ALL);
+            return this;
+        }
+
+        @Nonnull
         public Request loadPurchases(@Nonnull String product) {
+            ProductTypes.checkSupported(product);
             mProducts.add(product);
             return this;
         }
 
         boolean shouldLoadPurchases(@Nonnull String product) {
             return mProducts.contains(product);
+        }
+
+        @Nonnull
+        public Request loadInAppSkus(@Nonnull List<String> skus) {
+            loadSkus(ProductTypes.IN_APP, skus);
+            return this;
+        }
+
+        @Nonnull
+        public Request loadSubscriptionSkus(@Nonnull List<String> skus) {
+            loadSkus(ProductTypes.SUBSCRIPTION, skus);
+            return this;
         }
 
         @Nonnull
@@ -258,28 +292,23 @@ public interface Inventory {
 
         @Nonnull
         public Request loadSkus(@Nonnull String product, @Nonnull String sku) {
-            Check.isNotEmpty(product);
+            ProductTypes.checkSupported(product);
             Check.isNotEmpty(sku);
 
-            List<String> list = mSkus.get(product);
-            if (list == null) {
-                list = new ArrayList<>();
-                mSkus.put(product, list);
-            }
+            final List<String> list = mSkus.get(product);
             Check.isTrue(!list.contains(sku), "Adding same SKU is not allowed");
             list.add(sku);
             return this;
         }
 
         boolean shouldLoadSkus(@Nonnull String product) {
-            final List<String> skus = mSkus.get(product);
-            return skus != null && !skus.isEmpty();
+            ProductTypes.checkSupported(product);
+            return !mSkus.get(product).isEmpty();
         }
 
         @Nonnull
         public List<String> getSkus(@Nonnull String product) {
-            final List<String> list = mSkus.get(product);
-            return list == null ? Collections.<String>emptyList() : list;
+            return mSkus.get(product);
         }
     }
 }
