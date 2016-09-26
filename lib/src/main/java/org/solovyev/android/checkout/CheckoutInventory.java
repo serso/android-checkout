@@ -43,15 +43,7 @@ final class CheckoutInventory extends BaseInventory {
             // 1. onReady to be called
             // 2. loadPurchased to be finished
             // 3. loadSkus to be finished
-            mCount = ProductTypes.ALL.size();
-            for (String product : ProductTypes.ALL) {
-                if (request.shouldLoadPurchases(product)) {
-                    mCount++;
-                }
-                if (request.shouldLoadSkus(product)) {
-                    mCount++;
-                }
-            }
+            mCount = ProductTypes.ALL.size() * 3;
         }
 
         @Override
