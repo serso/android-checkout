@@ -26,6 +26,7 @@ import static java.util.Arrays.asList;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.solovyev.android.checkout.ProductTypes.IN_APP;
@@ -36,6 +37,7 @@ import static org.solovyev.android.checkout.Purchase.State.PURCHASED;
 import static org.solovyev.android.checkout.Purchase.State.REFUNDED;
 import static org.solovyev.android.checkout.PurchaseTest.verifyPurchase;
 
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -176,6 +178,43 @@ public abstract class InventoryTestBase {
         Tests.waitWhileLoading(inventory);
 
         assertEquals(5, c.mCount);
+    }
+
+    @Test
+    public void testShouldCancelTaskById() throws Exception {
+        checkout.start();
+        final int task1 = inventory.load(mRequest, mock(Inventory.Callback.class));
+        final int task2 = inventory.load(mRequest, mock(Inventory.Callback.class));
+        Assert.assertTrue(inventory.isLoading());
+        inventory.cancel(task1);
+        Assert.assertTrue(inventory.isLoading());
+        inventory.cancel(task2);
+        Assert.assertFalse(inventory.isLoading());
+    }
+
+    @Test
+    public void testShouldCancelAllTasks() throws Exception {
+        checkout.start();
+        inventory.load(mRequest, mock(Inventory.Callback.class));
+        inventory.load(mRequest, mock(Inventory.Callback.class));
+        Assert.assertTrue(inventory.isLoading());
+        inventory.cancel();
+        Assert.assertFalse(inventory.isLoading());
+    }
+
+    @Test
+    public void testCanceledCallbackShouldNotGetCalled() throws Exception {
+        checkout.start();
+        final Inventory.Callback c1 = mock(Inventory.Callback.class);
+        final Inventory.Callback c2 = mock(Inventory.Callback.class);
+        final int task1 = inventory.load(mRequest, c1);
+        inventory.load(mRequest, c2);
+
+        inventory.cancel(task1);
+
+        Tests.waitWhileLoading(inventory);
+        verify(c1, never()).onLoaded(anyProducts());
+        verify(c2, times(1)).onLoaded(anyProducts());
     }
 
     protected abstract boolean shouldVerifyPurchaseCompletely();

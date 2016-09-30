@@ -71,7 +71,7 @@ public class RobotmediaInventoryTest extends InventoryTestBase {
     @Nonnull
     @Override
     protected Inventory newInventory(@Nonnull Checkout checkout) {
-        return new RobotmediaInventory(checkout, sameThreadExecutor(), sameThreadExecutor());
+        return new RobotmediaInventory(checkout, sameThreadExecutor());
     }
 
     @Override

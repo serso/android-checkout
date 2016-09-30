@@ -86,7 +86,7 @@ public class FallingBackInventoryTest extends InventoryTestBase {
     @Nonnull
     @Override
     protected FallingBackInventory newInventory(@Nonnull Checkout checkout) {
-        return new FallingBackInventory(checkout, new RobotmediaInventory(checkout, sameThreadExecutor(), sameThreadExecutor()));
+        return new FallingBackInventory(checkout, new RobotmediaInventory(checkout, sameThreadExecutor()));
     }
 
     @Override
