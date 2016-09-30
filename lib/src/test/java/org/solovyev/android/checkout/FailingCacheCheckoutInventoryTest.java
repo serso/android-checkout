@@ -24,7 +24,6 @@ package org.solovyev.android.checkout;
 
 import static java.util.Arrays.asList;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import static org.solovyev.android.checkout.ProductTypes.IN_APP;
 import static org.solovyev.android.checkout.ProductTypes.SUBSCRIPTION;
 import static org.solovyev.android.checkout.Purchase.State.CANCELLED;
@@ -77,7 +76,7 @@ public class FailingCacheCheckoutInventoryTest {
                 Purchase.fromJson(PurchaseTest.newJson(3, REFUNDED), ""),
                 Purchase.fromJson(PurchaseTest.newJson(4, EXPIRED), "")
         );
-        CheckoutInventoryTest.insertPurchases(billing, IN_APP, expectedInApps);
+        Tests.mockGetPurchases(billing, IN_APP, expectedInApps);
 
         final List<Purchase> expectedSubs = asList(
                 Purchase.fromJson(PurchaseTest.newJsonSubscription(1, PURCHASED), ""),
@@ -85,7 +84,7 @@ public class FailingCacheCheckoutInventoryTest {
                 Purchase.fromJson(PurchaseTest.newJsonSubscription(3, REFUNDED), ""),
                 Purchase.fromJson(PurchaseTest.newJsonSubscription(4, EXPIRED), "")
         );
-        CheckoutInventoryTest.insertPurchases(billing, SUBSCRIPTION, expectedSubs);
+        Tests.mockGetPurchases(billing, SUBSCRIPTION, expectedSubs);
     }
 
     @Test
@@ -97,20 +96,9 @@ public class FailingCacheCheckoutInventoryTest {
         checkout.start();
         inventory.load(mRequest, listener);
 
-        waitWhileLoading(inventory);
+        Tests.waitWhileLoading(inventory);
 
         assertTrue(failingCache.exceptionThrown);
-    }
-
-    void waitWhileLoading(@Nonnull CheckoutInventory inventory) throws InterruptedException {
-        int sleeping = 0;
-        while (!inventory.hasLastLoadedProducts()) {
-            Thread.sleep(50L);
-            sleeping += 50L;
-            if (sleeping > 1000L) {
-                fail("Too long wait!");
-            }
-        }
     }
 
     @Nonnull

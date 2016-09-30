@@ -22,41 +22,21 @@
 
 package org.solovyev.android.checkout;
 
-import static org.mockito.Matchers.anyInt;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Matchers.isNull;
-import static org.mockito.Mockito.when;
+import static java.util.Arrays.asList;
+import static org.junit.Assert.assertEquals;
 import static org.solovyev.android.checkout.ProductTypes.IN_APP;
 import static org.solovyev.android.checkout.ProductTypes.SUBSCRIPTION;
-import static org.solovyev.android.checkout.RequestTestBase.newBundle;
-import static org.solovyev.android.checkout.ResponseCodes.OK;
 
-import android.os.Bundle;
 import android.os.RemoteException;
-
-import com.android.vending.billing.IInAppBillingService;
 
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.annotation.Nonnull;
 
 public class CheckoutInventoryTest extends InventoryTestBase {
-
-    static void insertPurchases(@Nonnull Billing billing, @Nonnull String product, @Nonnull List<Purchase> purchases) throws RemoteException {
-        final Bundle bundle = newBundle(OK);
-        final ArrayList<String> list = new ArrayList<String>();
-        for (Purchase purchase : purchases) {
-            list.add(purchase.toJson());
-        }
-        bundle.putStringArrayList(Purchases.BUNDLE_DATA_LIST, list);
-        final IInAppBillingService service = ((TestServiceConnector) billing.getConnector()).service;
-        when(service.getPurchases(anyInt(), anyString(), eq(product), isNull(String.class))).thenReturn(bundle);
-    }
 
     @Nonnull
     protected CheckoutInventory newInventory(@Nonnull Checkout checkout) {
@@ -70,12 +50,18 @@ public class CheckoutInventoryTest extends InventoryTestBase {
 
     @Override
     protected void insertPurchases(@Nonnull String product, @Nonnull List<Purchase> purchases) throws RemoteException {
-        insertPurchases(billing, product, purchases);
+        Tests.mockGetPurchases(billing, product, purchases);
+    }
+
+    @Override
+    protected void insertSkus(@Nonnull String product, @Nonnull List<Sku> skus) throws Exception {
+        Tests.mockGetSkuDetails(billing, product, skus);
     }
 
     @Test
     public void testIsLoadedWithEmptySkusList() throws Exception {
         populatePurchases();
+        populateSkus();
 
         final Inventory.Request request = Inventory.Request.create()
                 .loadAllPurchases()
@@ -88,7 +74,7 @@ public class CheckoutInventoryTest extends InventoryTestBase {
         checkout.start();
         inventory.load(request, listener);
 
-        waitWhileLoading(inventory);
+        Tests.waitWhileLoading(inventory);
 
         final Inventory.Product app = listener.products.get(IN_APP);
         Assert.assertTrue(app.getSkus().isEmpty());
@@ -112,9 +98,26 @@ public class CheckoutInventoryTest extends InventoryTestBase {
         checkout.start();
         inventory.load(request, listener);
 
-        waitWhileLoading(inventory);
+        Tests.waitWhileLoading(inventory);
 
         Assert.assertTrue(listener.exceptionThrown);
+    }
+
+    @Test
+    public void testShouldLoadSkus() throws Exception {
+        populateSkus();
+
+        checkout.start();
+
+        final TestCallback c1 = new TestCallback();
+        inventory.load(Inventory.Request.create().loadSkus(SUBSCRIPTION, asList("subX", "sub2", "sub3")), c1);
+        final TestCallback c2 = new TestCallback();
+        inventory.load(Inventory.Request.create().loadSkus(IN_APP, asList("1", "2", "5")), c2);
+
+        Tests.waitWhileLoading(inventory);
+
+        assertEquals(2, c1.products.get(SUBSCRIPTION).getSkus().size());
+        assertEquals(2, c2.products.get(IN_APP).getSkus().size());
     }
 
     private static final class CrashingCallback implements Inventory.Callback {

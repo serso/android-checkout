@@ -42,6 +42,10 @@ public class RobotmediaInventoryTest extends InventoryTestBase {
         }
     }
 
+    @Override
+    protected void insertSkus(@Nonnull String product, @Nonnull List<Sku> skus) throws Exception {
+    }
+
     @Nonnull
     private static Transaction toTransaction(@Nonnull Purchase purchase) {
         Transaction.PurchaseState[] states = Transaction.PurchaseState.values();

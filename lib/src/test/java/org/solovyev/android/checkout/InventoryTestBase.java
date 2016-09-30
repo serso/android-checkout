@@ -24,8 +24,6 @@ package org.solovyev.android.checkout;
 
 import static java.util.Arrays.asList;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -52,17 +50,26 @@ import javax.annotation.Nonnull;
 @Config(manifest = Config.NONE)
 public abstract class InventoryTestBase {
 
+    private static class CountingCallback implements Inventory.Callback {
+        int mCount = 0;
+
+        @Override
+        public void onLoaded(@Nonnull Inventory.Products products) {
+            mCount++;
+        }
+    }
+
     @Nonnull
     protected Billing billing;
 
     @Nonnull
-    private Checkout checkout;
+    protected Checkout checkout;
 
     @Nonnull
-    private Inventory inventory;
+    protected Inventory inventory;
 
     @Nonnull
-    private Inventory.Request mRequest;
+    protected Inventory.Request mRequest;
 
     @Before
     public void setUp() throws Exception {
@@ -86,12 +93,13 @@ public abstract class InventoryTestBase {
     @Test
     public void testShouldLoadPurchases() throws Exception {
         populatePurchases();
+        populateSkus();
 
         final TestCallback listener = new TestCallback();
         checkout.start();
         inventory.load(mRequest, listener);
 
-        waitWhileLoading(inventory);
+        Tests.waitWhileLoading(inventory);
 
         final boolean complete = shouldVerifyPurchaseCompletely();
 
@@ -112,8 +120,6 @@ public abstract class InventoryTestBase {
         verifyPurchase(actualSubs.get(1), 3, REFUNDED, complete, true);
         verifyPurchase(actualSubs.get(2), 2, CANCELLED, complete, true);
         verifyPurchase(actualSubs.get(3), 1, PURCHASED, complete, true);
-
-        assertSame(listener.products, inventory.getLastLoadedProducts());
     }
 
     protected void populatePurchases() throws Exception {
@@ -134,19 +140,58 @@ public abstract class InventoryTestBase {
         insertPurchases(SUBSCRIPTION, expectedSubs);
     }
 
+    protected void populateSkus() throws Exception {
+        final List<Sku> expectedInAppSkus = asList(
+                Sku.fromJson(SkuTest.newJson("1"), IN_APP),
+                Sku.fromJson(SkuTest.newJson("2"), IN_APP),
+                Sku.fromJson(SkuTest.newJson("3"), IN_APP),
+                Sku.fromJson(SkuTest.newJson("4"), IN_APP),
+                Sku.fromJson(SkuTest.newJson("6"), IN_APP)
+        );
+        insertSkus(IN_APP, expectedInAppSkus);
+
+        final List<Sku> expectedSubSkus = asList(
+                Sku.fromJson(SkuTest.newJson("sub1"), SUBSCRIPTION),
+                Sku.fromJson(SkuTest.newJson("sub2"), SUBSCRIPTION),
+                Sku.fromJson(SkuTest.newJson("sub3"), SUBSCRIPTION),
+                Sku.fromJson(SkuTest.newJson("sub4"), SUBSCRIPTION)
+        );
+        insertSkus(SUBSCRIPTION, expectedSubSkus);
+    }
+
+    @Test
+    public void testShouldLoadSeveralTasksAsynchronously() throws Exception {
+        populatePurchases();
+        populateSkus();
+
+        checkout.start();
+
+        final CountingCallback c = new CountingCallback();
+        inventory.load(Inventory.Request.create().loadPurchases(IN_APP), c);
+        inventory.load(Inventory.Request.create().loadPurchases(SUBSCRIPTION), c);
+        inventory.load(Inventory.Request.create().loadSkus(SUBSCRIPTION, asList("sub1", "sub2", "sub3", "sub4")), c);
+        inventory.load(Inventory.Request.create().loadSkus(IN_APP, asList("1", "2", "3", "4", "6")), c);
+        inventory.load(mRequest, c);
+
+        Tests.waitWhileLoading(inventory);
+
+        assertEquals(5, c.mCount);
+    }
+
     protected abstract boolean shouldVerifyPurchaseCompletely();
 
     protected abstract void insertPurchases(@Nonnull String product, @Nonnull List<Purchase> purchases) throws Exception;
+    protected abstract void insertSkus(@Nonnull String product, @Nonnull List<Sku> skus) throws Exception;
 
     @Test
     public void testShouldCallListenerWhenLoaded() throws Exception {
-        final Inventory.Callback l1 = mock(Inventory.Callback.class);
+        final Inventory.Callback c = mock(Inventory.Callback.class);
 
         checkout.start();
-        inventory.load(mRequest, l1);
-        waitWhileLoading(inventory);
+        inventory.load(mRequest, c);
+        Tests.waitWhileLoading(inventory);
 
-        verify(l1, times(1)).onLoaded(anyProducts());
+        verify(c, times(1)).onLoaded(anyProducts());
     }
 
     @Nonnull
@@ -161,21 +206,10 @@ public abstract class InventoryTestBase {
         inventory.load(mRequest, mock(Inventory.Callback.class));
         inventory.load(mRequest, mock(Inventory.Callback.class));
         inventory.load(mRequest, l);
-        waitWhileLoading(inventory);
+        Tests.waitWhileLoading(inventory);
         inventory.load(mRequest, mock(Inventory.Callback.class));
         inventory.load(mRequest, mock(Inventory.Callback.class));
         verify(l, times(1)).onLoaded(anyProducts());
-    }
-
-    void waitWhileLoading(@Nonnull Inventory inventory) throws InterruptedException {
-        int sleeping = 0;
-        while (!inventory.hasLastLoadedProducts()) {
-            Thread.sleep(50L);
-            sleeping += 50L;
-            if (sleeping > 1000L) {
-                fail("Too long wait!");
-            }
-        }
     }
 
     static class TestCallback implements Inventory.Callback {

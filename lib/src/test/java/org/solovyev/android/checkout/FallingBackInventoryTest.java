@@ -22,6 +22,8 @@
 
 package org.solovyev.android.checkout;
 
+import static java.util.Arrays.asList;
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
@@ -56,6 +58,23 @@ public class FallingBackInventoryTest extends InventoryTestBase {
         when(service.isBillingSupported(anyInt(), anyString(), eq(SUBSCRIPTION))).thenReturn(ResponseCodes.ERROR);
     }
 
+    @Test
+    public void testShouldLoadSkus() throws Exception {
+        populateSkus();
+
+        checkout.start();
+
+        final TestCallback c1 = new TestCallback();
+        inventory.load(Inventory.Request.create().loadSkus(SUBSCRIPTION, asList("subX", "sub2", "sub3")), c1);
+        final TestCallback c2 = new TestCallback();
+        inventory.load(Inventory.Request.create().loadSkus(IN_APP, asList("1", "2", "5")), c2);
+
+        Tests.waitWhileLoading(inventory);
+
+        assertEquals(0, c1.products.get(SUBSCRIPTION).getSkus().size());
+        assertEquals(2, c2.products.get(IN_APP).getSkus().size());
+    }
+
     @Nonnull
     @Override
     protected Billing newBilling() {
@@ -78,10 +97,15 @@ public class FallingBackInventoryTest extends InventoryTestBase {
     @Override
     protected void insertPurchases(@Nonnull String product, @Nonnull List<Purchase> purchases) throws Exception {
         if (IN_APP.equals(product)) {
-            CheckoutInventoryTest.insertPurchases(billing, product, purchases);
+            Tests.mockGetPurchases(billing, product, purchases);
         } else {
             RobotmediaInventoryTest.insertPurchases(new BillingDB(RuntimeEnvironment.application), purchases);
         }
+    }
+
+    @Override
+    protected void insertSkus(@Nonnull String product, @Nonnull List<Sku> skus) throws Exception {
+        Tests.mockGetSkuDetails(billing, product, skus);
     }
 
     @Test

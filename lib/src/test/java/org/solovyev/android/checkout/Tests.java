@@ -22,6 +22,22 @@
 
 package org.solovyev.android.checkout;
 
+import static org.junit.Assert.fail;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyInt;
+import static org.mockito.Matchers.anyList;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Matchers.isNull;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+import static org.solovyev.android.checkout.RequestTestBase.newBundle;
+import static org.solovyev.android.checkout.ResponseCodes.OK;
+
+import android.os.Bundle;
+import android.os.RemoteException;
+
 import com.android.vending.billing.IInAppBillingService;
 
 import org.mockito.invocation.InvocationOnMock;
@@ -36,12 +52,9 @@ import java.util.concurrent.Executor;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyList;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.mock;
-
 public final class Tests {
+
+    private static final long TIMEOUT = BuildConfig.DEBUG ? Long.MAX_VALUE : 1000L;
 
     private Tests() {
         throw new AssertionError();
@@ -145,5 +158,54 @@ public final class Tests {
             }
         }).when(verifier).verify(anyList(), any(RequestListener.class));
         return verifier;
+    }
+
+    static void waitWhileLoading(@Nonnull Inventory inventory) throws InterruptedException {
+        int sleeping = 0;
+        while (inventory.isLoading()) {
+            Thread.sleep(50L);
+            sleeping += 50L;
+            if (sleeping > TIMEOUT) {
+                fail("Too long wait!");
+            }
+        }
+    }
+
+    static void mockGetPurchases(@Nonnull Billing billing, @Nonnull String product,
+            @Nonnull List<Purchase> purchases) throws RemoteException {
+        final Bundle bundle = newBundle(OK);
+        final ArrayList<String> list = new ArrayList<String>();
+        for (Purchase purchase : purchases) {
+            list.add(purchase.toJson());
+        }
+        bundle.putStringArrayList(Purchases.BUNDLE_DATA_LIST, list);
+        final IInAppBillingService service =
+                ((TestServiceConnector) billing.getConnector()).service;
+        when(service.getPurchases(anyInt(), anyString(), eq(product), isNull(String.class)))
+                .thenReturn(bundle);
+    }
+
+    static void mockGetSkuDetails(@Nonnull Billing billing, @Nonnull String product,
+            @Nonnull final List<Sku> skus) throws RemoteException {
+        final IInAppBillingService service =
+                ((TestServiceConnector) billing.getConnector()).service;
+        when(service.getSkuDetails(anyInt(), anyString(), eq(product), any(Bundle.class)))
+                .thenAnswer(new Answer<Bundle>() {
+                    @Override
+                    public Bundle answer(InvocationOnMock invocation) throws Throwable {
+                        final Bundle in = (Bundle) invocation.getArguments()[3];
+                        final ArrayList<String> skuIds =
+                                in.getStringArrayList("ITEM_ID_LIST");
+                        final Bundle bundle = newBundle(OK);
+                        final ArrayList<String> list = new ArrayList<String>();
+                        for (Sku sku : skus) {
+                            if (skuIds.contains(sku.id.code)) {
+                                list.add(sku.toJson());
+                            }
+                        }
+                        bundle.putStringArrayList(Skus.BUNDLE_LIST, list);
+                        return bundle;
+                    }
+                });
     }
 }

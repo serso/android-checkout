@@ -40,12 +40,9 @@ import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 /**
- * Class which contains information about products, SKUs and purchases. This class can't be
+ * Class which loads information about products, SKUs and purchases. This class can't be
  * instantiated manually but only through {@link Checkout#loadInventory(Request, Callback)} or
  * {@link Checkout#makeInventory()} method calls.
- * Note that this class doesn't reflect a real-time billing info. It is not updated or notified if
- * an item is purchased or cancelled; its contents are static and updated only when
- * {@link #load(Request, Callback)} is called.
  * This class lifecycle is bound to the lifecycle of {@link Checkout} in which it was created. If
  * {@link Checkout} stops this class loading also stops and no
  * {@link Callback#onLoaded(Inventory.Products)} method is called.
@@ -55,14 +52,14 @@ public interface Inventory {
 
     /**
      * Loads a {@link Products} object and asynchronously delivers it to the provided
-     * {@link Callback}. The data to be loaded is defined by {@link Request} argument.
+     * {@link Callback}. The data to be loaded is defined in {@link Request} argument.
      * @param request request definition
      * @return task identifier
      */
     int load(@Nonnull Request request, @Nonnull Callback callback);
 
     /**
-     * Cancels all pending load requests, if any.
+     * Cancels all load tasks, if any.
      */
     void cancel();
 
@@ -73,14 +70,9 @@ public interface Inventory {
     void cancel(int id);
 
     /**
-     * Note that this method may return different instances of {@link Inventory.Products} with
-     * different contents
-     * @return the last loaded set of products
+     * @return true if there is at least one task that is still running, false otherwise
      */
-    @Nonnull
-    Inventory.Products getLastLoadedProducts();
-
-    boolean hasLastLoadedProducts();
+    boolean isLoading();
 
     /**
      * A callback of {@link #load(Request, Callback)} method.

@@ -42,9 +42,6 @@ public abstract class BaseInventory implements Inventory {
     protected final Checkout mCheckout;
     @GuardedBy("mLock")
     @Nonnull
-    private Products mLastProducts = Products.EMPTY;
-    @GuardedBy("mLock")
-    @Nonnull
     private final List<Task> mTasks = new ArrayList<>();
     private final AtomicInteger mTaskIdGenerator = new AtomicInteger();
 
@@ -79,23 +76,11 @@ public abstract class BaseInventory implements Inventory {
         }
     }
 
-    @Nonnull
-    public final Products getLastLoadedProducts() {
-        Check.isMainThread();
-        synchronized (mLock) {
-            if (!hasLastLoadedProducts()) {
-                Billing.warning(
-                        "Inventory is not loaded yet. Use Inventory#load(Request, Callback) instead");
-            }
-            return mLastProducts;
-        }
-    }
-
     @Override
-    public boolean hasLastLoadedProducts() {
+    public boolean isLoading() {
         Check.isMainThread();
         synchronized (mLock) {
-            return mLastProducts != Products.EMPTY;
+            return !mTasks.isEmpty();
         }
     }
 
@@ -133,7 +118,6 @@ public abstract class BaseInventory implements Inventory {
 
         protected final void onDone() {
             synchronized (mLock) {
-                mLastProducts = mProducts;
                 if (mCallback == null) {
                     return;
                 }

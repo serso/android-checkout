@@ -22,10 +22,10 @@
 
 package org.solovyev.android.checkout;
 
+import android.text.TextUtils;
+
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import android.text.TextUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.concurrent.Immutable;
@@ -63,15 +63,35 @@ public final class Sku {
         this.description = description;
     }
 
+    Sku(@Nonnull String json, @Nonnull String product) throws JSONException {
+        final JSONObject object = new JSONObject(json);
+        id = new Id(product, object.getString("productId"));
+        price = object.getString("price");
+        detailedPrice = Price.fromJson(object);
+        title = object.getString("title");
+        description = object.optString("description");
+    }
+
     @Nonnull
     static Sku fromJson(@Nonnull String json, @Nonnull String product) throws JSONException {
-        final JSONObject object = new JSONObject(json);
-        final String sku = object.getString("productId");
-        final String price = object.getString("price");
-        final Price detailedPrice = Price.fromJson(object);
-        final String title = object.getString("title");
-        final String description = object.optString("description");
-        return new Sku(product, sku, price, detailedPrice, title, description);
+        return new Sku(json, product);
+    }
+
+    @Nonnull
+    String toJson() throws JSONException {
+        return toJsonObject().toString();
+    }
+
+    @Nonnull
+    private JSONObject toJsonObject() throws JSONException {
+        final JSONObject json = new JSONObject();
+        json.put("productId", id.code);
+        json.put("price", price);
+        json.put("price_amount_micros", detailedPrice.amount);
+        json.put("price_currency_code", detailedPrice.currency);
+        json.put("title", title);
+        json.put("description", description);
+        return json;
     }
 
     public boolean isInApp() {
