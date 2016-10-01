@@ -22,10 +22,6 @@
 
 package org.solovyev.android.checkout;
 
-import static java.util.Collections.sort;
-import static java.util.Collections.unmodifiableCollection;
-import static java.util.Collections.unmodifiableList;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -39,6 +35,10 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
+import static java.util.Collections.sort;
+import static java.util.Collections.unmodifiableCollection;
+import static java.util.Collections.unmodifiableList;
+
 /**
  * Class which loads information about products, SKUs and purchases. This class can't be
  * instantiated manually but only through {@link Checkout#loadInventory(Request, Callback)} or
@@ -51,8 +51,10 @@ import javax.annotation.concurrent.Immutable;
 public interface Inventory {
 
     /**
-     * Loads a {@link Products} object and asynchronously delivers it to the provided
-     * {@link Callback}. The data to be loaded is defined in {@link Request} argument.
+     * Loads {@link Products} and asynchronously delivers it to the provided {@link Callback}. Data
+     * to be loaded is defined by {@link Request} argument. For each load request a task is created
+     * whose identifier is returned in this method. The task can be later cancelled via
+     * {@link #cancel(int)} method.
      * @param request request definition
      * @return task identifier
      */
