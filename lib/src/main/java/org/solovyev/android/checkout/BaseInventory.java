@@ -103,38 +103,27 @@ public abstract class BaseInventory implements Inventory {
 
     protected final class Task {
 
-        protected final int mId = mTaskIdGenerator.getAndIncrement();
+        private final int mId = mTaskIdGenerator.getAndIncrement();
         @Nonnull
-        protected final Request mRequest;
+        private final Request mRequest;
         @GuardedBy("mLock")
         @Nullable
         private Callback mCallback;
         @GuardedBy("mLock")
-        protected final Products mProducts = new Products();
+        private final Products mProducts = new Products();
 
         public Task(@Nonnull Request request, @Nonnull Callback callback) {
             mRequest = request.copy();
             mCallback = callback;
         }
 
-        protected final void onDone() {
-            synchronized (mLock) {
-                if (mCallback == null) {
-                    return;
-                }
-                mTasks.remove(this);
-                mCallback.onLoaded(mProducts);
-                mCallback = null;
-            }
-        }
-
-        final boolean isCancelled() {
+        public boolean isCancelled() {
             synchronized (mLock) {
                 return mCallback == null;
             }
         }
 
-        final void cancel() {
+        private void cancel() {
             synchronized (mLock) {
                 mCallback = null;
                 mTasks.remove(this);
@@ -143,6 +132,51 @@ public abstract class BaseInventory implements Inventory {
 
         public void run() {
             createWorker(this).run();
+        }
+
+        @Nonnull
+        public Request getRequest() {
+            return mRequest;
+        }
+
+        public void onDone(@Nonnull Products products) {
+            synchronized (mLock) {
+                mProducts.merge(products);
+                onDone();
+            }
+        }
+
+        public boolean onMaybeDone(@Nonnull Products products) {
+            synchronized (mLock) {
+                mProducts.merge(products);
+                if (!existsUnsupported()) {
+                    onDone();
+                    return true;
+                }
+                return false;
+            }
+        }
+
+        private void onDone() {
+            Check.isTrue(Thread.holdsLock(mLock), "Must be synchronized");
+            if (mCallback == null) {
+                return;
+            }
+            mTasks.remove(this);
+            mCallback.onLoaded(mProducts);
+            mCallback = null;
+        }
+
+
+        private boolean existsUnsupported() {
+            Check.isTrue(Thread.holdsLock(mLock), "Must be synchronized");
+            for (Product product : mProducts) {
+                if (!product.supported) {
+                    return true;
+                }
+            }
+
+            return false;
         }
     }
 

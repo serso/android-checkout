@@ -38,6 +38,8 @@ final class CheckoutInventory extends BaseInventory {
         private final Task mTask;
         @GuardedBy("mLock")
         private int mCount;
+        @GuardedBy("mLock")
+        private final Products mProducts = new Products();
 
         public Worker(@Nonnull Task task) {
             mTask = task;
@@ -63,13 +65,13 @@ final class CheckoutInventory extends BaseInventory {
             final Product product = new Product(productId, billingSupported);
             synchronized (mLock) {
                 countDown();
-                mTask.mProducts.add(product);
-                if (!mTask.isCancelled() && product.supported && mTask.mRequest.shouldLoadPurchases(productId)) {
+                mProducts.add(product);
+                if (!mTask.isCancelled() && product.supported && mTask.getRequest().shouldLoadPurchases(productId)) {
                     loadPurchases(requests, product);
                 } else {
                     countDown(1);
                 }
-                if (!mTask.isCancelled() && product.supported && mTask.mRequest.shouldLoadSkus(productId)) {
+                if (!mTask.isCancelled() && product.supported && mTask.getRequest().shouldLoadSkus(productId)) {
                     loadSkus(requests, product);
                 } else {
                     countDown(1);
@@ -87,7 +89,7 @@ final class CheckoutInventory extends BaseInventory {
             mCount -= count;
             Check.isTrue(mCount >= 0, "Can't be negative");
             if (mCount == 0) {
-                mTask.onDone();
+                mTask.onDone(mProducts);
             }
         }
 
@@ -108,7 +110,7 @@ final class CheckoutInventory extends BaseInventory {
         }
 
         private void loadSkus(@Nonnull BillingRequests requests, @Nonnull final Product product) {
-            final List<String> skuIds = mTask.mRequest.getSkus(product.id);
+            final List<String> skuIds = mTask.getRequest().getSkus(product.id);
             if (skuIds.isEmpty()) {
                 Billing.warning("There are no SKUs for \"" + product.id
                         + "\" product. No SKU information will be loaded");

@@ -54,19 +54,16 @@ public final class RobotmediaInventory extends BaseInventory {
             public void run() {
                 final Context context = mCheckout.getContext();
                 final RobotmediaDatabase database = new RobotmediaDatabase(context);
-                final Products products = database.load(mTask.mRequest);
+                final Products products = database.load(mTask.getRequest());
                 onLoaded(products);
             }
         }
 
-        private void onLoaded(@Nonnull Products products) {
-            synchronized (mLock) {
-                mTask.mProducts.merge(products);
-            }
+        private void onLoaded(@Nonnull final Products products) {
             mOnLoadExecutor.execute(new Runnable() {
                 @Override
                 public void run() {
-                    mTask.onDone();
+                    mTask.onDone(products);
                 }
             });
         }

@@ -52,29 +52,14 @@ class FallingBackInventory extends BaseInventory {
 
             @Override
             public void onLoaded(@Nonnull Products products) {
-                synchronized (mLock) {
-                    mTask.mProducts.merge(products);
-                    if (!existsUnsupported()) {
-                        mTask.onDone();
-                        return;
-                    }
-                    mFallbackCallback.load();
+                if (mTask.onMaybeDone(products)) {
+                    return;
                 }
-            }
-
-            private boolean existsUnsupported() {
-                Check.isTrue(Thread.holdsLock(mLock), "Must be synchronized");
-                for (Product product : mTask.mProducts) {
-                    if (!product.supported) {
-                        return true;
-                    }
-                }
-
-                return false;
+                mFallbackCallback.load();
             }
 
             public void load() {
-                mMainInventory.load(mTask.mRequest, this);
+                mMainInventory.load(mTask.getRequest(), this);
             }
         }
 
@@ -82,14 +67,11 @@ class FallingBackInventory extends BaseInventory {
 
             @Override
             public void onLoaded(@Nonnull Products products) {
-                synchronized (mLock) {
-                    mTask.mProducts.merge(products);
-                    mTask.onDone();
-                }
+                mTask.onDone(products);
             }
 
             public void load() {
-                mFallbackInventory.load(mTask.mRequest, this);
+                mFallbackInventory.load(mTask.getRequest(), this);
             }
         }
     }
