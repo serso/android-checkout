@@ -23,6 +23,7 @@
 package org.solovyev.android.checkout;
 
 import android.os.Handler;
+import android.os.Looper;
 
 import java.util.List;
 import java.util.concurrent.Executor;
@@ -33,39 +34,46 @@ import java.util.concurrent.atomic.AtomicInteger;
 import javax.annotation.Nonnull;
 
 /**
- * {@link org.solovyev.android.checkout.PurchaseVerifier} which verifies the purchases on the
- * background thread.
+ * Common base class of common implementation for {@link PurchaseVerifier} that performs a purchases
+ * verification on a background thread.
  */
 public abstract class BasePurchaseVerifier implements PurchaseVerifier {
 
     @Nonnull
-    private final Executor background = Executors.newFixedThreadPool(2, new ThreadFactory() {
-
-        @Nonnull
-        private final AtomicInteger counter = new AtomicInteger();
-
-        @Override
-        public Thread newThread(@Nonnull Runnable r) {
-            return new Thread(r, "PurchaseVerifierThread #" + counter.getAndIncrement());
-        }
-    });
-
+    private final Executor mBackground;
     @Nonnull
-    private final MainThread mainThread;
-
-    protected BasePurchaseVerifier(@Nonnull Handler handler) {
-        mainThread = new MainThread(handler);
-    }
+    private final MainThread mMainThread;
 
     protected BasePurchaseVerifier() {
-        mainThread = new MainThread(new Handler());
+        this(new Handler(Looper.getMainLooper()));
+    }
+
+    protected BasePurchaseVerifier(@Nonnull Handler handler) {
+        this(handler, 2, defaultThreadFactory());
+    }
+
+    protected BasePurchaseVerifier(@Nonnull Handler handler, int threadCount, @Nonnull ThreadFactory threadFactory) {
+        mMainThread = new MainThread(handler);
+        mBackground = Executors.newFixedThreadPool(threadCount, threadFactory);
+    }
+
+    @Nonnull
+    private static ThreadFactory defaultThreadFactory() {
+        return new ThreadFactory() {
+            @Nonnull
+            private final AtomicInteger mCount = new AtomicInteger();
+
+            @Override
+            public Thread newThread(@Nonnull Runnable r) {
+                return new Thread(r, "PurchaseVerifierThread #" + mCount.getAndIncrement());
+            }
+        };
     }
 
     @Override
     public final void verify(@Nonnull final List<Purchase> purchases, @Nonnull final RequestListener<List<Purchase>> listener) {
-        final boolean mainThread = MainThread.isMainThread();
-        if (mainThread) {
-            background.execute(new Runnable() {
+        if (MainThread.isMainThread()) {
+            mBackground.execute(new Runnable() {
                 @Override
                 public void run() {
                     doVerify(purchases, new MainThreadRequestListener(listener));
@@ -77,13 +85,11 @@ public abstract class BasePurchaseVerifier implements PurchaseVerifier {
     }
 
     /**
-     * Method verifies a list of <var>purchases</var> on background thread and delivers result by
-     * calling <var>listener</var>
-     * methods. Note that at the end of execution one and only one method of <var>listener</var>
-     * must be called. Not
-     * calling <var>listener</var> method might cause dangling request listeners. Listener's methods
-     * must be called on
-     * the thread on which current method was called.
+     * Implementation should verify a list of <var>purchases</var> and deliver the result to the
+     * passed <var>listener</var>. Note that at the end of the execution one and only one method of
+     * <var>listener</var> must be called. Forgetting calling methods of <var>listener</var> causes
+     * a memory leak as there is no other indication of that the work is done. Listener's methods
+     * must be called on the thread on which current method is called.
      *
      * @param purchases purchases to be verified
      * @param listener  callback listener
@@ -93,28 +99,28 @@ public abstract class BasePurchaseVerifier implements PurchaseVerifier {
     private final class MainThreadRequestListener implements RequestListener<List<Purchase>> {
 
         @Nonnull
-        private final RequestListener<List<Purchase>> listener;
+        private final RequestListener<List<Purchase>> mListener;
 
         private MainThreadRequestListener(@Nonnull RequestListener<List<Purchase>> listener) {
-            this.listener = listener;
+            mListener = listener;
         }
 
         @Override
         public void onSuccess(@Nonnull final List<Purchase> result) {
-            mainThread.execute(new Runnable() {
+            mMainThread.execute(new Runnable() {
                 @Override
                 public void run() {
-                    listener.onSuccess(result);
+                    mListener.onSuccess(result);
                 }
             });
         }
 
         @Override
         public void onError(final int response, @Nonnull final Exception e) {
-            mainThread.execute(new Runnable() {
+            mMainThread.execute(new Runnable() {
                 @Override
                 public void run() {
-                    listener.onError(response, e);
+                    mListener.onError(response, e);
                 }
             });
         }
