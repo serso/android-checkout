@@ -28,16 +28,16 @@ import android.os.Looper;
 import javax.annotation.Nonnull;
 
 /**
- * Utility class which executes runnables on the main application thread
+ * Utility class that executes runnables on the main application thread
  */
 final class MainThread implements CancellableExecutor {
 
     @Nonnull
-    private final Handler mainHandler;
+    private final Handler mHandler;
 
-    MainThread(@Nonnull Handler mainHandler) {
-        Check.isTrue(mainHandler.getLooper() == Looper.getMainLooper(), "Should be main application thread handler");
-        this.mainHandler = mainHandler;
+    MainThread(@Nonnull Handler handler) {
+        Check.isTrue(handler.getLooper() == Looper.getMainLooper(), "Should be main application thread handler");
+        mHandler = handler;
     }
 
     static boolean isMainThread() {
@@ -46,10 +46,8 @@ final class MainThread implements CancellableExecutor {
 
     /**
      * Method executes <var>runnable</var> on the main application thread. If method is called on
-     * the main application thread
-     * then <var>runnable</var> is executed synchronously. Otherwise, it is posted to be executed on
-     * the next loop of
-     * the main thread looper.
+     * the main application thread then the passed <var>runnable</var> is executed synchronously.
+     * Otherwise, it is posted to be executed on the next iteration of the main thread looper.
      *
      * @param runnable runnable to be executed on the main application thread
      */
@@ -58,12 +56,12 @@ final class MainThread implements CancellableExecutor {
         if (MainThread.isMainThread()) {
             runnable.run();
         } else {
-            mainHandler.post(runnable);
+            mHandler.post(runnable);
         }
     }
 
     @Override
     public void cancel(@Nonnull Runnable runnable) {
-        this.mainHandler.removeCallbacks(runnable);
+        mHandler.removeCallbacks(runnable);
     }
 }
