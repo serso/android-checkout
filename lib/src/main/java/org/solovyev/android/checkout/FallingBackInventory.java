@@ -30,15 +30,17 @@ import javax.annotation.Nonnull;
  */
 class FallingBackInventory extends BaseInventory {
 
-    private class MyTask extends Task {
+    private class Worker implements Runnable {
 
         @Nonnull
         private final MainCallback mMainCallback = new MainCallback();
         @Nonnull
         private final FallbackCallback mFallbackCallback = new FallbackCallback();
+        @Nonnull
+        private final Task mTask;
 
-        MyTask(Request request, Callback callback) {
-            super(request, callback);
+        public Worker(@Nonnull Task task) {
+            mTask = task;
         }
 
         @Override
@@ -51,9 +53,9 @@ class FallingBackInventory extends BaseInventory {
             @Override
             public void onLoaded(@Nonnull Products products) {
                 synchronized (mLock) {
-                    mProducts.merge(products);
+                    mTask.mProducts.merge(products);
                     if (!existsUnsupported()) {
-                        onDone();
+                        mTask.onDone();
                         return;
                     }
                     mFallbackCallback.load();
@@ -62,7 +64,7 @@ class FallingBackInventory extends BaseInventory {
 
             private boolean existsUnsupported() {
                 Check.isTrue(Thread.holdsLock(mLock), "Must be synchronized");
-                for (Product product : mProducts) {
+                for (Product product : mTask.mProducts) {
                     if (!product.supported) {
                         return true;
                     }
@@ -72,7 +74,7 @@ class FallingBackInventory extends BaseInventory {
             }
 
             public void load() {
-                mMainInventory.load(mRequest, this);
+                mMainInventory.load(mTask.mRequest, this);
             }
         }
 
@@ -81,13 +83,13 @@ class FallingBackInventory extends BaseInventory {
             @Override
             public void onLoaded(@Nonnull Products products) {
                 synchronized (mLock) {
-                    mProducts.merge(products);
-                    onDone();
+                    mTask.mProducts.merge(products);
+                    mTask.onDone();
                 }
             }
 
             public void load() {
-                mFallbackInventory.load(mRequest, this);
+                mFallbackInventory.load(mTask.mRequest, this);
             }
         }
     }
@@ -103,8 +105,9 @@ class FallingBackInventory extends BaseInventory {
         mFallbackInventory = fallbackInventory;
     }
 
+    @Nonnull
     @Override
-    protected Task createTask(@Nonnull Request request, @Nonnull Callback callback) {
-        return new MyTask(request, callback);
+    protected Runnable createWorker(@Nonnull Task task) {
+        return new Worker(task);
     }
 }

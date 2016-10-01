@@ -31,9 +31,13 @@ import javax.annotation.Nonnull;
 
 public final class RobotmediaInventory extends BaseInventory {
 
-    private class MyTask extends Task {
-        public MyTask(@Nonnull Request request, @Nonnull Callback callback) {
-            super(request, callback);
+    private class Worker implements Runnable {
+
+        @Nonnull
+        private final Task mTask;
+
+        public Worker(@Nonnull Task task) {
+            mTask = task;
         }
 
         @Override
@@ -50,19 +54,19 @@ public final class RobotmediaInventory extends BaseInventory {
             public void run() {
                 final Context context = mCheckout.getContext();
                 final RobotmediaDatabase database = new RobotmediaDatabase(context);
-                final Products products = database.load(mRequest);
+                final Products products = database.load(mTask.mRequest);
                 onLoaded(products);
             }
         }
 
-        private void onLoaded(Products products) {
+        private void onLoaded(@Nonnull Products products) {
             synchronized (mLock) {
-                mProducts.merge(products);
+                mTask.mProducts.merge(products);
             }
             mOnLoadExecutor.execute(new Runnable() {
                 @Override
                 public void run() {
-                    onDone();
+                    mTask.onDone();
                 }
             });
         }
@@ -84,9 +88,9 @@ public final class RobotmediaInventory extends BaseInventory {
         mOnLoadExecutor = onLoadExecutor;
     }
 
-
+    @Nonnull
     @Override
-    protected Task createTask(@Nonnull Request request, @Nonnull Callback callback) {
-        return new MyTask(request, callback);
+    protected Runnable createWorker(Task task) {
+        return new Worker(task);
     }
 }

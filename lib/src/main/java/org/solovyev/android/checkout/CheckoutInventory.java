@@ -32,22 +32,24 @@ import javax.annotation.concurrent.GuardedBy;
  */
 final class CheckoutInventory extends BaseInventory {
 
-    private class MyTask extends Task implements Checkout.Listener {
+    private class Worker implements Checkout.Listener, Runnable {
 
+        @Nonnull
+        private final Task mTask;
         @GuardedBy("mLock")
         private int mCount;
 
-        MyTask(Request request, Callback callback) {
-            super(request, callback);
+        public Worker(@Nonnull Task task) {
+            mTask = task;
+        }
+
+        @Override
+        public void run() {
             // for each product we wait for:
             // 1. onReady to be called
             // 2. loadPurchased to be finished
             // 3. loadSkus to be finished
             mCount = ProductTypes.ALL.size() * 3;
-        }
-
-        @Override
-        public void run() {
             mCheckout.whenReady(this);
         }
 
@@ -61,13 +63,13 @@ final class CheckoutInventory extends BaseInventory {
             final Product product = new Product(productId, billingSupported);
             synchronized (mLock) {
                 countDown();
-                mProducts.add(product);
-                if (!isCancelled() && product.supported && mRequest.shouldLoadPurchases(productId)) {
+                mTask.mProducts.add(product);
+                if (!mTask.isCancelled() && product.supported && mTask.mRequest.shouldLoadPurchases(productId)) {
                     loadPurchases(requests, product);
                 } else {
                     countDown(1);
                 }
-                if (!isCancelled() && product.supported && mRequest.shouldLoadSkus(productId)) {
+                if (!mTask.isCancelled() && product.supported && mTask.mRequest.shouldLoadSkus(productId)) {
                     loadSkus(requests, product);
                 } else {
                     countDown(1);
@@ -85,7 +87,7 @@ final class CheckoutInventory extends BaseInventory {
             mCount -= count;
             Check.isTrue(mCount >= 0, "Can't be negative");
             if (mCount == 0) {
-                onDone();
+                mTask.onDone();
             }
         }
 
@@ -106,7 +108,7 @@ final class CheckoutInventory extends BaseInventory {
         }
 
         private void loadSkus(@Nonnull BillingRequests requests, @Nonnull final Product product) {
-            final List<String> skuIds = mRequest.getSkus(product.id);
+            final List<String> skuIds = mTask.mRequest.getSkus(product.id);
             if (skuIds.isEmpty()) {
                 Billing.warning("There are no SKUs for \"" + product.id
                         + "\" product. No SKU information will be loaded");
@@ -134,8 +136,9 @@ final class CheckoutInventory extends BaseInventory {
         super(checkout);
     }
 
+    @Nonnull
     @Override
-    protected Task createTask(@Nonnull Request request, @Nonnull Callback callback) {
-        return new MyTask(request, callback);
+    protected Runnable createWorker(Task task) {
+        return new Worker(task);
     }
 }

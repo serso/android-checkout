@@ -87,7 +87,7 @@ public abstract class BaseInventory implements Inventory {
     @Override
     public int load(@Nonnull Request request, @Nonnull Callback callback) {
         synchronized (mLock) {
-            final Task task = createTask(request, callback);
+            final Task task = new Task(request, callback);
             mTasks.add(task);
             task.run();
             return task.mId;
@@ -98,9 +98,10 @@ public abstract class BaseInventory implements Inventory {
         return new SynchronizedRequestListener<>(l);
     }
 
-    protected abstract Task createTask(@Nonnull Request request, @Nonnull Callback callback);
+    @Nonnull
+    protected abstract Runnable createWorker(@Nonnull Task task);
 
-    protected abstract class Task implements Runnable {
+    protected final class Task {
 
         protected final int mId = mTaskIdGenerator.getAndIncrement();
         @Nonnull
@@ -138,6 +139,10 @@ public abstract class BaseInventory implements Inventory {
                 mCallback = null;
                 mTasks.remove(this);
             }
+        }
+
+        public void run() {
+            createWorker(this).run();
         }
     }
 
