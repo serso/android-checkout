@@ -49,71 +49,76 @@ import static java.lang.System.currentTimeMillis;
 import static org.solovyev.android.checkout.ResponseCodes.ITEM_ALREADY_OWNED;
 import static org.solovyev.android.checkout.ResponseCodes.ITEM_NOT_OWNED;
 
+/**
+ * A core class of the Checkout's implementation of Android's Billing API.
+ * This class is responsible for:
+ * <ol>
+ *     <li>Connecting and disconnecting to the billing service</li>
+ *     <li>Performing billing requests</li>
+ *     <li>Caching the requests results</li>
+ *     <li>Creating {@link Checkout} objects</li>
+ *     <li>Logging</li>
+ * </ol>
+ * Though, this class can be used on its own to obtain the billing information from Android it's
+ * recommended to use higher abstractions, such as {@link Checkout} and {@link Inventory}, for such
+ * purposes.
+ */
 public final class Billing {
 
     static final int V3 = 3;
     static final int V5 = 5;
+
     static final long SECOND = 1000L;
     static final long MINUTE = SECOND * 60L;
     static final long HOUR = MINUTE * 60L;
     static final long DAY = HOUR * 24L;
+
     @Nonnull
     private static final String TAG = "Checkout";
     @Nonnull
-    private static final EmptyListener EMPTY_LISTENER = new EmptyListener();
+    private static final EmptyListener sEmptyListener = new EmptyListener();
     @Nonnull
-    private static Logger LOGGER = new DefaultLogger();
+    private static Logger sLogger = new DefaultLogger();
 
     @Nonnull
-    private final Context context;
+    private final Context mContext;
     @Nonnull
-    private final Object lock = new Object();
+    private final Object mLock = new Object();
     @Nonnull
-    private final Configuration configuration;
+    private final StaticConfiguration mConfiguration;
     @Nonnull
-    private final ConcurrentCache cache;
+    private final ConcurrentCache mCache;
     @Nonnull
-    private final PendingRequests pendingRequests = new PendingRequests();
+    private final PendingRequests mPendingRequests = new PendingRequests();
     @Nonnull
-    private final BillingRequests requests = newRequestsBuilder().withTag(null).onBackgroundThread().create();
-    @GuardedBy("lock")
+    private final BillingRequests mRequests = newRequestsBuilder().withTag(null).onBackgroundThread().create();
+    @GuardedBy("mLock")
     @Nullable
-    private IInAppBillingService service;
-    @GuardedBy("lock")
+    private IInAppBillingService mService;
+    @GuardedBy("mLock")
     @Nonnull
-    private volatile State state = State.INITIAL;
+    private State mState = State.INITIAL;
     @Nonnull
-    private CancellableExecutor mainThread;
+    private CancellableExecutor mMainThread;
     @Nonnull
-    private Executor background = Executors.newSingleThreadExecutor(new ThreadFactory() {
+    private Executor mBackground = Executors.newSingleThreadExecutor(new ThreadFactory() {
         @Override
         public Thread newThread(@Nonnull Runnable r) {
             return new Thread(r, "RequestThread");
         }
     });
     @Nonnull
-    private ServiceConnector connector = new DefaultServiceConnector();
+    private ServiceConnector mConnector = new DefaultServiceConnector();
+    @GuardedBy("mLock")
+    private int mCheckoutCount;
 
-    @Nonnull
-    private PurchaseVerifier purchaseVerifier;
-
-    @GuardedBy("lock")
-    private volatile int checkouts;
-
-    /**
-     * Same as {@link #Billing(android.content.Context, android.os.Handler, Configuration)} with new
-     * handler
-     */
     public Billing(@Nonnull Context context, @Nonnull Configuration configuration) {
         this(context, new Handler(), configuration);
         Check.isMainThread();
     }
 
     /**
-     * Creates an instance. After creation, it will be ready to use. This constructor does not
-     * block and is safe to call from a UI thread.
-     *
-     * @param context       application or activity mContext. Needed to bind to the in-app billing
+     * @param context       application or activity context. Needed to bind to the in-app billing
      *                      service.
      * @param configuration billing configuration
      */
@@ -121,24 +126,22 @@ public final class Billing {
         if (context instanceof Application) {
             // mContext.getApplicationContext() might return null for applications as we allow create Billing before
             // Application#onCreate is called
-            this.context = context;
+            mContext = context;
         } else {
-            this.context = context.getApplicationContext();
+            mContext = context.getApplicationContext();
         }
-        this.mainThread = new MainThread(handler);
-        this.configuration = new StaticConfiguration(configuration);
-        Check.isNotEmpty(this.configuration.getPublicKey());
+        mMainThread = new MainThread(handler);
+        mConfiguration = new StaticConfiguration(configuration);
+        Check.isNotEmpty(mConfiguration.getPublicKey());
         final Cache cache = configuration.getCache();
-        this.cache = new ConcurrentCache(cache == null ? null : new SafeCache(cache));
-        this.purchaseVerifier = configuration.getPurchaseVerifier();
+        mCache = new ConcurrentCache(cache == null ? null : new SafeCache(cache));
     }
 
     /**
      * Sometimes Google Play is not that fast in updating information on device. Let's wait it a
-     * little bit as if we
-     * don't wait we might cache expired information (though, it will be updated soon as
-     * RequestType#GET_PURCHASES
-     * cache entry expires quite often)
+     * little bit as if we don't wait we might cache expired information (though, it will be
+     * updated
+     * soon as RequestType#GET_PURCHASES cache entry expires quite often)
      */
     static void waitGooglePlay() {
         try {
@@ -151,11 +154,11 @@ public final class Billing {
     @SuppressWarnings("unchecked")
     @Nonnull
     private static <R> RequestListener<R> emptyListener() {
-        return EMPTY_LISTENER;
+        return sEmptyListener;
     }
 
     static void error(@Nonnull String message) {
-        LOGGER.e(TAG, message);
+        sLogger.e(TAG, message);
     }
 
     static void error(@Nonnull Exception e) {
@@ -169,30 +172,30 @@ public final class Billing {
                 case ResponseCodes.OK:
                 case ResponseCodes.USER_CANCELED:
                 case ResponseCodes.ACCOUNT_ERROR:
-                    LOGGER.e(TAG, message, e);
+                    sLogger.e(TAG, message, e);
                     break;
                 default:
-                    LOGGER.e(TAG, message, e);
+                    sLogger.e(TAG, message, e);
             }
         } else {
-            LOGGER.e(TAG, message, e);
+            sLogger.e(TAG, message, e);
         }
     }
 
     static void debug(@Nonnull String subTag, @Nonnull String message) {
-        LOGGER.d(TAG + "/" + subTag, message);
+        sLogger.d(TAG + "/" + subTag, message);
     }
 
     static void debug(@Nonnull String message) {
-        LOGGER.d(TAG, message);
+        sLogger.d(TAG, message);
     }
 
     static void warning(@Nonnull String message) {
-        LOGGER.w(TAG, message);
+        sLogger.w(TAG, message);
     }
 
     public static void setLogger(@Nullable Logger logger) {
-        Billing.LOGGER = logger == null ? new EmptyLogger() : logger;
+        Billing.sLogger = logger == null ? new EmptyLogger() : logger;
     }
 
     /**
@@ -224,28 +227,28 @@ public final class Billing {
 
     @Nonnull
     public Context getContext() {
-        return context;
+        return mContext;
     }
 
     @Nonnull
     Configuration getConfiguration() {
-        return configuration;
+        return mConfiguration;
     }
 
     @Nonnull
     ServiceConnector getConnector() {
-        return connector;
+        return mConnector;
     }
 
     void setConnector(@Nonnull ServiceConnector connector) {
-        this.connector = connector;
+        mConnector = connector;
     }
 
     void setService(@Nullable IInAppBillingService service, boolean connecting) {
-        synchronized (lock) {
+        synchronized (mLock) {
             final State newState;
             if (connecting) {
-                if (state != State.CONNECTING) {
+                if (mState != State.CONNECTING) {
                     return;
                 }
                 if (service == null) {
@@ -254,58 +257,59 @@ public final class Billing {
                     newState = State.CONNECTED;
                 }
             } else {
-                if (state == State.INITIAL) {
+                if (mState == State.INITIAL) {
                     // preserve initial state
                     return;
                 }
                 // service might be disconnected abruptly
                 newState = State.DISCONNECTED;
             }
-            this.service = service;
+            mService = service;
             setState(newState);
         }
     }
 
     void setBackground(@Nonnull Executor background) {
-        this.background = background;
+        mBackground = background;
     }
 
     void setMainThread(@Nonnull CancellableExecutor mainThread) {
-        this.mainThread = mainThread;
+        mMainThread = mainThread;
     }
 
     void setPurchaseVerifier(@Nonnull PurchaseVerifier purchaseVerifier) {
-        this.purchaseVerifier = purchaseVerifier;
+        mConfiguration.setPurchaseVerifier(purchaseVerifier);
     }
 
     private void executePendingRequests() {
-        background.execute(pendingRequests);
+        mBackground.execute(mPendingRequests);
     }
 
     @Nonnull
     State getState() {
-        synchronized (lock) {
-            return state;
+        synchronized (mLock) {
+            return mState;
         }
     }
 
     void setState(@Nonnull State newState) {
-        synchronized (lock) {
-            if (state != newState) {
-                state = newState;
-                switch (state) {
-                    case CONNECTED:
-                        executePendingRequests();
-                        break;
-                    case FAILED:
-                        mainThread.execute(new Runnable() {
-                            @Override
-                            public void run() {
-                                pendingRequests.onConnectionFailed();
-                            }
-                        });
-                        break;
-                }
+        synchronized (mLock) {
+            if (mState == newState) {
+                return;
+            }
+            mState = newState;
+            switch (mState) {
+                case CONNECTED:
+                    executePendingRequests();
+                    break;
+                case FAILED:
+                    mMainThread.execute(new Runnable() {
+                        @Override
+                        public void run() {
+                            mPendingRequests.onConnectionFailed();
+                        }
+                    });
+                    break;
             }
         }
     }
@@ -317,19 +321,19 @@ public final class Billing {
      * happen.
      */
     public void connect() {
-        synchronized (lock) {
-            if (state == State.CONNECTED) {
+        synchronized (mLock) {
+            if (mState == State.CONNECTED) {
                 executePendingRequests();
                 return;
             }
-            if (state == State.CONNECTING) {
+            if (mState == State.CONNECTING) {
                 return;
             }
-            if (configuration.isAutoConnect() && checkouts <= 0) {
+            if (mConfiguration.isAutoConnect() && mCheckoutCount <= 0) {
                 warning("Auto connection feature is turned on. There is no need in calling Billing.connect() manually. See Billing.Configuration.isAutoConnect");
             }
             setState(State.CONNECTING);
-            mainThread.execute(new Runnable() {
+            mMainThread.execute(new Runnable() {
                 @Override
                 public void run() {
                     connectOnMainThread();
@@ -340,38 +344,38 @@ public final class Billing {
 
     private void connectOnMainThread() {
         Check.isMainThread();
-        final boolean connecting = connector.connect();
+        final boolean connecting = mConnector.connect();
         if (!connecting) {
             setState(State.FAILED);
         }
     }
 
     /**
-     * Disconnects from Billing service cancelling all pending requests. Any subsequent
-     * request will automatically reconnect Billing service, thus, don't run any requests after
-     * disconnection (otherwise Billing service will be connected again).
-     * It's allowed to call this method several times, if service is already disconnected nothing
-     * will happen.
+     * Disconnects from the Billing service cancelling all pending requests if any. Any subsequent
+     * request will automatically reconnect the Billing service. Thus, no more requests should be
+     * scheduled after this method has been called (otherwise the service will be connected again).
+     * It's allowed to call this method several times, if the service is already disconnected
+     * nothing happens.
      */
     public void disconnect() {
-        synchronized (lock) {
-            if (state == State.DISCONNECTED || state == State.DISCONNECTING || state == State.INITIAL) {
+        synchronized (mLock) {
+            if (mState == State.DISCONNECTED || mState == State.DISCONNECTING || mState == State.INITIAL) {
                 return;
             }
             setState(State.DISCONNECTING);
-            mainThread.execute(new Runnable() {
+            mMainThread.execute(new Runnable() {
                 @Override
                 public void run() {
                     disconnectOnMainThread();
                 }
             });
-            pendingRequests.cancelAll();
+            mPendingRequests.cancelAll();
         }
     }
 
     private void disconnectOnMainThread() {
         Check.isMainThread();
-        connector.disconnect();
+        mConnector.disconnect();
     }
 
     private int runWhenConnected(@Nonnull Request request, @Nullable Object tag) {
@@ -380,8 +384,8 @@ public final class Billing {
 
     <R> int runWhenConnected(@Nonnull Request<R> request, @Nullable RequestListener<R> listener, @Nullable Object tag) {
         if (listener != null) {
-            if (cache.hasCache()) {
-                listener = new CachingRequestListener<R>(request, listener);
+            if (mCache.hasCache()) {
+                listener = new CachingRequestListener<>(request, listener);
             }
             request.setListener(listener);
         }
@@ -389,26 +393,26 @@ public final class Billing {
             request.setTag(tag);
         }
 
-        pendingRequests.add(onConnectedService(request));
+        mPendingRequests.add(onConnectedService(request));
         connect();
 
         return request.getId();
     }
 
     /**
-     * Cancels request with <var>requestId</var>
+     * Cancels a pending request with the given <var>requestId</var>.
      *
      * @param requestId id of request
      */
     public void cancel(int requestId) {
-        pendingRequests.cancel(requestId);
+        mPendingRequests.cancel(requestId);
     }
 
     /**
-     * Cancels all billing requests
+     * Cancels all pending requests.
      */
     public void cancelAll() {
-        pendingRequests.cancelAll();
+        mPendingRequests.cancelAll();
     }
 
     @Nonnull
@@ -417,7 +421,9 @@ public final class Billing {
     }
 
     /**
-     * @return new requests builder
+     * A factory method of {@link RequestsBuilder}.
+     *
+     * @return new instance of {@link RequestsBuilder}
      */
     @Nonnull
     public RequestsBuilder newRequestsBuilder() {
@@ -425,9 +431,10 @@ public final class Billing {
     }
 
     /**
-     * Requests executed on the returned object will be marked with <var>activity</var> tag and will
-     * be delivered on the
-     * main application thread
+     * A factory method of {@link BillingRequests}. The constructed object is tagged with the given
+     * <var>activity</var>. All methods of {@link RequestListener} used in this {@link
+     * BillingRequests}
+     * are called on the main application thread.
      *
      * @param activity activity
      * @return requests for given <var>activity</var>
@@ -438,9 +445,9 @@ public final class Billing {
     }
 
     /**
-     * Requests executed on the returned object will be marked with <var>service</var> tag and will
-     * be delivered on the
-     * main application thread
+     * A factory method of {@link BillingRequests}. The constructed object is tagged with the given
+     * <var>service</var> context. All methods of {@link RequestListener} used in this
+     * {@link BillingRequests} are called on the main application thread.
      *
      * @param service service
      * @return requests for given <var>mContext</var>
@@ -451,15 +458,12 @@ public final class Billing {
     }
 
     /**
-     * Requests executed on the returned object will be marked with no tag and will be delivered on
-     * the
-     * main application thread
-     *
-     * @return default application requests
+     * @return default requests object associated with this {@link Billing} class. All methods of
+     * {@link RequestListener} used in it are called on the main application thread.
      */
     @Nonnull
     public BillingRequests getRequests() {
-        return requests;
+        return mRequests;
     }
 
     @Nonnull
@@ -476,42 +480,42 @@ public final class Billing {
 
     @Nonnull
     PurchaseFlow createPurchaseFlow(@Nonnull Activity activity, int requestCode, @Nonnull RequestListener<Purchase> listener) {
-        if (cache.hasCache()) {
+        if (mCache.hasCache()) {
             listener = new RequestListenerWrapper<Purchase>(listener) {
                 @Override
                 public void onSuccess(@Nonnull Purchase result) {
-                    cache.removeAll(RequestType.GET_PURCHASES.getCacheKeyType());
+                    mCache.removeAll(RequestType.GET_PURCHASES.getCacheKeyType());
                     super.onSuccess(result);
                 }
             };
         }
-        return new PurchaseFlow(activity, requestCode, listener, purchaseVerifier);
+        return new PurchaseFlow(activity, requestCode, listener, mConfiguration.getPurchaseVerifier());
     }
 
     @Nonnull
-    <R> RequestListener<R> onMainThread(@Nonnull final RequestListener<R> listener) {
-        return new MainThreadRequestListener<R>(mainThread, listener);
+    private <R> RequestListener<R> onMainThread(@Nonnull final RequestListener<R> listener) {
+        return new MainThreadRequestListener<>(mMainThread, listener);
     }
 
     public void onCheckoutStarted() {
         Check.isMainThread();
-        synchronized (lock) {
-            checkouts++;
-            if (checkouts > 0 && configuration.isAutoConnect()) {
+        synchronized (mLock) {
+            mCheckoutCount++;
+            if (mCheckoutCount > 0 && mConfiguration.isAutoConnect()) {
                 connect();
             }
         }
     }
 
-    public void onCheckoutStopped() {
+    void onCheckoutStopped() {
         Check.isMainThread();
-        synchronized (lock) {
-            checkouts--;
-            if (checkouts < 0) {
-                checkouts = 0;
+        synchronized (mLock) {
+            mCheckoutCount--;
+            if (mCheckoutCount < 0) {
+                mCheckoutCount = 0;
                 warning("Billing#onCheckoutStopped is called more than Billing#onCheckoutStarted");
             }
-            if (checkouts == 0 && configuration.isAutoConnect()) {
+            if (mCheckoutCount == 0 && mConfiguration.isAutoConnect()) {
                 disconnect();
             }
         }
@@ -547,23 +551,36 @@ public final class Billing {
         FAILED,
     }
 
-    static interface ServiceConnector {
+    interface ServiceConnector {
         boolean connect();
 
         void disconnect();
     }
 
-    public static interface Configuration {
+    /**
+     * An interface that represents {@link Billing}'s configuration. Each {@link Billing} object
+     * gets an instance of this class when it is constructed. Once {@link Billing} is created the
+     * configuration can't be changed.
+     * A {@link DefaultConfiguration} can be used as a base class for common configurations.
+     */
+    public interface Configuration {
         /**
-         * @return application's public key, encoded in base64.
          * This is used for verification of purchase signatures. You can find app's base64-encoded
          * public key in application's page on Google Play Developer Console. Note that this
-         * is NOT "developer public key".
+         * is *not* "developer public key".
+         *
+         * @return application's public key, encoded in base64.
          */
         @Nonnull
         String getPublicKey();
 
         /**
+         * Though, Android's Billing API claims to support client caching Checkout library uses its
+         * own cache. The main reason is to avoid too frequent inter-process communication (IPC)
+         * between the app and the billing service. This feature can be disabled if a null
+         * reference
+         * is returned by this method.
+         *
          * @return cache instance to be used for caching, null for no caching
          * @see Billing#newCache()
          */
@@ -571,30 +588,41 @@ public final class Billing {
         Cache getCache();
 
         /**
-         * @return {@link PurchaseVerifier} to be used to validate the purchases
-         * @see org.solovyev.android.checkout.PurchaseVerifier
+         * A hook to perform a custom signature verification via {@link PurchaseVerifier}
+         * interface.
+         * One and only one instance of {@link PurchaseVerifier} is used in {@link Billing}: this
+         * method is called from the {@link Billing}'s constructor and the returned value is cached
+         * and later reused.
+         *
+         * @return {@link PurchaseVerifier} to be used to validate purchases
+         * @see PurchaseVerifier
          */
         @Nonnull
         PurchaseVerifier getPurchaseVerifier();
 
         /**
+         * A fallback inventory is used to recover purchases that were done in the earlier Billing
+         * API versions and that can't be restored automatically in Billing API v.3
+         *
          * @param checkout       checkout
-         * @param onLoadExecutor executor to be used to call {@link Inventory.Callback}
-         *                       methods
+         * @param onLoadExecutor executor to be used to call {@link Inventory.Callback} methods
          * @return inventory to be used if Billing v.3 is not supported
          */
         @Nullable
         Inventory getFallbackInventory(@Nonnull Checkout checkout, @Nonnull Executor onLoadExecutor);
 
         /**
-         * Return true if you want Billing to connect to/disconnect from Billing API Service
-         * automatically. If this method returns true then there is not need in calling {@link
-         * Billing#connect()}
-         * or {@link Billing#disconnect()} manually.
+         * Internally, Checkout library connects to the Billing service and uses it to perform
+         * the API requests. As often only some application activities require Billing information
+         * there is no need in keeping the connection all the time. Starting and stopping
+         * {@link Billing} manually in the activities that need it is one way to solve the problem.
+         * Another way is to allow {@link Billing} to manage the connection itself. If
+         * <code>true</code> is returned from this method {@link Billing} will count all the
+         * {@link Checkout} objects created in it and will close the connection as soon as the last
+         * {@link Checkout} is destroyed.
          *
-         * @return true if Billing should connect to/disconnect from Billing API service
+         * @return true if {@link Billing} should connect to/disconnect from Billing API service
          * automatically
-         * according to the number of started Checkouts
          */
         boolean isAutoConnect();
     }
@@ -641,58 +669,64 @@ public final class Billing {
     }
 
     /**
-     * Gets public key only once, all other methods are called from original configuration
+     * {@link Configuration} that caches and re-uses some fields of the original
+     * {@link Configuration} passed to its constructor.
      */
     private static final class StaticConfiguration implements Configuration {
         @Nonnull
-        private final Configuration original;
-
+        private final Configuration mOriginal;
         @Nonnull
-        private final String publicKey;
+        private final String mPublicKey;
+        @Nonnull
+        private PurchaseVerifier mPurchaseVerifier;
 
         private StaticConfiguration(@Nonnull Configuration original) {
-            this.original = original;
-            this.publicKey = original.getPublicKey();
+            mOriginal = original;
+            mPublicKey = original.getPublicKey();
+            mPurchaseVerifier = original.getPurchaseVerifier();
         }
 
         @Nonnull
         @Override
         public String getPublicKey() {
-            return publicKey;
+            return mPublicKey;
         }
 
         @Nullable
         @Override
         public Cache getCache() {
-            return original.getCache();
+            return mOriginal.getCache();
         }
 
         @Nonnull
         @Override
         public PurchaseVerifier getPurchaseVerifier() {
-            return original.getPurchaseVerifier();
+            return mPurchaseVerifier;
+        }
+
+        void setPurchaseVerifier(@Nonnull PurchaseVerifier purchaseVerifier) {
+            mPurchaseVerifier = purchaseVerifier;
         }
 
         @Nullable
         @Override
         public Inventory getFallbackInventory(@Nonnull Checkout checkout, @Nonnull Executor onLoadExecutor) {
-            return original.getFallbackInventory(checkout, onLoadExecutor);
+            return mOriginal.getFallbackInventory(checkout, onLoadExecutor);
         }
 
         @Override
         public boolean isAutoConnect() {
-            return original.isAutoConnect();
+            return mOriginal.isAutoConnect();
         }
     }
 
     private final class OnConnectedServiceRunnable implements RequestRunnable {
-
         @GuardedBy("this")
         @Nullable
-        private Request request;
+        private Request mRequest;
 
         public OnConnectedServiceRunnable(@Nonnull Request request) {
-            this.request = request;
+            mRequest = request;
         }
 
         @Override
@@ -708,20 +742,16 @@ public final class Billing {
             // request is alive, let's check the service state
             final State localState;
             final IInAppBillingService localService;
-            synchronized (lock) {
-                localState = state;
-                localService = service;
+            synchronized (mLock) {
+                localState = mState;
+                localService = mService;
             }
             if (localState == State.CONNECTED) {
                 Check.isNotNull(localService);
                 // service is connected, let's start request
                 try {
-                    localRequest.start(localService, context.getPackageName());
-                } catch (RemoteException e) {
-                    localRequest.onError(e);
-                } catch (RequestException e) {
-                    localRequest.onError(e);
-                } catch (RuntimeException e) {
+                    localRequest.start(localService, mContext.getPackageName());
+                } catch (RemoteException | RuntimeException | RequestException e) {
                     localRequest.onError(e);
                 }
             } else {
@@ -740,42 +770,43 @@ public final class Billing {
         }
 
         private boolean checkCache(@Nonnull Request request) {
-            if (cache.hasCache()) {
-                final String key = request.getCacheKey();
-                if (key != null) {
-                    final Cache.Entry entry = cache.get(request.getType().getCacheKey(key));
-                    if (entry != null) {
-                        //noinspection unchecked
-                        request.onSuccess(entry.data);
-                        return true;
-                    }
-                }
+            if (!mCache.hasCache()) {
+                return false;
             }
-            return false;
+            final String key = request.getCacheKey();
+            if (key == null) {
+                return false;
+            }
+            final Cache.Entry entry = mCache.get(request.getType().getCacheKey(key));
+            if (entry == null) {
+                return false;
+            }
+            request.onSuccess(entry.data);
+            return true;
         }
 
         @Override
         @Nullable
         public Request getRequest() {
             synchronized (this) {
-                return request;
+                return mRequest;
             }
         }
 
         public void cancel() {
             synchronized (this) {
-                if (request != null) {
-                    Billing.debug("Cancelling request: " + request);
-                    request.cancel();
+                if (mRequest != null) {
+                    Billing.debug("Cancelling request: " + mRequest);
+                    mRequest.cancel();
                 }
-                request = null;
+                mRequest = null;
             }
         }
 
         @Override
         public int getId() {
             synchronized (this) {
-                return request != null ? request.getId() : -1;
+                return mRequest != null ? mRequest.getId() : -1;
             }
         }
 
@@ -783,67 +814,82 @@ public final class Billing {
         @Override
         public Object getTag() {
             synchronized (this) {
-                return request != null ? request.getTag() : null;
+                return mRequest != null ? mRequest.getTag() : null;
             }
         }
 
         @Override
         public String toString() {
-            return String.valueOf(request);
+            return String.valueOf(mRequest);
         }
     }
 
     /**
-     * {@link org.solovyev.android.checkout.BillingRequests} builder. Allows to specify request tags
-     * and
-     * result delivery methods
+     * A {@link BillingRequests} builder. Allows to specify request tags and result delivery
+     * methods
      */
     public final class RequestsBuilder {
         @Nullable
-        private Object tag;
+        private Object mTag;
         @Nullable
-        private Boolean onMainThread;
+        private Boolean mOnMainThread;
 
         private RequestsBuilder() {
         }
 
+        /**
+         * @param tag tab to be used for all requests initiated by the constructed {@link
+         *            BillingRequests}
+         * @return this builder
+         */
         @Nonnull
         public RequestsBuilder withTag(@Nullable Object tag) {
-            Check.isNull(this.tag);
-            this.tag = tag;
+            Check.isNull(mTag);
+            mTag = tag;
             return this;
         }
 
+        /**
+         * Makes {@link RequestListener} methods to be called on a background thread.
+         *
+         * @return this builder
+         */
         @Nonnull
         public RequestsBuilder onBackgroundThread() {
-            Check.isNull(onMainThread);
-            onMainThread = false;
+            Check.isNull(mOnMainThread);
+            mOnMainThread = false;
             return this;
         }
 
+        /**
+         * Makes {@link RequestListener} methods to be called on the main application thread.
+         * Default choice if neither this nor {@link #onBackgroundThread()} was called.
+         *
+         * @return this builder
+         */
         @Nonnull
         public RequestsBuilder onMainThread() {
-            Check.isNull(onMainThread);
-            onMainThread = true;
+            Check.isNull(mOnMainThread);
+            mOnMainThread = true;
             return this;
         }
 
         @Nonnull
         public BillingRequests create() {
-            return new Requests(tag, onMainThread == null ? true : onMainThread);
+            return new Requests(mTag, mOnMainThread == null ? true : mOnMainThread);
         }
     }
 
     final class Requests implements BillingRequests {
 
         @Nullable
-        private final Object tag;
+        private final Object mTag;
 
-        private final boolean onMainThread;
+        private final boolean mOnMainThread;
 
         private Requests(@Nullable Object tag, boolean onMainThread) {
-            this.tag = tag;
-            this.onMainThread = onMainThread;
+            mTag = tag;
+            mOnMainThread = onMainThread;
         }
 
         @Override
@@ -860,7 +906,7 @@ public final class Billing {
         public int isBillingSupported(@Nonnull String product, int apiVersion,
                                       @Nonnull RequestListener<Object> listener) {
             Check.isNotEmpty(product);
-            return runWhenConnected(new BillingSupportedRequest(product, apiVersion), wrapListener(listener), tag);
+            return runWhenConnected(new BillingSupportedRequest(product, apiVersion), wrapListener(listener), mTag);
         }
 
         @Override
@@ -870,50 +916,50 @@ public final class Billing {
 
         @Nonnull
         private <R> RequestListener<R> wrapListener(@Nonnull RequestListener<R> listener) {
-            return onMainThread ? onMainThread(listener) : listener;
+            return mOnMainThread ? onMainThread(listener) : listener;
         }
 
         @Nonnull
         Executor getDeliveryExecutor() {
-            return onMainThread ? mainThread : SameThreadExecutor.INSTANCE;
+            return mOnMainThread ? mMainThread : SameThreadExecutor.INSTANCE;
         }
 
         @Override
         public int getPurchases(@Nonnull final String product, @Nullable final String continuationToken, @Nonnull RequestListener<Purchases> listener) {
             Check.isNotEmpty(product);
-            return runWhenConnected(new GetPurchasesRequest(product, continuationToken, purchaseVerifier), wrapListener(listener), tag);
+            return runWhenConnected(new GetPurchasesRequest(product, continuationToken, mConfiguration.getPurchaseVerifier()), wrapListener(listener), mTag);
         }
 
         @Override
         public int getAllPurchases(@Nonnull String product, @Nonnull RequestListener<Purchases> listener) {
             Check.isNotEmpty(product);
             final GetAllPurchasesListener getAllPurchasesListener = new GetAllPurchasesListener(listener);
-            final GetPurchasesRequest request = new GetPurchasesRequest(product, null, purchaseVerifier);
-            getAllPurchasesListener.request = request;
-            return runWhenConnected(request, wrapListener(getAllPurchasesListener), tag);
+            final GetPurchasesRequest request = new GetPurchasesRequest(product, null, mConfiguration.getPurchaseVerifier());
+            getAllPurchasesListener.mRequest = request;
+            return runWhenConnected(request, wrapListener(getAllPurchasesListener), mTag);
         }
 
         @Override
         public int isPurchased(@Nonnull final String product, @Nonnull final String sku, @Nonnull final RequestListener<Boolean> listener) {
             Check.isNotEmpty(sku);
             final IsPurchasedListener isPurchasedListener = new IsPurchasedListener(sku, listener);
-            final GetPurchasesRequest request = new GetPurchasesRequest(product, null, purchaseVerifier);
-            isPurchasedListener.request = request;
-            return runWhenConnected(request, wrapListener(isPurchasedListener), tag);
+            final GetPurchasesRequest request = new GetPurchasesRequest(product, null, mConfiguration.getPurchaseVerifier());
+            isPurchasedListener.mRequest = request;
+            return runWhenConnected(request, wrapListener(isPurchasedListener), mTag);
         }
 
         @Override
         public int getSkus(@Nonnull String product, @Nonnull List<String> skus, @Nonnull RequestListener<Skus> listener) {
             Check.isNotEmpty(product);
             Check.isNotEmpty(skus);
-            return runWhenConnected(new GetSkuDetailsRequest(product, skus), wrapListener(listener), tag);
+            return runWhenConnected(new GetSkuDetailsRequest(product, skus), wrapListener(listener), mTag);
         }
 
         @Override
         public int purchase(@Nonnull String product, @Nonnull String sku, @Nullable String payload, @Nonnull PurchaseFlow purchaseFlow) {
             Check.isNotEmpty(product);
             Check.isNotEmpty(sku);
-            return runWhenConnected(new PurchaseRequest(product, sku, payload), wrapListener(purchaseFlow), tag);
+            return runWhenConnected(new PurchaseRequest(product, sku, payload), wrapListener(purchaseFlow), mTag);
         }
 
         @Override
@@ -924,7 +970,7 @@ public final class Billing {
             Check.isNotEmpty(newSku);
             return runWhenConnected(
                     new ChangePurchaseRequest(ProductTypes.SUBSCRIPTION, oldSkus, newSku, payload),
-                    wrapListener(purchaseFlow), tag);
+                    wrapListener(purchaseFlow), mTag);
         }
 
         @Override
@@ -952,97 +998,94 @@ public final class Billing {
         @Override
         public int consume(@Nonnull String token, @Nonnull RequestListener<Object> listener) {
             Check.isNotEmpty(token);
-            return runWhenConnected(new ConsumePurchaseRequest(token), wrapListener(listener), tag);
+            return runWhenConnected(new ConsumePurchaseRequest(token), wrapListener(listener), mTag);
         }
 
         @Override
         public void cancelAll() {
-            pendingRequests.cancelAll(tag);
+            mPendingRequests.cancelAll(mTag);
         }
 
         /**
          * This class waits for the result from {@link GetPurchasesRequest} and checks if purchases
-         * contains specified
-         * <var>sku</var>. If there is a <var>continuationToken</var> and item can't be found in
-         * this bulk of purchases
-         * another (recursive) request is executed (to load other purchases) and the search is done
-         * again. New (additional)
-         * request has the same ID and listener as original request, thus, can be cancelled with
+         * contains specified <var>sku</var>. If there is a <var>continuationToken</var> and item
+         * can't be found in this bulk of purchases another (recursive) request is executed (to
+         * load
+         * other purchases) and the search is done again. New (additional) request has the same ID
+         * and the same listener as the original request and, thus, can be cancelled with the
          * original request ID.
          */
         private final class IsPurchasedListener implements CancellableRequestListener<Purchases> {
-
             @Nonnull
-            private final String sku;
+            private final String mSku;
             @Nonnull
-            private final RequestListener<Boolean> listener;
+            private final RequestListener<Boolean> mListener;
             @Nonnull
-            private GetPurchasesRequest request;
+            private GetPurchasesRequest mRequest;
 
             public IsPurchasedListener(@Nonnull String sku, @Nonnull RequestListener<Boolean> listener) {
-                this.sku = sku;
-                this.listener = listener;
+                mSku = sku;
+                mListener = listener;
             }
 
             @Override
             public void onSuccess(@Nonnull Purchases purchases) {
-                final Purchase purchase = purchases.getPurchase(sku);
+                final Purchase purchase = purchases.getPurchase(mSku);
                 if (purchase != null) {
-                    listener.onSuccess(purchase.state == Purchase.State.PURCHASED);
-                } else {
-                    // we need to check continuation token
-                    if (purchases.continuationToken != null) {
-                        request = new GetPurchasesRequest(request, purchases.continuationToken);
-                        runWhenConnected(request, tag);
-                    } else {
-                        listener.onSuccess(false);
-                    }
+                    mListener.onSuccess(purchase.state == Purchase.State.PURCHASED);
+                    return;
                 }
+                if (purchases.continuationToken == null) {
+                    mListener.onSuccess(false);
+                    return;
+                }
+                mRequest = new GetPurchasesRequest(mRequest, purchases.continuationToken);
+                runWhenConnected(mRequest, mTag);
             }
 
             @Override
             public void onError(int response, @Nonnull Exception e) {
-                listener.onError(response, e);
+                mListener.onError(response, e);
             }
 
             @Override
             public void cancel() {
-                Billing.cancel(listener);
+                Billing.cancel(mListener);
             }
         }
 
         private final class GetAllPurchasesListener implements CancellableRequestListener<Purchases> {
-
             @Nonnull
-            private final RequestListener<Purchases> listener;
-            private final List<Purchase> result = new ArrayList<Purchase>();
+            private final RequestListener<Purchases> mListener;
             @Nonnull
-            private GetPurchasesRequest request;
+            private final List<Purchase> mPurchases = new ArrayList<>();
+            @Nonnull
+            private GetPurchasesRequest mRequest;
 
             public GetAllPurchasesListener(@Nonnull RequestListener<Purchases> listener) {
-                this.listener = listener;
+                this.mListener = listener;
             }
 
             @Override
             public void onSuccess(@Nonnull Purchases purchases) {
-                result.addAll(purchases.list);
+                mPurchases.addAll(purchases.list);
                 // we need to check continuation token
-                if (purchases.continuationToken != null) {
-                    request = new GetPurchasesRequest(request, purchases.continuationToken);
-                    runWhenConnected(request, tag);
-                } else {
-                    listener.onSuccess(new Purchases(purchases.product, result, null));
+                if (purchases.continuationToken == null) {
+                    mListener.onSuccess(new Purchases(purchases.product, mPurchases, null));
+                    return;
                 }
+                mRequest = new GetPurchasesRequest(mRequest, purchases.continuationToken);
+                runWhenConnected(mRequest, mTag);
             }
 
             @Override
             public void onError(int response, @Nonnull Exception e) {
-                listener.onError(response, e);
+                mListener.onError(response, e);
             }
 
             @Override
             public void cancel() {
-                Billing.cancel(listener);
+                Billing.cancel(mListener);
             }
         }
 
@@ -1050,22 +1093,22 @@ public final class Billing {
 
     private class CachingRequestListener<R> extends RequestListenerWrapper<R> {
         @Nonnull
-        private final Request<R> request;
+        private final Request<R> mRequest;
 
         public CachingRequestListener(@Nonnull Request<R> request, @Nonnull RequestListener<R> listener) {
             super(listener);
-            Check.isTrue(cache.hasCache(), "Cache must exist");
-            this.request = request;
+            Check.isTrue(mCache.hasCache(), "Cache must exist");
+            this.mRequest = request;
         }
 
         @Override
         public void onSuccess(@Nonnull R result) {
-            final String key = request.getCacheKey();
-            final RequestType type = request.getType();
+            final String key = mRequest.getCacheKey();
+            final RequestType type = mRequest.getType();
             if (key != null) {
                 final long now = currentTimeMillis();
                 final Cache.Entry entry = new Cache.Entry(result, now + type.expiresIn);
-                cache.putIfNotExist(type.getCacheKey(key), entry);
+                mCache.putIfNotExist(type.getCacheKey(key), entry);
             }
             switch (type) {
                 case PURCHASE:
@@ -1073,7 +1116,7 @@ public final class Billing {
                 case CONSUME_PURCHASE:
                     // these requests might affect the state of purchases => we need to invalidate caches.
                     // see Billing#onPurchaseFinished() also
-                    cache.removeAll(RequestType.GET_PURCHASES.getCacheKeyType());
+                    mCache.removeAll(RequestType.GET_PURCHASES.getCacheKeyType());
                     break;
             }
             super.onSuccess(result);
@@ -1081,19 +1124,19 @@ public final class Billing {
 
         @Override
         public void onError(int response, @Nonnull Exception e) {
-            final RequestType type = request.getType();
+            final RequestType type = mRequest.getType();
             // sometimes it is possible that cached data is not synchronized with data on Google Play => we can
-            // clear caches if such situation occurred
+            // clear caches if such situation occurs
             switch (type) {
                 case PURCHASE:
                 case CHANGE_PURCHASE:
                     if (response == ITEM_ALREADY_OWNED) {
-                        cache.removeAll(RequestType.GET_PURCHASES.getCacheKeyType());
+                        mCache.removeAll(RequestType.GET_PURCHASES.getCacheKeyType());
                     }
                     break;
                 case CONSUME_PURCHASE:
                     if (response == ITEM_NOT_OWNED) {
-                        cache.removeAll(RequestType.GET_PURCHASES.getCacheKeyType());
+                        mCache.removeAll(RequestType.GET_PURCHASES.getCacheKeyType());
                     }
                     break;
             }
@@ -1102,9 +1145,8 @@ public final class Billing {
     }
 
     private final class DefaultServiceConnector implements ServiceConnector {
-
         @Nonnull
-        private final ServiceConnection connection = new ServiceConnection() {
+        private final ServiceConnection mConnection = new ServiceConnection() {
             @Override
             public void onServiceDisconnected(ComponentName name) {
                 setService(null, false);
@@ -1122,7 +1164,7 @@ public final class Billing {
             try {
                 final Intent intent = new Intent("com.android.vending.billing.InAppBillingService.BIND");
                 intent.setPackage("com.android.vending");
-                return context.bindService(intent, connection, Context.BIND_AUTO_CREATE);
+                return mContext.bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
             } catch (IllegalArgumentException e) {
                 // some devices throw IllegalArgumentException (Service Intent must be explicit)
                 // even though we set package name explicitly. Let's not crash the app and catch
@@ -1133,8 +1175,7 @@ public final class Billing {
 
         @Override
         public void disconnect() {
-            context.unbindService(connection);
+            mContext.unbindService(mConnection);
         }
     }
-
 }

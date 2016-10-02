@@ -95,7 +95,7 @@ public interface Inventory {
     final class Products implements Iterable<Inventory.Product> {
 
         @Nonnull
-        static final Products EMPTY = new Products();
+        static final Products sEmpty = new Products();
 
         @Nonnull
         private final Map<String, Inventory.Product> mMap = new HashMap<>();
