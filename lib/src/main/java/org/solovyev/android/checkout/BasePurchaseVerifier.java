@@ -34,7 +34,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import javax.annotation.Nonnull;
 
 /**
- * Common base class of common implementation for {@link PurchaseVerifier} that performs a purchases
+ * Common base class of common implementation for {@link PurchaseVerifier} that performs a
+ * purchases
  * verification on a background thread.
  */
 public abstract class BasePurchaseVerifier implements PurchaseVerifier {
@@ -89,7 +90,7 @@ public abstract class BasePurchaseVerifier implements PurchaseVerifier {
      * passed <var>listener</var>. Note that at the end of the execution one and only one method of
      * <var>listener</var> must be called. Forgetting calling methods of <var>listener</var> causes
      * a memory leak as there is no other indication of that the work is done. Listener's methods
-     * must be called on the thread on which current method is called.
+     * must be called on the same thread on which this method is called.
      *
      * @param purchases purchases to be verified
      * @param listener  callback listener
