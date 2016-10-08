@@ -53,11 +53,11 @@ import static org.solovyev.android.checkout.ResponseCodes.ITEM_NOT_OWNED;
  * A core class of the Checkout's implementation of Android's Billing API.
  * This class is responsible for:
  * <ol>
- *     <li>Connecting and disconnecting to the billing service</li>
- *     <li>Performing billing requests</li>
- *     <li>Caching the requests results</li>
- *     <li>Creating {@link Checkout} objects</li>
- *     <li>Logging</li>
+ * <li>Connecting and disconnecting to the billing service</li>
+ * <li>Performing billing requests</li>
+ * <li>Caching the requests results</li>
+ * <li>Creating {@link Checkout} objects</li>
+ * <li>Logging</li>
  * </ol>
  * Though, this class can be used on its own to obtain the billing information from Android it's
  * recommended to use higher abstractions, such as {@link Checkout} and {@link Inventory}, for such
@@ -140,8 +140,7 @@ public final class Billing {
     /**
      * Sometimes Google Play is not that fast in updating information on device. Let's wait it a
      * little bit as if we don't wait we might cache expired information (though, it will be
-     * updated
-     * soon as RequestType#GET_PURCHASES cache entry expires quite often)
+     * updated soon as RequestType#GET_PURCHASES cache entry expires quite often)
      */
     static void waitGooglePlay() {
         try {
@@ -315,7 +314,7 @@ public final class Billing {
     }
 
     /**
-     * Connects to Billing service. Called automatically when first request is done,
+     * Connects to the Billing service. Called automatically when first request is done,
      * Use {@link #disconnect()} to disconnect.
      * It's allowed to call this method several times, if service is already connected nothing will
      * happen.
@@ -433,8 +432,7 @@ public final class Billing {
     /**
      * A factory method of {@link BillingRequests}. The constructed object is tagged with the given
      * <var>activity</var>. All methods of {@link RequestListener} used in this {@link
-     * BillingRequests}
-     * are called on the main application thread.
+     * BillingRequests} are called on the main application thread.
      *
      * @param activity activity
      * @return requests for given <var>activity</var>
@@ -578,8 +576,7 @@ public final class Billing {
          * Though, Android's Billing API claims to support client caching Checkout library uses its
          * own cache. The main reason is to avoid too frequent inter-process communication (IPC)
          * between the app and the billing service. This feature can be disabled if a null
-         * reference
-         * is returned by this method.
+         * reference is returned by this method.
          *
          * @return cache instance to be used for caching, null for no caching
          * @see Billing#newCache()
@@ -642,6 +639,12 @@ public final class Billing {
         }
     }
 
+    /**
+     * Class that partially implements {@link Configuration} interface. {@link Billing} instance
+     * configured with this class will get a cache from {@link #newCache()}, a purchase verifier
+     * from {@link #newPurchaseVerifier(String)}, no fallback inventory and will auto-connect to
+     * the billing service when needed.
+     */
     public abstract static class DefaultConfiguration implements Configuration {
         @Nullable
         @Override
@@ -1010,10 +1013,9 @@ public final class Billing {
          * This class waits for the result from {@link GetPurchasesRequest} and checks if purchases
          * contains specified <var>sku</var>. If there is a <var>continuationToken</var> and item
          * can't be found in this bulk of purchases another (recursive) request is executed (to
-         * load
-         * other purchases) and the search is done again. New (additional) request has the same ID
-         * and the same listener as the original request and, thus, can be cancelled with the
-         * original request ID.
+         * load other purchases) and the search is done again. New (additional) request has the
+         * same ID and the same listener as the original request and, thus, can be cancelled with
+         * the original request ID.
          */
         private final class IsPurchasedListener implements CancellableRequestListener<Purchases> {
             @Nonnull
