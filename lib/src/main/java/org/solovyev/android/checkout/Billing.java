@@ -1009,6 +1009,11 @@ public final class Billing {
             mPendingRequests.cancelAll(mTag);
         }
 
+        @Override
+        public void cancel(int requestId) {
+            mPendingRequests.cancel(requestId);
+        }
+
         /**
          * This class waits for the result from {@link GetPurchasesRequest} and checks if purchases
          * contains specified <var>sku</var>. If there is a <var>continuationToken</var> and item
