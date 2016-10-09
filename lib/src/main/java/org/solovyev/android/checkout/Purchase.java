@@ -88,18 +88,23 @@ public final class Purchase {
         this.data = data;
     }
 
+    Purchase(@Nonnull String data, @Nonnull String signature) throws JSONException {
+        final JSONObject json = new JSONObject(data);
+        this.sku = json.getString("productId");
+        this.orderId = json.optString("orderId");
+        this.packageName = json.optString("packageName");
+        this.time = json.getLong("purchaseTime");
+        this.state = State.valueOf(json.optInt("purchaseState", 0));
+        this.payload = json.optString("developerPayload");
+        this.token = json.optString("token", json.optString("purchaseToken"));
+        this.autoRenewing = json.optBoolean("autoRenewing");
+        this.data = data;
+        this.signature = signature;
+    }
+
     @Nonnull
     static Purchase fromJson(@Nonnull String data, @Nonnull String signature) throws JSONException {
-        final JSONObject json = new JSONObject(data);
-        final String sku = json.getString("productId");
-        final String orderId = json.optString("orderId");
-        final String packageName = json.optString("packageName");
-        final long purchaseTime = json.getLong("purchaseTime");
-        final int purchaseState = json.optInt("purchaseState", 0);
-        final String payload = json.optString("developerPayload");
-        final String token = json.optString("token", json.optString("purchaseToken"));
-        final boolean autoRenewing = json.optBoolean("autoRenewing");
-        return new Purchase(sku, orderId, packageName, purchaseTime, purchaseState, payload, token, autoRenewing, data, signature);
+        return new Purchase(data, signature);
     }
 
     private static void tryPut(@Nonnull JSONObject json, @Nonnull String key, @Nonnull String name) throws JSONException {
@@ -110,7 +115,8 @@ public final class Purchase {
 
     /**
      * Same as {@link #toJson(boolean)} with {@code withSignature=false}.
-     * Note that this method returns JSON which is not the same as original JSON returned by Google.
+     * Note that this method returns JSON which is not the same as original JSON returned by
+     * Google.
      * Original JSON is
      * stored in {@link #data}, use it if you want to do a signature check (as {@link #signature}
      * signs {@link #data})

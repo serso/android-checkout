@@ -42,10 +42,10 @@ public final class RobotmediaDatabase {
     static final String NAME = "billing.db";
 
     @Nonnull
-    private final Context context;
+    private final Context mContext;
 
     public RobotmediaDatabase(@Nonnull Context context) {
-        this.context = context;
+        mContext = context;
     }
 
     public static boolean exists(@Nonnull Context context) {
@@ -90,7 +90,7 @@ public final class RobotmediaDatabase {
     Inventory.Products load(@Nonnull Inventory.Request request) {
         SQLiteDatabase db = null;
         try {
-            final String databasePath = RobotmediaDatabase.getDatabasePath(context);
+            final String databasePath = RobotmediaDatabase.getDatabasePath(mContext);
             db = openDatabase(databasePath, null, OPEN_READONLY);
             return loadProducts(request, db);
         } catch (RuntimeException e) {
@@ -124,9 +124,9 @@ public final class RobotmediaDatabase {
     @Nonnull
     private List<Purchase> loadPurchases(@Nonnull List<String> skus, @Nonnull SQLiteDatabase db) {
         Check.isNotEmpty(skus);
-        final List<Purchase> purchases = new ArrayList<Purchase>(skus.size());
+        final List<Purchase> purchases = new ArrayList<>(skus.size());
         final String[] columns = {"_id", "state", "productId", "purchaseTime", "developerPayload"};
-        final String packageName = context.getPackageName();
+        final String packageName = mContext.getPackageName();
 
         Cursor c = null;
         try {

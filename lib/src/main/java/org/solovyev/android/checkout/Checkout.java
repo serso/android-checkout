@@ -337,7 +337,7 @@ public class Checkout {
     }
 
     /**
-     * Empty implementation of  {@link Checkout.Listener}. Any custom listener that cares only
+     * Empty implementation of {@link Checkout.Listener}. Any custom listener that cares only
      * about a subset of the methods of {@link Checkout.Listener} can subclass this class and
      * implement only the methods it is interested in.
      */
@@ -353,18 +353,18 @@ public class Checkout {
 
     private static final class Listeners implements Listener {
         @Nonnull
-        private final List<Listener> list = new ArrayList<>();
+        private final List<Listener> mList = new ArrayList<>();
 
         public void add(@Nonnull Listener l) {
-            if (!list.contains(l)) {
-                list.add(l);
+            if (!mList.contains(l)) {
+                mList.add(l);
             }
         }
 
         @Override
         public void onReady(@Nonnull BillingRequests requests) {
-            final List<Listener> localList = new ArrayList<>(list);
-            list.clear();
+            final List<Listener> localList = new ArrayList<>(mList);
+            mList.clear();
             for (Listener listener : localList) {
                 listener.onReady(requests);
             }
@@ -372,13 +372,13 @@ public class Checkout {
 
         @Override
         public void onReady(@Nonnull BillingRequests requests, @Nonnull String product, boolean billingSupported) {
-            for (Listener listener : list) {
+            for (Listener listener : mList) {
                 listener.onReady(requests, product, billingSupported);
             }
         }
 
         public void clear() {
-            list.clear();
+            mList.clear();
         }
     }
 

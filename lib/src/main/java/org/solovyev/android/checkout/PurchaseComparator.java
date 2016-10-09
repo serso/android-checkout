@@ -33,10 +33,10 @@ final class PurchaseComparator implements Comparator<Purchase> {
 
     @Nonnull
     private static final Comparator<Purchase> LATEST_FIRST = new PurchaseComparator(false);
-    private final int asc;
+    private final int mAsc;
 
     private PurchaseComparator(boolean asc) {
-        this.asc = asc ? 1 : -1;
+        mAsc = asc ? 1 : -1;
     }
 
     @Nonnull
@@ -55,6 +55,6 @@ final class PurchaseComparator implements Comparator<Purchase> {
 
     @Override
     public int compare(@Nonnull Purchase l, @Nonnull Purchase r) {
-        return asc * compare(l.time, r.time);
+        return mAsc * compare(l.time, r.time);
     }
 }

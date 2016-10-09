@@ -30,17 +30,17 @@ import javax.annotation.Nullable;
  */
 final class SafeCache implements Cache {
     @Nonnull
-    private final Cache cache;
+    private final Cache mCache;
 
     SafeCache(@Nonnull Cache cache) {
-        this.cache = cache;
+        mCache = cache;
     }
 
     @Override
     @Nullable
     public Entry get(@Nonnull Key key) {
         try {
-            return cache.get(key);
+            return mCache.get(key);
         } catch (Exception e) {
             Billing.error(e);
             return null;
@@ -50,7 +50,7 @@ final class SafeCache implements Cache {
     @Override
     public void put(@Nonnull Key key, @Nonnull Entry entry) {
         try {
-            cache.put(key, entry);
+            mCache.put(key, entry);
         } catch (Exception e) {
             Billing.error(e);
         }
@@ -59,7 +59,7 @@ final class SafeCache implements Cache {
     @Override
     public void init() {
         try {
-            cache.init();
+            mCache.init();
         } catch (Exception e) {
             Billing.error(e);
         }
@@ -68,7 +68,7 @@ final class SafeCache implements Cache {
     @Override
     public void remove(@Nonnull Key key) {
         try {
-            cache.remove(key);
+            mCache.remove(key);
         } catch (Exception e) {
             Billing.error(e);
         }
@@ -77,7 +77,7 @@ final class SafeCache implements Cache {
     @Override
     public void removeAll(int type) {
         try {
-            cache.removeAll(type);
+            mCache.removeAll(type);
         } catch (Exception e) {
             Billing.error(e);
         }
@@ -86,7 +86,7 @@ final class SafeCache implements Cache {
     @Override
     public void clear() {
         try {
-            cache.clear();
+            mCache.clear();
         } catch (Exception e) {
             Billing.error(e);
         }

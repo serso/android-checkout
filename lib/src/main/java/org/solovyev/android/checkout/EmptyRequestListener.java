@@ -25,7 +25,7 @@ package org.solovyev.android.checkout;
 import javax.annotation.Nonnull;
 
 /**
- * Empty implementation of  {@link RequestListener}. Any custom listener that cares only
+ * Empty implementation of {@link RequestListener}. Any custom listener that cares only
  * about a subset of the methods of {@link RequestListener} can subclass this class and
  * implement only the methods it is interested in.
  */

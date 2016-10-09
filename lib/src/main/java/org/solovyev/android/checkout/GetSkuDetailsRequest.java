@@ -22,10 +22,10 @@
 
 package org.solovyev.android.checkout;
 
+import com.android.vending.billing.IInAppBillingService;
+
 import android.os.Bundle;
 import android.os.RemoteException;
-
-import com.android.vending.billing.IInAppBillingService;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -42,24 +42,24 @@ final class GetSkuDetailsRequest extends Request<Skus> {
     private static final int MAX_SIZE_PER_REQUEST = 20;
 
     @Nonnull
-    private final String product;
+    private final String mProduct;
 
     @Nonnull
-    private final ArrayList<String> skus;
+    private final ArrayList<String> mSkus;
 
     GetSkuDetailsRequest(@Nonnull String product, @Nonnull List<String> skus) {
         super(RequestType.GET_SKU_DETAILS);
-        this.product = product;
-        this.skus = new ArrayList<>(skus);
-        Collections.sort(this.skus);
+        mProduct = product;
+        mSkus = new ArrayList<>(skus);
+        Collections.sort(mSkus);
     }
 
     @Override
     void start(@Nonnull IInAppBillingService service, @Nonnull String packageName) throws RemoteException, RequestException {
         final List<Sku> allSkuDetails = new ArrayList<>();
-        for (int start = 0; start < skus.size(); start += MAX_SIZE_PER_REQUEST) {
-            final int end = Math.min(skus.size(), start + MAX_SIZE_PER_REQUEST);
-            final ArrayList<String> skuBatch = new ArrayList<>(skus.subList(start, end));
+        for (int start = 0; start < mSkus.size(); start += MAX_SIZE_PER_REQUEST) {
+            final int end = Math.min(mSkus.size(), start + MAX_SIZE_PER_REQUEST);
+            final ArrayList<String> skuBatch = new ArrayList<>(mSkus.subList(start, end));
             final Skus skuDetails = getSkuDetails(service, packageName, skuBatch);
             if (skuDetails != null) {
                 allSkuDetails.addAll(skuDetails.list);
@@ -68,7 +68,7 @@ final class GetSkuDetailsRequest extends Request<Skus> {
                 return;
             }
         }
-        onSuccess(new Skus(product, allSkuDetails));
+        onSuccess(new Skus(mProduct, allSkuDetails));
     }
 
     @Nullable
@@ -77,9 +77,9 @@ final class GetSkuDetailsRequest extends Request<Skus> {
         Check.isTrue(skuBatch.size() <= MAX_SIZE_PER_REQUEST, "SKU list is too big");
         final Bundle skusBundle = new Bundle();
         skusBundle.putStringArrayList("ITEM_ID_LIST", skuBatch);
-        final Bundle bundle = service.getSkuDetails(Billing.V3, packageName, product, skusBundle);
+        final Bundle bundle = service.getSkuDetails(Billing.V3, packageName, mProduct, skusBundle);
         if (!handleError(bundle)) {
-            return Skus.fromBundle(bundle, product);
+            return Skus.fromBundle(bundle, mProduct);
         }
         return null;
     }
@@ -87,19 +87,19 @@ final class GetSkuDetailsRequest extends Request<Skus> {
     @Nullable
     @Override
     protected String getCacheKey() {
-        if (skus.size() == 1) {
-            return product + "_" + skus.get(0);
+        if (mSkus.size() == 1) {
+            return mProduct + "_" + mSkus.get(0);
         } else {
-            final StringBuilder sb = new StringBuilder(5 * skus.size());
+            final StringBuilder sb = new StringBuilder(5 * mSkus.size());
             sb.append("[");
-            for (int i = 0; i < skus.size(); i++) {
+            for (int i = 0; i < mSkus.size(); i++) {
                 if (i > 0) {
                     sb.append(",");
                 }
-                sb.append(skus.get(i));
+                sb.append(mSkus.get(i));
             }
             sb.append("]");
-            return product + "_" + sb.toString();
+            return mProduct + "_" + sb.toString();
         }
     }
 }

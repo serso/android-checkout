@@ -23,7 +23,7 @@
 package org.solovyev.android.checkout;
 
 /**
- * Billing response codes, codes starting with 10000 are this library specific.
+ * Billing response codes, codes >= 10000 are defined by this library.
  * See <a href="http://developer.android.com/google/play/billing/index.html">In-App Billing</a> docs
  * for more information.
  */
@@ -85,8 +85,8 @@ public final class ResponseCodes {
      * is null
      */
     public static final int NULL_INTENT = 10003;
+
     private ResponseCodes() {
         throw new AssertionError();
     }
-
 }

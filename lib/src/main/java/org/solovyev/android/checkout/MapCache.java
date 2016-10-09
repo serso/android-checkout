@@ -33,7 +33,7 @@ import javax.annotation.Nullable;
 class MapCache implements Cache {
 
     @Nonnull
-    private final Map<Key, Entry> map = new HashMap<Key, Entry>();
+    private final Map<Key, Entry> mMap = new HashMap<Key, Entry>();
 
     MapCache() {
     }
@@ -41,12 +41,12 @@ class MapCache implements Cache {
     @Nullable
     @Override
     public Entry get(@Nonnull Key key) {
-        return map.get(key);
+        return mMap.get(key);
     }
 
     @Override
     public void put(@Nonnull Key key, @Nonnull Entry entry) {
-        map.put(key, entry);
+        mMap.put(key, entry);
     }
 
     @Override
@@ -55,12 +55,12 @@ class MapCache implements Cache {
 
     @Override
     public void remove(@Nonnull Key key) {
-        map.remove(key);
+        mMap.remove(key);
     }
 
     @Override
     public void removeAll(int type) {
-        final Set<Map.Entry<Key, Entry>> entries = map.entrySet();
+        final Set<Map.Entry<Key, Entry>> entries = mMap.entrySet();
         final Iterator<Map.Entry<Key, Entry>> iterator = entries.iterator();
         while (iterator.hasNext()) {
             final Map.Entry<Key, Entry> entry = iterator.next();
@@ -72,6 +72,6 @@ class MapCache implements Cache {
 
     @Override
     public void clear() {
-        map.clear();
+        mMap.clear();
     }
 }

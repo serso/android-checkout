@@ -28,7 +28,7 @@ import java.util.List;
 import javax.annotation.Nonnull;
 
 /**
- * Types of products available in Billing API
+ * Types of the products available in Billing API
  */
 public final class ProductTypes {
 

@@ -38,7 +38,9 @@ import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 /**
- * List of purchased items of <var>product</var> type.
+ * List of the purchases of the {@link #product} type as returned from
+ * {@link com.android.vending.billing.IInAppBillingService#getPurchases(int, String, String,
+ * String)}.
  */
 @Immutable
 public final class Purchases {
@@ -90,7 +92,7 @@ public final class Purchases {
         final List<String> datas = extractDatasList(bundle);
         final List<String> signatures = bundle.getStringArrayList(BUNDLE_SIGNATURE_LIST);
 
-        final List<Purchase> purchases = new ArrayList<Purchase>(datas.size());
+        final List<Purchase> purchases = new ArrayList<>(datas.size());
         for (int i = 0; i < datas.size(); i++) {
             final String data = datas.get(i);
             final String signature = signatures != null ? signatures.get(i) : "";
@@ -121,9 +123,9 @@ public final class Purchases {
     static List<Purchase> neutralize(@Nonnull List<Purchase> purchases) {
         // probably, it's possible to avoid creation of temporary list. The reason for it is that we don't want to
         // modify original list
-        purchases = new LinkedList<Purchase>(purchases);
+        purchases = new LinkedList<>(purchases);
 
-        final List<Purchase> result = new ArrayList<Purchase>(purchases.size());
+        final List<Purchase> result = new ArrayList<>(purchases.size());
 
         Collections.sort(purchases, PurchaseComparator.earliestFirst());
         while (!purchases.isEmpty()) {

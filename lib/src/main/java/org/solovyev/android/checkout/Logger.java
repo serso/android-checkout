@@ -3,7 +3,7 @@ package org.solovyev.android.checkout;
 import javax.annotation.Nonnull;
 
 /**
- * Interface to allow custom logger
+ * Logger interface that can be used in {@link Billing} via {@link Billing#setLogger(Logger)}
  */
 public interface Logger {
 

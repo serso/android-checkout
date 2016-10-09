@@ -34,24 +34,24 @@ import javax.annotation.Nullable;
 final class PurchaseRequest extends Request<PendingIntent> {
 
     @Nonnull
-    private final String product;
+    private final String mProduct;
 
     @Nonnull
-    private final String sku;
+    private final String mSku;
 
     @Nullable
-    private final String payload;
+    private final String mPayload;
 
     PurchaseRequest(@Nonnull String product, @Nonnull String sku, @Nullable String payload) {
         super(RequestType.PURCHASE);
-        this.product = product;
-        this.sku = sku;
-        this.payload = payload;
+        mProduct = product;
+        mSku = sku;
+        mPayload = payload;
     }
 
     @Override
     void start(@Nonnull IInAppBillingService service, @Nonnull String packageName) throws RemoteException, RequestException {
-        final Bundle bundle = service.getBuyIntent(apiVersion, packageName, sku, product, payload == null ? "" : payload);
+        final Bundle bundle = service.getBuyIntent(mApiVersion, packageName, mSku, mProduct, mPayload == null ? "" : mPayload);
         if (handleError(bundle)) {
             return;
         }

@@ -35,17 +35,17 @@ import static android.text.TextUtils.isEmpty;
 class DefaultPurchaseVerifier implements PurchaseVerifier {
 
     @Nonnull
-    private final String publicKey;
+    private final String mPublicKey;
 
     public DefaultPurchaseVerifier(@Nonnull String publicKey) {
-        this.publicKey = publicKey;
+        mPublicKey = publicKey;
     }
 
     @Override
     public void verify(@Nonnull List<Purchase> purchases, @Nonnull RequestListener<List<Purchase>> listener) {
         final List<Purchase> verifiedPurchases = new ArrayList<Purchase>(purchases.size());
         for (Purchase purchase : purchases) {
-            if (Security.verifyPurchase(publicKey, purchase.data, purchase.signature)) {
+            if (Security.verifyPurchase(mPublicKey, purchase.data, purchase.signature)) {
                 verifiedPurchases.add(purchase);
             } else {
                 if (isEmpty(purchase.signature)) {

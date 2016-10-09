@@ -31,13 +31,13 @@ import javax.annotation.Nullable;
 import javax.annotation.concurrent.GuardedBy;
 
 /**
- * List of requests to be executed when connection with service is established.
+ * List of the requests to be executed when connection to the billing service is established.
  */
 final class PendingRequests implements Runnable {
 
-    @GuardedBy("list")
+    @GuardedBy("mList")
     @Nonnull
-    private final List<RequestRunnable> list = new ArrayList<RequestRunnable>();
+    private final List<RequestRunnable> mList = new ArrayList<>();
 
     /**
      * Adds <var>runnable</var> to the end of waiting list.
@@ -45,9 +45,9 @@ final class PendingRequests implements Runnable {
      * @param runnable runnable to be executed when connection is established
      */
     void add(@Nonnull RequestRunnable runnable) {
-        synchronized (list) {
+        synchronized (mList) {
             Billing.debug("Adding pending request: " + runnable);
-            list.add(runnable);
+            mList.add(runnable);
         }
     }
 
@@ -55,9 +55,9 @@ final class PendingRequests implements Runnable {
      * Method cancels all pending requests
      */
     void cancelAll() {
-        synchronized (list) {
+        synchronized (mList) {
             Billing.debug("Cancelling all pending requests");
-            final Iterator<RequestRunnable> iterator = list.iterator();
+            final Iterator<RequestRunnable> iterator = mList.iterator();
             while (iterator.hasNext()) {
                 final RequestRunnable request = iterator.next();
                 request.cancel();
@@ -72,9 +72,9 @@ final class PendingRequests implements Runnable {
      * @param tag request tag
      */
     void cancelAll(@Nullable Object tag) {
-        synchronized (list) {
+        synchronized (mList) {
             Billing.debug("Cancelling all pending requests with tag=" + tag);
-            final Iterator<RequestRunnable> iterator = list.iterator();
+            final Iterator<RequestRunnable> iterator = mList.iterator();
             while (iterator.hasNext()) {
                 final RequestRunnable request = iterator.next();
                 final Object requestTag = request.getTag();
@@ -102,9 +102,9 @@ final class PendingRequests implements Runnable {
      * @param requestId id of request to be cancelled
      */
     void cancel(int requestId) {
-        synchronized (list) {
+        synchronized (mList) {
             Billing.debug("Cancelling pending request with id=" + requestId);
-            final Iterator<RequestRunnable> iterator = list.iterator();
+            final Iterator<RequestRunnable> iterator = mList.iterator();
             while (iterator.hasNext()) {
                 final RequestRunnable request = iterator.next();
                 if (request.getId() == requestId) {
@@ -123,8 +123,8 @@ final class PendingRequests implements Runnable {
      */
     @Nullable
     RequestRunnable pop() {
-        synchronized (list) {
-            final RequestRunnable runnable = !list.isEmpty() ? list.remove(0) : null;
+        synchronized (mList) {
+            final RequestRunnable runnable = !mList.isEmpty() ? mList.remove(0) : null;
             if (runnable != null) {
                 Billing.debug("Removing pending request: " + runnable);
             }
@@ -139,8 +139,8 @@ final class PendingRequests implements Runnable {
      */
     @Nullable
     RequestRunnable peek() {
-        synchronized (list) {
-            return !list.isEmpty() ? list.get(0) : null;
+        synchronized (mList) {
+            return !mList.isEmpty() ? mList.get(0) : null;
         }
     }
 
@@ -170,8 +170,8 @@ final class PendingRequests implements Runnable {
      * @param runnable runnable to be removed from the waiting list
      */
     private void remove(@Nonnull RequestRunnable runnable) {
-        synchronized (list) {
-            final Iterator<RequestRunnable> iterator = list.iterator();
+        synchronized (mList) {
+            final Iterator<RequestRunnable> iterator = mList.iterator();
             while (iterator.hasNext()) {
                 if (iterator.next() == runnable) {
                     Billing.debug("Removing pending request: " + runnable);

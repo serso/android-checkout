@@ -34,8 +34,7 @@ import static org.solovyev.android.checkout.RequestType.BILLING_SUPPORTED;
 final class BillingSupportedRequest extends Request<Object> {
 
     @Nonnull
-    private final String product;
-    private final int apiVersion;
+    private final String mProduct;
 
     BillingSupportedRequest(@Nonnull String product) {
         this(product, Billing.V3);
@@ -43,13 +42,12 @@ final class BillingSupportedRequest extends Request<Object> {
 
     BillingSupportedRequest(@Nonnull String product, int apiVersion) {
         super(BILLING_SUPPORTED, apiVersion);
-        this.product = product;
-        this.apiVersion = apiVersion;
+        mProduct = product;
     }
 
     @Override
     public void start(@Nonnull IInAppBillingService service, @Nonnull String packageName) throws RemoteException {
-        final int response = service.isBillingSupported(apiVersion, packageName, product);
+        final int response = service.isBillingSupported(mApiVersion, packageName, mProduct);
         if (!handleError(response)) {
             onSuccess(new Object());
         }
@@ -58,6 +56,6 @@ final class BillingSupportedRequest extends Request<Object> {
     @Nullable
     @Override
     protected String getCacheKey() {
-        return product;
+        return mProduct;
     }
 }

@@ -34,7 +34,7 @@ enum RequestType {
 
     final long expiresIn;
     @Nonnull
-    private final String cacheKeyName;
+    final String cacheKeyName;
 
     RequestType(@Nonnull String cacheKeyName, long expiresIn) {
         this.cacheKeyName = cacheKeyName;

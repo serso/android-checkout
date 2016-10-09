@@ -35,7 +35,8 @@ import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 /**
- * List of SKUs
+ * List of SKUs as returned from {@link com.android.vending.billing.IInAppBillingService#getSkuDetails(int,
+ * String, String, Bundle)} method.
  */
 @Immutable
 public final class Skus {
@@ -61,7 +62,7 @@ public final class Skus {
     static Skus fromBundle(@Nonnull Bundle bundle, @Nonnull String product) throws RequestException {
         final List<String> list = extractList(bundle);
 
-        final List<Sku> skus = new ArrayList<Sku>(list.size());
+        final List<Sku> skus = new ArrayList<>(list.size());
         for (String response : list) {
             try {
                 skus.add(Sku.fromJson(response, product));

@@ -25,7 +25,7 @@ package org.solovyev.android.checkout;
 import javax.annotation.Nullable;
 
 /**
- * Runnable which executes billing request.
+ * Runnable which executes a billing request.
  */
 interface RequestRunnable {
 

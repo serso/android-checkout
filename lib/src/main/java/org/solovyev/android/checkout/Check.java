@@ -31,7 +31,7 @@ import static java.lang.Thread.currentThread;
 
 final class Check {
 
-    private static final boolean junit = isJunit();
+    private static final boolean sJunit = isJunit();
 
     private Check() {
         throw new AssertionError();
@@ -48,7 +48,7 @@ final class Check {
     }
 
     static void isMainThread() {
-        if (!junit && !MainThread.isMainThread()) {
+        if (!sJunit && !MainThread.isMainThread()) {
             throw new AssertionException("Should be called on the main thread");
         }
     }

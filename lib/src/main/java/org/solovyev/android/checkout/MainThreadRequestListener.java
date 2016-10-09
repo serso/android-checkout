@@ -34,50 +34,50 @@ import javax.annotation.Nullable;
 final class MainThreadRequestListener<R> extends RequestListenerWrapper<R> {
 
     @Nonnull
-    private final CancellableExecutor mainThread;
+    private final CancellableExecutor mMainThread;
 
     @Nullable
-    private Runnable successRunnable;
+    private Runnable mSuccessRunnable;
 
     @Nullable
-    private Runnable errorRunnable;
+    private Runnable mErrorRunnable;
 
     MainThreadRequestListener(@Nonnull CancellableExecutor mainThread, @Nonnull RequestListener<R> listener) {
         super(listener);
-        this.mainThread = mainThread;
+        mMainThread = mainThread;
     }
 
     @Override
     public void onSuccess(@Nonnull final R result) {
-        successRunnable = new Runnable() {
+        mSuccessRunnable = new Runnable() {
             @Override
             public void run() {
-                listener.onSuccess(result);
+                mListener.onSuccess(result);
             }
         };
-        mainThread.execute(successRunnable);
+        mMainThread.execute(mSuccessRunnable);
     }
 
     @Override
     public void onError(final int response, @Nonnull final Exception e) {
-        errorRunnable = new Runnable() {
+        mErrorRunnable = new Runnable() {
             @Override
             public void run() {
-                listener.onError(response, e);
+                mListener.onError(response, e);
             }
         };
-        mainThread.execute(errorRunnable);
+        mMainThread.execute(mErrorRunnable);
     }
 
     public void onCancel() {
-        if (successRunnable != null) {
-            mainThread.cancel(successRunnable);
-            successRunnable = null;
+        if (mSuccessRunnable != null) {
+            mMainThread.cancel(mSuccessRunnable);
+            mSuccessRunnable = null;
         }
 
-        if (errorRunnable != null) {
-            mainThread.cancel(errorRunnable);
-            errorRunnable = null;
+        if (mErrorRunnable != null) {
+            mMainThread.cancel(mErrorRunnable);
+            mErrorRunnable = null;
         }
     }
 }

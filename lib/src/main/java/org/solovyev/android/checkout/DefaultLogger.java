@@ -12,79 +12,79 @@ import javax.annotation.concurrent.ThreadSafe;
 @ThreadSafe
 class DefaultLogger implements Logger {
 
-    private boolean enabled = BuildConfig.DEBUG;
+    private boolean mEnabled = BuildConfig.DEBUG;
 
     @Override
     public void e(@Nonnull String tag, @Nonnull String msg) {
-        if (enabled) {
+        if (mEnabled) {
             Log.e(tag, msg);
         }
     }
 
     @Override
     public void w(@Nonnull String tag, @Nonnull String msg) {
-        if (enabled) {
+        if (mEnabled) {
             Log.w(tag, msg);
         }
     }
 
     @Override
     public void i(@Nonnull String tag, @Nonnull String msg) {
-        if (enabled) {
+        if (mEnabled) {
             Log.i(tag, msg);
         }
     }
 
     @Override
     public void d(@Nonnull String tag, @Nonnull String msg) {
-        if (enabled) {
+        if (mEnabled) {
             Log.d(tag, msg);
         }
     }
 
     @Override
     public void v(@Nonnull String tag, @Nonnull String msg) {
-        if (enabled) {
+        if (mEnabled) {
             Log.v(tag, msg);
         }
     }
 
     @Override
     public void e(@Nonnull String tag, @Nonnull String msg, @Nonnull Throwable e) {
-        if (enabled) {
+        if (mEnabled) {
             Log.e(tag, msg, e);
         }
     }
 
     @Override
     public void w(@Nonnull String tag, @Nonnull String msg, @Nonnull Throwable e) {
-        if (enabled) {
+        if (mEnabled) {
             Log.w(tag, msg, e);
         }
     }
 
     @Override
     public void i(@Nonnull String tag, @Nonnull String msg, @Nonnull Throwable e) {
-        if (enabled) {
+        if (mEnabled) {
             Log.i(tag, msg, e);
         }
     }
 
     @Override
     public void d(@Nonnull String tag, @Nonnull String msg, @Nonnull Throwable e) {
-        if (enabled) {
+        if (mEnabled) {
             Log.d(tag, msg, e);
         }
     }
 
     @Override
     public void v(@Nonnull String tag, @Nonnull String msg, @Nonnull Throwable e) {
-        if (enabled) {
+        if (mEnabled) {
             Log.v(tag, msg, e);
         }
     }
 
     public void setEnabled(boolean enabled) {
-        this.enabled = enabled;
+        mEnabled = enabled;
     }
 }

@@ -32,16 +32,16 @@ import javax.annotation.Nullable;
 final class ConsumePurchaseRequest extends Request<Object> {
 
     @Nonnull
-    private final String token;
+    private final String mToken;
 
     ConsumePurchaseRequest(@Nonnull String token) {
         super(RequestType.CONSUME_PURCHASE);
-        this.token = token;
+        mToken = token;
     }
 
     @Override
     void start(@Nonnull IInAppBillingService service, @Nonnull String packageName) throws RemoteException, RequestException {
-        final int response = service.consumePurchase(apiVersion, packageName, token);
+        final int response = service.consumePurchase(mApiVersion, packageName, mToken);
         if (!handleError(response)) {
             Billing.waitGooglePlay();
             onSuccess(new Object());

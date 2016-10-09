@@ -43,38 +43,35 @@ import static org.solovyev.android.checkout.ResponseCodes.OK;
 abstract class Request<R> {
 
     @Nonnull
-    private static final AtomicInteger counter = new AtomicInteger(0);
-    protected final int apiVersion;
-    private final int id;
+    private static final AtomicInteger sCounter = new AtomicInteger(0);
+    protected final int mApiVersion;
+    private final int mId;
     @Nonnull
-    private final RequestType type;
-
+    private final RequestType mType;
     @Nullable
-    private Object tag;
-
+    private Object mTag;
     @GuardedBy("this")
     @Nullable
-    private RequestListener<R> listener;
-
+    private RequestListener<R> mListener;
     @GuardedBy("this")
-    private boolean listenerCalled;
+    private boolean mListenerCalled;
 
     Request(@Nonnull RequestType type) {
         this(type, Billing.V3);
     }
 
     Request(@Nonnull RequestType type, int apiVersion) {
-        this.type = type;
-        this.apiVersion = apiVersion;
-        this.id = counter.getAndIncrement();
+        mType = type;
+        mApiVersion = apiVersion;
+        mId = sCounter.getAndIncrement();
     }
 
     Request(@Nonnull RequestType type, @Nonnull Request<R> request) {
-        this.type = type;
-        this.id = request.id;
-        this.apiVersion = request.apiVersion;
+        mType = type;
+        mId = request.mId;
+        mApiVersion = request.mApiVersion;
         synchronized (request) {
-            this.listener = request.listener;
+            mListener = request.mListener;
         }
     }
 
@@ -82,7 +79,7 @@ abstract class Request<R> {
      * @return request id, unique identifier of the request in the application
      */
     protected int getId() {
-        return id;
+        return mId;
     }
 
     abstract void start(@Nonnull IInAppBillingService service, @Nonnull String packageName)
@@ -93,16 +90,16 @@ abstract class Request<R> {
      */
     @Nullable
     Object getTag() {
-        return tag;
+        return mTag;
     }
 
     void setTag(@Nullable Object tag) {
-        this.tag = tag;
+        this.mTag = tag;
     }
 
     @Nonnull
     RequestType getType() {
-        return type;
+        return mType;
     }
 
     /**
@@ -110,10 +107,10 @@ abstract class Request<R> {
      */
     void cancel() {
         synchronized (this) {
-            if (listener != null) {
-                Billing.cancel(listener);
+            if (mListener != null) {
+                Billing.cancel(mListener);
             }
-            listener = null;
+            mListener = null;
         }
     }
 
@@ -122,7 +119,7 @@ abstract class Request<R> {
      */
     boolean isCancelled() {
         synchronized (this) {
-            return listener == null;
+            return mListener == null;
         }
     }
 
@@ -136,10 +133,10 @@ abstract class Request<R> {
 
     private boolean checkListenerCalled() {
         synchronized (this) {
-            if (listenerCalled) {
+            if (mListenerCalled) {
                 return true;
             }
-            listenerCalled = true;
+            mListenerCalled = true;
         }
         return false;
     }
@@ -180,14 +177,14 @@ abstract class Request<R> {
     @Nullable
     RequestListener<R> getListener() {
         synchronized (this) {
-            return listener;
+            return mListener;
         }
     }
 
     void setListener(@Nullable RequestListener<R> listener) {
         synchronized (this) {
-            Check.isNull(this.listener);
-            this.listener = listener;
+            Check.isNull(this.mListener);
+            mListener = listener;
         }
     }
 

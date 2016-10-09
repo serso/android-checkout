@@ -39,103 +39,104 @@ import static org.solovyev.android.checkout.ResponseCodes.EXCEPTION;
 final class GetPurchasesRequest extends Request<Purchases> {
 
     @Nonnull
-    private final String product;
+    private final String mProduct;
 
     @Nullable
-    private final String continuationToken;
+    private final String mContinuationToken;
 
     @Nonnull
-    private final PurchaseVerifier verifier;
+    private final PurchaseVerifier mVerifier;
 
     GetPurchasesRequest(@Nonnull String product, @Nullable String continuationToken, @Nonnull PurchaseVerifier verifier) {
         super(RequestType.GET_PURCHASES);
-        this.product = product;
-        this.continuationToken = continuationToken;
-        this.verifier = verifier;
+        mProduct = product;
+        mContinuationToken = continuationToken;
+        mVerifier = verifier;
     }
 
     GetPurchasesRequest(@Nonnull GetPurchasesRequest request, @Nonnull String continuationToken) {
         super(RequestType.GET_PURCHASES, request);
-        this.product = request.product;
-        this.continuationToken = continuationToken;
-        this.verifier = request.verifier;
+        mProduct = request.mProduct;
+        mContinuationToken = continuationToken;
+        mVerifier = request.mVerifier;
     }
 
     @Nonnull
     String getProduct() {
-        return product;
+        return mProduct;
     }
 
     @Nullable
     String getContinuationToken() {
-        return continuationToken;
+        return mContinuationToken;
     }
 
     @Override
     void start(@Nonnull IInAppBillingService service, @Nonnull String packageName) throws RemoteException {
-        final Bundle bundle = service.getPurchases(apiVersion, packageName, product, continuationToken);
-        if (!handleError(bundle)) {
-            try {
-                final String continuationToken = Purchases.getContinuationTokenFromBundle(bundle);
-                final List<Purchase> purchases = Purchases.getListFromBundle(bundle);
-                if (!purchases.isEmpty()) {
-                    final VerificationListener listener = new VerificationListener(this, product, continuationToken);
-                    verifier.verify(purchases, listener);
-                    if (!listener.called) {
-                        listener.onError(ResponseCodes.EXCEPTION, new IllegalStateException("Either onSuccess or onError methods must be called by PurchaseVerifier"));
-                    }
-                } else {
-                    onSuccess(new Purchases(product, purchases, continuationToken));
-                }
-            } catch (JSONException e) {
-                onError(e);
+        final Bundle bundle = service.getPurchases(mApiVersion, packageName, mProduct, mContinuationToken);
+        if (handleError(bundle)) {
+            return;
+        }
+        try {
+            final String continuationToken = Purchases.getContinuationTokenFromBundle(bundle);
+            final List<Purchase> purchases = Purchases.getListFromBundle(bundle);
+            if (purchases.isEmpty()) {
+                onSuccess(new Purchases(mProduct, purchases, continuationToken));
+                return;
             }
+            final VerificationListener listener = new VerificationListener(this, mProduct, continuationToken);
+            mVerifier.verify(purchases, listener);
+            if (!listener.mCalled) {
+                listener.onError(ResponseCodes.EXCEPTION, new IllegalStateException("Either onSuccess or onError methods must be called by PurchaseVerifier"));
+            }
+        } catch (JSONException e) {
+            onError(e);
         }
     }
 
     @Nullable
     @Override
     protected String getCacheKey() {
-        if (continuationToken != null) {
-            return product + "_" + continuationToken;
+        if (mContinuationToken != null) {
+            return mProduct + "_" + mContinuationToken;
         } else {
-            return product;
+            return mProduct;
         }
     }
 
     private static class VerificationListener implements RequestListener<List<Purchase>> {
         @Nonnull
-        private final Request<Purchases> request;
+        private final Request<Purchases> mRequest;
         @Nonnull
-        private final String product;
+        private final String mProduct;
         @Nullable
-        private final String continuationToken;
+        private final String mContinuationToken;
         @Nonnull
-        private final Thread thread;
-        private boolean called;
+        private final Thread mOriginalThread;
+        private boolean mCalled;
 
         public VerificationListener(@Nonnull Request<Purchases> request, @Nonnull String product, @Nullable String continuationToken) {
-            this.request = request;
-            this.product = product;
-            this.continuationToken = continuationToken;
-            this.thread = Thread.currentThread();
+            mRequest = request;
+            mProduct = product;
+            mContinuationToken = continuationToken;
+            mOriginalThread = Thread.currentThread();
         }
 
         @Override
         public void onSuccess(@Nonnull List<Purchase> verifiedPurchases) {
-            Check.equals(thread, Thread.currentThread(), "Must be called on the same thread");
-            called = true;
-            request.onSuccess(new Purchases(product, verifiedPurchases, continuationToken));
+            Check.equals(mOriginalThread, Thread.currentThread(), "Must be called on the same thread");
+            mCalled = true;
+            mRequest.onSuccess(new Purchases(mProduct, verifiedPurchases, mContinuationToken));
         }
 
         @Override
         public void onError(int response, @Nonnull Exception e) {
-            Check.equals(thread, Thread.currentThread(), "Must be called on the same thread");
-            called = true;
+            Check.equals(mOriginalThread, Thread.currentThread(), "Must be called on the same thread");
+            mCalled = true;
             if (response == EXCEPTION) {
-                request.onError(e);
+                mRequest.onError(e);
             } else {
-                request.onError(response);
+                mRequest.onError(response);
             }
         }
     }
