@@ -25,12 +25,11 @@ package org.solovyev.android.checkout;
 import javax.annotation.Nonnull;
 
 /**
- * This adapter class provides empty implementations of the methods from {@link
- * org.solovyev.android.checkout.RequestListener}.
- * Any custom listener that cares only about a subset of the methods of this listener can
- * simply subclass this adapter class instead of implementing the interface directly.
+ * Empty implementation of  {@link RequestListener}. Any custom listener that cares only
+ * about a subset of the methods of {@link RequestListener} can subclass this class and
+ * implement only the methods it is interested in.
  */
-public class RequestListenerAdapter<R> implements RequestListener<R> {
+public class EmptyRequestListener<R> implements RequestListener<R> {
     @Override
     public void onSuccess(@Nonnull R result) {
     }

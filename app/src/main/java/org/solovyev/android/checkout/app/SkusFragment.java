@@ -22,10 +22,13 @@
 
 package org.solovyev.android.checkout.app;
 
-import static org.solovyev.android.checkout.ProductTypes.IN_APP;
-import static org.solovyev.android.checkout.ProductTypes.SUBSCRIPTION;
-import static org.solovyev.android.checkout.app.CheckoutApplication.IN_APPS;
-import static org.solovyev.android.checkout.app.CheckoutApplication.SUBSCRIPTIONS;
+import org.solovyev.android.checkout.BillingRequests;
+import org.solovyev.android.checkout.Checkout;
+import org.solovyev.android.checkout.Inventory;
+import org.solovyev.android.checkout.Purchase;
+import org.solovyev.android.checkout.RequestListener;
+import org.solovyev.android.checkout.ResponseCodes;
+import org.solovyev.android.checkout.Sku;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -38,19 +41,16 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Toast;
 
-import org.solovyev.android.checkout.BillingRequests;
-import org.solovyev.android.checkout.Checkout;
-import org.solovyev.android.checkout.Inventory;
-import org.solovyev.android.checkout.Purchase;
-import org.solovyev.android.checkout.RequestListener;
-import org.solovyev.android.checkout.ResponseCodes;
-import org.solovyev.android.checkout.Sku;
-
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
 import javax.annotation.Nonnull;
+
+import static org.solovyev.android.checkout.ProductTypes.IN_APP;
+import static org.solovyev.android.checkout.ProductTypes.SUBSCRIPTION;
+import static org.solovyev.android.checkout.app.CheckoutApplication.IN_APPS;
+import static org.solovyev.android.checkout.app.CheckoutApplication.SUBSCRIPTIONS;
 
 public class SkusFragment extends BaseListFragment {
 
@@ -100,7 +100,7 @@ public class SkusFragment extends BaseListFragment {
     }
 
     private void consume(@Nonnull final String token, @Nonnull final RequestListener<Object> onConsumed) {
-        checkout.whenReady(new Checkout.ListenerAdapter() {
+        checkout.whenReady(new Checkout.EmptyListener() {
             @Override
             public void onReady(@Nonnull BillingRequests requests) {
                 requests.consume(token, onConsumed);
@@ -109,7 +109,7 @@ public class SkusFragment extends BaseListFragment {
     }
 
     private void purchase(@Nonnull final Sku sku) {
-        checkout.whenReady(new Checkout.ListenerAdapter() {
+        checkout.whenReady(new Checkout.EmptyListener() {
             @Override
             public void onReady(@Nonnull BillingRequests requests) {
                 requests.purchase(sku, null, checkout.getPurchaseFlow());
@@ -127,7 +127,7 @@ public class SkusFragment extends BaseListFragment {
     private class OnChangeSubClickListener implements SkusAdapter.OnChangeSubClickListener {
         @Override
         public void onClick(@Nonnull final SkuUi skuUi) {
-            checkout.whenReady(new Checkout.ListenerAdapter() {
+            checkout.whenReady(new Checkout.EmptyListener() {
                 @Override
                 public void onReady(@Nonnull BillingRequests requests) {
                     final List<String> oldSkus = Collections.singletonList(skuUi.sku.id.code);
@@ -172,7 +172,7 @@ public class SkusFragment extends BaseListFragment {
     private class InventoryLoadedCallback implements Inventory.Callback {
         @Override
         public void onLoaded(@Nonnull final Inventory.Products products) {
-            checkout.whenReady(new Checkout.ListenerAdapter() {
+            checkout.whenReady(new Checkout.EmptyListener() {
                 @Override
                 public void onReady(@Nonnull BillingRequests requests) {
                     requests.isChangeSubscriptionSupported(new RequestListener<Object>() {

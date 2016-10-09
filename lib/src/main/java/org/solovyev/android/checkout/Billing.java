@@ -76,7 +76,7 @@ public final class Billing {
     @Nonnull
     private static final String TAG = "Checkout";
     @Nonnull
-    private static final EmptyListener sEmptyListener = new EmptyListener();
+    private static final EmptyRequestListener sEmptyListener = new EmptyRequestListener();
     @Nonnull
     private static Logger sLogger = new DefaultLogger();
 
@@ -622,21 +622,6 @@ public final class Billing {
          * automatically
          */
         boolean isAutoConnect();
-    }
-
-    /**
-     * Dummy listener, used if user didn't provide {@link RequestListener}
-     *
-     * @param <R> type of result
-     */
-    private static class EmptyListener<R> implements RequestListener<R> {
-        @Override
-        public void onSuccess(@Nonnull R result) {
-        }
-
-        @Override
-        public void onError(int response, @Nonnull Exception e) {
-        }
     }
 
     /**

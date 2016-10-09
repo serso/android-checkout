@@ -40,8 +40,8 @@ import static java.util.Collections.unmodifiableCollection;
 import static java.util.Collections.unmodifiableList;
 
 /**
- * Class which loads information about products, SKUs and purchases. This class can't be
- * instantiated manually but only through {@link Checkout#loadInventory(Request, Callback)} or
+ * Class that can load information about products, SKUs and purchases. This class can't be
+ * instantiated directly but only through {@link Checkout#loadInventory(Request, Callback)} or
  * {@link Checkout#makeInventory()} method calls.
  * This class lifecycle is bound to the lifecycle of {@link Checkout} in which it was created. If
  * {@link Checkout} stops this class loading also stops and no

@@ -57,10 +57,9 @@ import javax.annotation.concurrent.GuardedBy;
  *    protected void onCreate(Bundle savedInstanceState) {
  *         super.onCreate(savedInstanceState);
  *         // ...
- *         mCheckout.start(new Checkout.ListenerAdapter() {
- *              public void onReady(BillingRequests requests, String product, boolean
- * billingSupported) {
- *                      if (billingSupported) {
+ *         mCheckout.start(new Checkout.EmptyListener() {
+ *              public void onReady(BillingRequests requests, String product, boolean supported) {
+ *                      if (supported) {
  *                          // billing for a product is supported
  *                          // ...
  *                      }
@@ -82,10 +81,10 @@ import javax.annotation.concurrent.GuardedBy;
  * }
  * }</pre>
  * <br/>
- * It is possible to call {@link #start()}/{@link #stop()} several times if you want know that in
- * some circumstances no Billing information is needed (internally the Billing service might be
- * unbound from the application). Be aware, though, that {@link #stop()} will cancel all pending
- * requests and remove all set listeners.
+ * If no more billing information is needed {@link Checkout} can be stopped via {@link #stop()}
+ * method call (internally the Billing service might be unbound from the application).
+ * If needed {@link #start()} can be used to start {@link Checkout} over. Be aware, though, that
+ * {@link #stop()} will cancel all pending requests and remove all previously set listeners.
  * </p>
  * <p>
  * As soon as Billing API is ready for product
@@ -140,16 +139,24 @@ public class Checkout {
         return new Checkout(null, billing);
     }
 
-
     @Nonnull
     Context getContext() {
         return mBilling.getContext();
     }
 
+    /**
+     * Same as {@link #start(Listener)} but with no initial request listener.
+     */
     public void start() {
         start(null);
     }
 
+    /**
+     * Starts this {@link Checkout} and sends an initial request that checks whether billing is
+     * supported for each product available in the Billing API.
+     *
+     * @param listener initial request listener
+     */
     public void start(@Nullable final Listener listener) {
         Check.isMainThread();
 
@@ -178,6 +185,15 @@ public class Checkout {
         }
     }
 
+    /**
+     * Adds an initial request listener to this {@link Checkout} if the initial request hasn't
+     * finished yet or calls appropriate methods of the passed listener if some/all data has
+     * already been loaded.
+     * Depending on the current state of {@link Checkout} some methods of the passed listener might
+     * be called synchronously while other - asynchronously.
+     *
+     * @param listener listener which is notified about the initial request's results
+     */
     public void whenReady(@Nonnull Listener listener) {
         Check.isMainThread();
 
@@ -218,22 +234,25 @@ public class Checkout {
     }
 
     /**
-     * Creates an {@link Inventory} object according to the {@link Billing.Configuration}. This
-     * method also starts loading a list of {@link Sku}s in the created {@link Inventory}
+     * Creates an {@link Inventory} object related to this {@link Checkout} instance. This
+     * method also starts loading data defined by the passed inventory <var>request</var>.
      *
-     * @param skus list of SKU ids to be loaded in the inventory
+     * @param request  request that defines what data should be loaded
      * @param callback inventory listener
      * @return inventory
      */
     @Nonnull
-    public Inventory loadInventory(@Nonnull Inventory.Request skus, @Nonnull Inventory.Callback callback) {
+    public Inventory loadInventory(@Nonnull Inventory.Request request, @Nonnull Inventory.Callback callback) {
         final Inventory inventory = makeInventory();
-        inventory.load(skus, callback);
+        inventory.load(request, callback);
         return inventory;
     }
 
     /**
-     * Creates an {@link Inventory} object according to the {@link Billing.Configuration}.
+     * Creates an {@link Inventory} object related to this {@link Checkout} instance. The created
+     * {@link Inventory} will use a fall-back {@link Inventory} if it is returned from
+     * {@link Billing.Configuration#getFallbackInventory(Checkout, Executor)} method.
+     *
      * @return inventory
      */
     @Nonnull
@@ -278,6 +297,10 @@ public class Checkout {
         }
     }
 
+    /**
+     * @param product product
+     * @return the last loaded value for the given product
+     */
     public boolean isBillingSupported(@Nonnull String product) {
         Check.isTrue(ProductTypes.ALL.contains(product), "Product should be added to the products list");
         Check.isTrue(mSupportedProducts.containsKey(product), "Billing information is not ready yet");
@@ -295,16 +318,16 @@ public class Checkout {
      */
     public interface Listener {
         /**
-         * Called when {@link BillingRequests#isBillingSupported(String, RequestListener)} finished
-         * for all products
+         * Called when {@link BillingRequests#isBillingSupported(String, RequestListener)} finishes
+         * for all the products
          *
          * @param requests requests ready to use
          */
         void onReady(@Nonnull BillingRequests requests);
 
         /**
-         * Called when {@link BillingRequests#isBillingSupported(String, RequestListener)} finished
-         * for <var>product</var> with <var>billingSupported</var> result
+         * Called when {@link BillingRequests#isBillingSupported(String, RequestListener)} finishes
+         * for a <var>product</var> with <var>billingSupported</var> result
          *
          * @param requests         requests ready to use
          * @param product          product for which check was done
@@ -314,12 +337,11 @@ public class Checkout {
     }
 
     /**
-     * This adapter class provides empty implementations of the methods from {@link
-     * Checkout.Listener}. Any custom listener that cares only about a subset of the methods of this
-     * listener can simply subclass this adapter class instead of implementing the interface
-     * directly.
+     * Empty implementation of  {@link Checkout.Listener}. Any custom listener that cares only
+     * about a subset of the methods of {@link Checkout.Listener} can subclass this class and
+     * implement only the methods it is interested in.
      */
-    public static abstract class ListenerAdapter implements Listener {
+    public static abstract class EmptyListener implements Listener {
         @Override
         public void onReady(@Nonnull BillingRequests requests) {
         }

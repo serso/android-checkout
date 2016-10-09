@@ -45,7 +45,7 @@ import javax.annotation.Nullable;
  *  }
  *
  *  protected void purchase(final String product, final String sku) {
- *      mCheckout.whenReady(new Checkout.ListenerAdapter() {
+ *      mCheckout.whenReady(new Checkout.EmptyListener() {
  *          public void onReady(BillingRequests requests) {
  *              requests.purchase(product, sku, null, checkout.getPurchaseFlow());
  *          }
@@ -182,7 +182,7 @@ public final class ActivityCheckout extends Checkout {
      *  }
      *
      *  protected void purchase(final String product, final String sku) {
-     *      mCheckout.whenReady(new Checkout.ListenerAdapter() {
+     *      mCheckout.whenReady(new Checkout.EmptyListener() {
      *          public void onReady(BillingRequests requests) {
      *              // listener will be unregistered when the purchase flow finishes. If this
      *              // method is called several times with the same requestCode an exception is
