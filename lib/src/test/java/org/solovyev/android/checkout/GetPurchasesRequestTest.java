@@ -123,8 +123,8 @@ public class GetPurchasesRequestTest extends RequestTestBase {
 
         request.start(service, "test");
 
-        assertNotNull(l.purchases);
-        assertTrue(l.purchases.list.size() == 4);
+        assertNotNull(l.mPurchases);
+        assertTrue(l.mPurchases.list.size() == 4);
     }
 
     @Test
@@ -175,11 +175,11 @@ public class GetPurchasesRequestTest extends RequestTestBase {
 
     private static class PurchasesAwareRequestListener implements RequestListener<Purchases> {
         @Nullable
-        Purchases purchases;
+        Purchases mPurchases;
 
         @Override
         public void onSuccess(@Nonnull Purchases result) {
-            this.purchases = result;
+            mPurchases = result;
         }
 
         @Override

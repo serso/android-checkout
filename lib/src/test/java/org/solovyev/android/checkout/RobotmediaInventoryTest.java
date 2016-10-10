@@ -22,8 +22,6 @@
 
 package org.solovyev.android.checkout;
 
-import static org.solovyev.android.checkout.Tests.sameThreadExecutor;
-
 import org.junit.Before;
 import org.robolectric.RuntimeEnvironment;
 
@@ -31,19 +29,17 @@ import java.util.List;
 
 import javax.annotation.Nonnull;
 
+import static org.solovyev.android.checkout.Tests.sameThreadExecutor;
+
 public class RobotmediaInventoryTest extends InventoryTestBase {
 
     @Nonnull
-    private BillingDB db;
+    private BillingDB mDb;
 
     static void insertPurchases(@Nonnull BillingDB db, @Nonnull List<Purchase> purchases) {
         for (Purchase purchase : purchases) {
             db.insert(toTransaction(purchase));
         }
-    }
-
-    @Override
-    protected void insertSkus(@Nonnull String product, @Nonnull List<Sku> skus) throws Exception {
     }
 
     @Nonnull
@@ -54,9 +50,13 @@ public class RobotmediaInventoryTest extends InventoryTestBase {
     }
 
     @Override
+    protected void insertSkus(@Nonnull String product, @Nonnull List<Sku> skus) throws Exception {
+    }
+
+    @Override
     @Before
     public void setUp() throws Exception {
-        db = new BillingDB(RuntimeEnvironment.application);
+        mDb = new BillingDB(RuntimeEnvironment.application);
         super.setUp();
     }
 
@@ -81,6 +81,6 @@ public class RobotmediaInventoryTest extends InventoryTestBase {
 
     @Override
     protected void insertPurchases(@Nonnull String product, @Nonnull List<Purchase> purchases) throws Exception {
-        insertPurchases(db, purchases);
+        insertPurchases(mDb, purchases);
     }
 }

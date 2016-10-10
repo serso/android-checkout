@@ -22,19 +22,19 @@
 
 package org.solovyev.android.checkout;
 
-import static java.util.Arrays.asList;
-import static org.junit.Assert.assertEquals;
-import static org.solovyev.android.checkout.ProductTypes.IN_APP;
-import static org.solovyev.android.checkout.ProductTypes.SUBSCRIPTION;
-
-import android.os.RemoteException;
-
 import org.junit.Assert;
 import org.junit.Test;
+
+import android.os.RemoteException;
 
 import java.util.List;
 
 import javax.annotation.Nonnull;
+
+import static java.util.Arrays.asList;
+import static org.junit.Assert.assertEquals;
+import static org.solovyev.android.checkout.ProductTypes.IN_APP;
+import static org.solovyev.android.checkout.ProductTypes.SUBSCRIPTION;
 
 public class CheckoutInventoryTest extends InventoryTestBase {
 
@@ -50,12 +50,12 @@ public class CheckoutInventoryTest extends InventoryTestBase {
 
     @Override
     protected void insertPurchases(@Nonnull String product, @Nonnull List<Purchase> purchases) throws RemoteException {
-        Tests.mockGetPurchases(billing, product, purchases);
+        Tests.mockGetPurchases(mBilling, product, purchases);
     }
 
     @Override
     protected void insertSkus(@Nonnull String product, @Nonnull List<Sku> skus) throws Exception {
-        Tests.mockGetSkuDetails(billing, product, skus);
+        Tests.mockGetSkuDetails(mBilling, product, skus);
     }
 
     @Test
@@ -67,7 +67,7 @@ public class CheckoutInventoryTest extends InventoryTestBase {
                 .loadAllPurchases()
                 .loadSkus(IN_APP, "in_app_01")
                 .loadSkus(SUBSCRIPTION, "sub_01");
-        final Checkout checkout = Checkout.forApplication(billing);
+        final Checkout checkout = Checkout.forApplication(mBilling);
 
         final CheckoutInventory inventory = new CheckoutInventory(checkout);
         final TestCallback listener = new TestCallback();
@@ -76,10 +76,10 @@ public class CheckoutInventoryTest extends InventoryTestBase {
 
         Tests.waitWhileLoading(inventory);
 
-        final Inventory.Product app = listener.products.get(IN_APP);
+        final Inventory.Product app = listener.mProducts.get(IN_APP);
         Assert.assertTrue(app.getSkus().isEmpty());
         Assert.assertFalse(app.getPurchases().isEmpty());
-        final Inventory.Product sub = listener.products.get(SUBSCRIPTION);
+        final Inventory.Product sub = listener.mProducts.get(SUBSCRIPTION);
         Assert.assertTrue(sub.getSkus().isEmpty());
         Assert.assertFalse(sub.getPurchases().isEmpty());
     }
@@ -91,7 +91,7 @@ public class CheckoutInventoryTest extends InventoryTestBase {
         final Inventory.Request request = Inventory.Request.create()
                 .loadSkus(IN_APP, "in_app_01")
                 .loadSkus(SUBSCRIPTION, "sub_01");
-        final Checkout checkout = Checkout.forApplication(billing);
+        final Checkout checkout = Checkout.forApplication(mBilling);
 
         final CrashingCallback listener = new CrashingCallback();
         final CheckoutInventory inventory = new CheckoutInventory(checkout);
@@ -107,17 +107,17 @@ public class CheckoutInventoryTest extends InventoryTestBase {
     public void testShouldLoadSkus() throws Exception {
         populateSkus();
 
-        checkout.start();
+        mCheckout.start();
 
         final TestCallback c1 = new TestCallback();
-        inventory.load(Inventory.Request.create().loadSkus(SUBSCRIPTION, asList("subX", "sub2", "sub3")), c1);
+        mInventory.load(Inventory.Request.create().loadSkus(SUBSCRIPTION, asList("subX", "sub2", "sub3")), c1);
         final TestCallback c2 = new TestCallback();
-        inventory.load(Inventory.Request.create().loadSkus(IN_APP, asList("1", "2", "5")), c2);
+        mInventory.load(Inventory.Request.create().loadSkus(IN_APP, asList("1", "2", "5")), c2);
 
-        Tests.waitWhileLoading(inventory);
+        Tests.waitWhileLoading(mInventory);
 
-        assertEquals(2, c1.products.get(SUBSCRIPTION).getSkus().size());
-        assertEquals(2, c2.products.get(IN_APP).getSkus().size());
+        assertEquals(2, c1.mProducts.get(SUBSCRIPTION).getSkus().size());
+        assertEquals(2, c2.mProducts.get(IN_APP).getSkus().size());
     }
 
     private static final class CrashingCallback implements Inventory.Callback {

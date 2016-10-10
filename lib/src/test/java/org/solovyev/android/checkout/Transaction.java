@@ -41,8 +41,10 @@ public class Transaction {
     public String productId;
     public PurchaseState purchaseState;
     public long purchaseTime;
+
     public Transaction() {
     }
+
     public Transaction(String orderId, String productId, String packageName, PurchaseState purchaseState,
                        String notificationId, long purchaseTime, String developerPayload) {
         this.orderId = orderId;

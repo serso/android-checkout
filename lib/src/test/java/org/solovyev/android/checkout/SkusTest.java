@@ -46,31 +46,31 @@ import static org.junit.Assert.assertTrue;
 public class SkusTest {
 
     @Nonnull
-    private Skus skus;
+    private Skus mSkus;
 
     @Before
     public void setUp() throws Exception {
-        skus = new Skus("test", asList(newSku("1"), newSku("2"), newSku("3")));
+        mSkus = new Skus("test", asList(newSku("1"), newSku("2"), newSku("3")));
     }
 
     @Test
     public void testShouldReturnSkuById() throws Exception {
-        assertNotNull(skus.getSku("2"));
+        assertNotNull(mSkus.getSku("2"));
     }
 
     @Test
     public void testShouldNotReturnSkuById() throws Exception {
-        assertNull(skus.getSku("4"));
+        assertNull(mSkus.getSku("4"));
     }
 
     @Test
     public void testShouldHaveSku() throws Exception {
-        assertTrue(skus.hasSku("2"));
+        assertTrue(mSkus.hasSku("2"));
     }
 
     @Test
     public void testShouldNotHaveSku() throws Exception {
-        assertFalse(skus.hasSku("4"));
+        assertFalse(mSkus.hasSku("4"));
     }
 
     @Test

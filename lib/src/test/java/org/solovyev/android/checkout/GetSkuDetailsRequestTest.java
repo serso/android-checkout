@@ -104,19 +104,19 @@ public class GetSkuDetailsRequestTest extends RequestTestBase {
 
         request.start(service, "");
 
-        assertNotNull(l.skus);
+        assertNotNull(l.mSkus);
         for (String sku : skus) {
-            assertTrue(l.skus.hasSku(sku));
+            assertTrue(l.mSkus.hasSku(sku));
         }
-        assertTrue(l.skus.list.size() == 97);
+        assertTrue(l.mSkus.list.size() == 97);
     }
 
     private static class RequestListenerSpy implements RequestListener<Skus> {
-        private Skus skus;
+        private Skus mSkus;
 
         @Override
         public void onSuccess(@Nonnull Skus skus) {
-            this.skus = skus;
+            mSkus = skus;
         }
 
         @Override

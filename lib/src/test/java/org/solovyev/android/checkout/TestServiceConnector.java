@@ -28,23 +28,23 @@ import javax.annotation.Nonnull;
 
 class TestServiceConnector implements Billing.ServiceConnector {
     @Nonnull
-    public final IInAppBillingService service;
+    public final IInAppBillingService mService;
     @Nonnull
-    private final Billing billing;
+    private final Billing mBilling;
 
     public TestServiceConnector(@Nonnull Billing billing, @Nonnull IInAppBillingService service) {
-        this.billing = billing;
-        this.service = service;
+        mBilling = billing;
+        mService = service;
     }
 
     @Override
     public boolean connect() {
-        billing.setService(service, true);
+        mBilling.setService(mService, true);
         return true;
     }
 
     @Override
     public void disconnect() {
-        billing.setService(null, false);
+        mBilling.setService(null, false);
     }
 }

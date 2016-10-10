@@ -34,14 +34,13 @@ import static org.mockito.Mockito.mock;
 class AsyncServiceConnector implements Billing.ServiceConnector {
 
     @Nonnull
-    private final Executor background;
-
+    private final Executor mBackground;
     @Nonnull
-    private final Billing billing;
+    private final Billing mBilling;
 
     public AsyncServiceConnector(@Nonnull Billing billing) {
-        this.billing = billing;
-        background = Executors.newSingleThreadExecutor();
+        mBilling = billing;
+        mBackground = Executors.newSingleThreadExecutor();
     }
 
     @Override
@@ -51,10 +50,10 @@ class AsyncServiceConnector implements Billing.ServiceConnector {
     }
 
     private void setService(final IInAppBillingService service) {
-        background.execute(new Runnable() {
+        mBackground.execute(new Runnable() {
             @Override
             public void run() {
-                billing.setService(service, service != null);
+                mBilling.setService(service, service != null);
             }
         });
     }

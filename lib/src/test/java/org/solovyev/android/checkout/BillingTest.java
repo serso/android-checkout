@@ -51,10 +51,9 @@ import static org.solovyev.android.checkout.ResponseCodes.OK;
 public class BillingTest {
 
     @Nonnull
-    private Billing billing;
-
+    private Billing mBilling;
     @Nonnull
-    private Random random;
+    private Random mRandom;
 
     @Nonnull
     static Bundle newPurchasesBundle(long id, boolean withContinuationToken) throws JSONException {
@@ -70,8 +69,8 @@ public class BillingTest {
 
     @Before
     public void setUp() throws Exception {
-        billing = Tests.newSynchronousBilling();
-        random = new Random(currentTimeMillis());
+        mBilling = Tests.newSynchronousBilling();
+        mRandom = new Random(currentTimeMillis());
     }
 
     @Test
@@ -79,9 +78,9 @@ public class BillingTest {
         final Billing.ServiceConnector connector = mock(Billing.ServiceConnector.class);
         when(connector.connect()).thenReturn(false);
 
-        billing.setConnector(connector);
+        mBilling.setConnector(connector);
         final RequestListener<Object> l = mock(RequestListener.class);
-        billing.getRequests().isBillingSupported("p", l);
+        mBilling.getRequests().isBillingSupported("p", l);
         verify(l, times(1)).onError(eq(ResponseCodes.SERVICE_NOT_CONNECTED), any(BillingException.class));
         verify(l, times(0)).onSuccess(any());
     }
@@ -92,14 +91,14 @@ public class BillingTest {
         when(connector.connect()).then(new Answer<Object>() {
             @Override
             public Object answer(InvocationOnMock invocation) throws Throwable {
-                billing.setService(null, true);
+                mBilling.setService(null, true);
                 return true;
             }
         });
 
-        billing.setConnector(connector);
+        mBilling.setConnector(connector);
         final RequestListener<Object> l = mock(RequestListener.class);
-        billing.getRequests().isBillingSupported("p", l);
+        mBilling.getRequests().isBillingSupported("p", l);
         verify(l, times(1)).onError(eq(ResponseCodes.SERVICE_NOT_CONNECTED), any(BillingException.class));
         verify(l, times(0)).onSuccess(any());
     }
@@ -112,14 +111,14 @@ public class BillingTest {
         when(connector.connect()).then(new Answer<Object>() {
             @Override
             public Object answer(InvocationOnMock invocation) throws Throwable {
-                billing.setService(service, true);
+                mBilling.setService(service, true);
                 return true;
             }
         });
 
-        billing.setConnector(connector);
+        mBilling.setConnector(connector);
         final RequestListener<Object> l = mock(RequestListener.class);
-        billing.getRequests().isBillingSupported("p", l);
+        mBilling.getRequests().isBillingSupported("p", l);
         verify(l, times(0)).onError(anyInt(), any(BillingException.class));
         verify(l, times(1)).onSuccess(any());
     }
@@ -128,47 +127,47 @@ public class BillingTest {
     public void testStates() throws Exception {
         final Billing.ServiceConnector connector = mock(Billing.ServiceConnector.class);
         when(connector.connect()).thenReturn(true);
-        billing.setConnector(connector);
-        billing.connect();
+        mBilling.setConnector(connector);
+        mBilling.connect();
 
-        assertEquals(Billing.State.CONNECTING, billing.getState());
-        billing.setService(mock(IInAppBillingService.class), true);
-        assertEquals(Billing.State.CONNECTED, billing.getState());
-        billing.disconnect();
-        assertEquals(Billing.State.DISCONNECTING, billing.getState());
-        billing.setService(null, false);
-        assertEquals(Billing.State.DISCONNECTED, billing.getState());
+        assertEquals(Billing.State.CONNECTING, mBilling.getState());
+        mBilling.setService(mock(IInAppBillingService.class), true);
+        assertEquals(Billing.State.CONNECTED, mBilling.getState());
+        mBilling.disconnect();
+        assertEquals(Billing.State.DISCONNECTING, mBilling.getState());
+        mBilling.setService(null, false);
+        assertEquals(Billing.State.DISCONNECTED, mBilling.getState());
     }
 
     @Test
     public void testShouldDisconnectOnlyIfNotInInitialState() throws Exception {
-        billing.setState(Billing.State.INITIAL);
-        billing.setService(null, false);
+        mBilling.setState(Billing.State.INITIAL);
+        mBilling.setService(null, false);
 
-        assertEquals(Billing.State.INITIAL, billing.getState());
+        assertEquals(Billing.State.INITIAL, mBilling.getState());
 
-        billing.setState(Billing.State.DISCONNECTING);
-        billing.setService(null, false);
+        mBilling.setState(Billing.State.DISCONNECTING);
+        mBilling.setService(null, false);
 
-        assertEquals(Billing.State.DISCONNECTED, billing.getState());
+        assertEquals(Billing.State.DISCONNECTED, mBilling.getState());
 
-        billing.setState(Billing.State.CONNECTED);
-        billing.setService(null, false);
+        mBilling.setState(Billing.State.CONNECTED);
+        mBilling.setService(null, false);
 
-        assertEquals(Billing.State.DISCONNECTED, billing.getState());
+        assertEquals(Billing.State.DISCONNECTED, mBilling.getState());
     }
 
     @Test
     public void testShouldConnectOnlyIfConnecting() throws Exception {
-        billing.setState(Billing.State.FAILED);
-        billing.setService(mock(IInAppBillingService.class), true);
+        mBilling.setState(Billing.State.FAILED);
+        mBilling.setService(mock(IInAppBillingService.class), true);
 
-        assertEquals(Billing.State.FAILED, billing.getState());
+        assertEquals(Billing.State.FAILED, mBilling.getState());
 
-        billing.setState(Billing.State.CONNECTING);
-        billing.setService(mock(IInAppBillingService.class), true);
+        mBilling.setState(Billing.State.CONNECTING);
+        mBilling.setService(mock(IInAppBillingService.class), true);
 
-        assertEquals(Billing.State.CONNECTED, billing.getState());
+        assertEquals(Billing.State.CONNECTED, mBilling.getState());
     }
 
     @Test
@@ -184,13 +183,13 @@ public class BillingTest {
         final RequestListener l = new CountDownListener(latch);
         for (int i = 0; i < REQUESTS; i++) {
             if (i % 10 == 0) {
-                if (random.nextBoolean()) {
+                if (mRandom.nextBoolean()) {
                     b.connect();
                 } else {
                     c.disconnect();
                 }
             }
-            b.runWhenConnected(new SleepingRequest(random.nextInt(SLEEP)), l, null);
+            b.runWhenConnected(new SleepingRequest(mRandom.nextInt(SLEEP)), l, null);
         }
         b.connect();
         assertTrue(latch.await(SLEEP * REQUESTS, TimeUnit.MILLISECONDS));

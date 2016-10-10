@@ -22,6 +22,17 @@
 
 package org.solovyev.android.checkout;
 
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.robolectric.RobolectricTestRunner;
+import org.robolectric.annotation.Config;
+
+import java.util.List;
+
+import javax.annotation.Nonnull;
+
 import static java.util.Arrays.asList;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
@@ -37,51 +48,28 @@ import static org.solovyev.android.checkout.Purchase.State.PURCHASED;
 import static org.solovyev.android.checkout.Purchase.State.REFUNDED;
 import static org.solovyev.android.checkout.PurchaseTest.verifyPurchase;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
-import org.robolectric.annotation.Config;
-
-import java.util.List;
-
-import javax.annotation.Nonnull;
-
 @RunWith(RobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public abstract class InventoryTestBase {
 
-    private static class CountingCallback implements Inventory.Callback {
-        int mCount = 0;
-
-        @Override
-        public void onLoaded(@Nonnull Inventory.Products products) {
-            mCount++;
-        }
-    }
-
     @Nonnull
-    protected Billing billing;
-
+    protected Billing mBilling;
     @Nonnull
-    protected Checkout checkout;
-
+    protected Checkout mCheckout;
     @Nonnull
-    protected Inventory inventory;
-
+    protected Inventory mInventory;
     @Nonnull
     protected Inventory.Request mRequest;
 
     @Before
     public void setUp() throws Exception {
-        billing = newBilling();
+        mBilling = newBilling();
         mRequest = Inventory.Request.create()
                 .loadAllPurchases()
                 .loadSkus(IN_APP, asList("1", "2", "3", "4", "6"))
                 .loadSkus(SUBSCRIPTION, asList("sub1", "sub2", "sub3", "sub4"));
-        checkout = Checkout.forApplication(billing);
-        inventory = newInventory(checkout);
+        mCheckout = Checkout.forApplication(mBilling);
+        mInventory = newInventory(mCheckout);
     }
 
     @Nonnull
@@ -98,14 +86,14 @@ public abstract class InventoryTestBase {
         populateSkus();
 
         final TestCallback listener = new TestCallback();
-        checkout.start();
-        inventory.load(mRequest, listener);
+        mCheckout.start();
+        mInventory.load(mRequest, listener);
 
-        Tests.waitWhileLoading(inventory);
+        Tests.waitWhileLoading(mInventory);
 
         final boolean complete = shouldVerifyPurchaseCompletely();
 
-        final Inventory.Product inApp = listener.products.get(IN_APP);
+        final Inventory.Product inApp = listener.mProducts.get(IN_APP);
         final List<Purchase> actualInApps = inApp.getPurchases();
         assertEquals(4, actualInApps.size());
 
@@ -114,7 +102,7 @@ public abstract class InventoryTestBase {
         verifyPurchase(actualInApps.get(2), 2, CANCELLED, complete, false);
         verifyPurchase(actualInApps.get(3), 1, PURCHASED, complete, false);
 
-        final Inventory.Product sub = listener.products.get(SUBSCRIPTION);
+        final Inventory.Product sub = listener.mProducts.get(SUBSCRIPTION);
         final List<Purchase> actualSubs = sub.getPurchases();
         assertEquals(4, actualSubs.size());
 
@@ -166,53 +154,53 @@ public abstract class InventoryTestBase {
         populatePurchases();
         populateSkus();
 
-        checkout.start();
+        mCheckout.start();
 
         final CountingCallback c = new CountingCallback();
-        inventory.load(Inventory.Request.create().loadPurchases(IN_APP), c);
-        inventory.load(Inventory.Request.create().loadPurchases(SUBSCRIPTION), c);
-        inventory.load(Inventory.Request.create().loadSkus(SUBSCRIPTION, asList("sub1", "sub2", "sub3", "sub4")), c);
-        inventory.load(Inventory.Request.create().loadSkus(IN_APP, asList("1", "2", "3", "4", "6")), c);
-        inventory.load(mRequest, c);
+        mInventory.load(Inventory.Request.create().loadPurchases(IN_APP), c);
+        mInventory.load(Inventory.Request.create().loadPurchases(SUBSCRIPTION), c);
+        mInventory.load(Inventory.Request.create().loadSkus(SUBSCRIPTION, asList("sub1", "sub2", "sub3", "sub4")), c);
+        mInventory.load(Inventory.Request.create().loadSkus(IN_APP, asList("1", "2", "3", "4", "6")), c);
+        mInventory.load(mRequest, c);
 
-        Tests.waitWhileLoading(inventory);
+        Tests.waitWhileLoading(mInventory);
 
         assertEquals(5, c.mCount);
     }
 
     @Test
     public void testShouldCancelTaskById() throws Exception {
-        checkout.start();
-        final int task1 = inventory.load(mRequest, mock(Inventory.Callback.class));
-        final int task2 = inventory.load(mRequest, mock(Inventory.Callback.class));
-        Assert.assertTrue(inventory.isLoading());
-        inventory.cancel(task1);
-        Assert.assertTrue(inventory.isLoading());
-        inventory.cancel(task2);
-        Assert.assertFalse(inventory.isLoading());
+        mCheckout.start();
+        final int task1 = mInventory.load(mRequest, mock(Inventory.Callback.class));
+        final int task2 = mInventory.load(mRequest, mock(Inventory.Callback.class));
+        Assert.assertTrue(mInventory.isLoading());
+        mInventory.cancel(task1);
+        Assert.assertTrue(mInventory.isLoading());
+        mInventory.cancel(task2);
+        Assert.assertFalse(mInventory.isLoading());
     }
 
     @Test
     public void testShouldCancelAllTasks() throws Exception {
-        checkout.start();
-        inventory.load(mRequest, mock(Inventory.Callback.class));
-        inventory.load(mRequest, mock(Inventory.Callback.class));
-        Assert.assertTrue(inventory.isLoading());
-        inventory.cancel();
-        Assert.assertFalse(inventory.isLoading());
+        mCheckout.start();
+        mInventory.load(mRequest, mock(Inventory.Callback.class));
+        mInventory.load(mRequest, mock(Inventory.Callback.class));
+        Assert.assertTrue(mInventory.isLoading());
+        mInventory.cancel();
+        Assert.assertFalse(mInventory.isLoading());
     }
 
     @Test
     public void testCanceledCallbackShouldNotGetCalled() throws Exception {
-        checkout.start();
+        mCheckout.start();
         final Inventory.Callback c1 = mock(Inventory.Callback.class);
         final Inventory.Callback c2 = mock(Inventory.Callback.class);
-        final int task1 = inventory.load(mRequest, c1);
-        inventory.load(mRequest, c2);
+        final int task1 = mInventory.load(mRequest, c1);
+        mInventory.load(mRequest, c2);
 
-        inventory.cancel(task1);
+        mInventory.cancel(task1);
 
-        Tests.waitWhileLoading(inventory);
+        Tests.waitWhileLoading(mInventory);
         verify(c1, never()).onLoaded(anyProducts());
         verify(c2, times(1)).onLoaded(anyProducts());
     }
@@ -220,15 +208,16 @@ public abstract class InventoryTestBase {
     protected abstract boolean shouldVerifyPurchaseCompletely();
 
     protected abstract void insertPurchases(@Nonnull String product, @Nonnull List<Purchase> purchases) throws Exception;
+
     protected abstract void insertSkus(@Nonnull String product, @Nonnull List<Sku> skus) throws Exception;
 
     @Test
     public void testShouldCallListenerWhenLoaded() throws Exception {
         final Inventory.Callback c = mock(Inventory.Callback.class);
 
-        checkout.start();
-        inventory.load(mRequest, c);
-        Tests.waitWhileLoading(inventory);
+        mCheckout.start();
+        mInventory.load(mRequest, c);
+        Tests.waitWhileLoading(mInventory);
 
         verify(c, times(1)).onLoaded(anyProducts());
     }
@@ -241,23 +230,32 @@ public abstract class InventoryTestBase {
     @Test
     public void testListenerShouldBeCalledOnlyOnce() throws Exception {
         final Inventory.Callback l = mock(Inventory.Callback.class);
-        checkout.start();
-        inventory.load(mRequest, mock(Inventory.Callback.class));
-        inventory.load(mRequest, mock(Inventory.Callback.class));
-        inventory.load(mRequest, l);
-        Tests.waitWhileLoading(inventory);
-        inventory.load(mRequest, mock(Inventory.Callback.class));
-        inventory.load(mRequest, mock(Inventory.Callback.class));
+        mCheckout.start();
+        mInventory.load(mRequest, mock(Inventory.Callback.class));
+        mInventory.load(mRequest, mock(Inventory.Callback.class));
+        mInventory.load(mRequest, l);
+        Tests.waitWhileLoading(mInventory);
+        mInventory.load(mRequest, mock(Inventory.Callback.class));
+        mInventory.load(mRequest, mock(Inventory.Callback.class));
         verify(l, times(1)).onLoaded(anyProducts());
+    }
+
+    private static class CountingCallback implements Inventory.Callback {
+        int mCount = 0;
+
+        @Override
+        public void onLoaded(@Nonnull Inventory.Products products) {
+            mCount++;
+        }
     }
 
     static class TestCallback implements Inventory.Callback {
         @Nonnull
-        volatile Inventory.Products products;
+        volatile Inventory.Products mProducts;
 
         @Override
         public void onLoaded(@Nonnull Inventory.Products products) {
-            this.products = products;
+            this.mProducts = products;
         }
     }
 }

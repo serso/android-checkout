@@ -22,15 +22,15 @@
 
 package org.solovyev.android.checkout;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.solovyev.android.checkout.Purchase.State.CANCELLED;
-import static org.solovyev.android.checkout.Purchase.State.REFUNDED;
-
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
+
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.solovyev.android.checkout.Purchase.State.CANCELLED;
+import static org.solovyev.android.checkout.Purchase.State.REFUNDED;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(manifest = Config.NONE)

@@ -22,6 +22,18 @@
 
 package org.solovyev.android.checkout;
 
+import com.android.vending.billing.IInAppBillingService;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.robolectric.RuntimeEnvironment;
+
+import android.database.sqlite.SQLiteDatabase;
+
+import java.util.List;
+
+import javax.annotation.Nonnull;
+
 import static java.util.Arrays.asList;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.anyInt;
@@ -31,18 +43,6 @@ import static org.mockito.Mockito.when;
 import static org.solovyev.android.checkout.ProductTypes.IN_APP;
 import static org.solovyev.android.checkout.ProductTypes.SUBSCRIPTION;
 import static org.solovyev.android.checkout.Tests.sameThreadExecutor;
-
-import android.database.sqlite.SQLiteDatabase;
-
-import com.android.vending.billing.IInAppBillingService;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.robolectric.RuntimeEnvironment;
-
-import java.util.List;
-
-import javax.annotation.Nonnull;
 
 public class FallingBackInventoryTest extends InventoryTestBase {
 
@@ -54,7 +54,7 @@ public class FallingBackInventoryTest extends InventoryTestBase {
 
         super.setUp();
 
-        final IInAppBillingService service = ((TestServiceConnector) billing.getConnector()).service;
+        final IInAppBillingService service = ((TestServiceConnector) mBilling.getConnector()).mService;
         when(service.isBillingSupported(anyInt(), anyString(), eq(SUBSCRIPTION))).thenReturn(ResponseCodes.ERROR);
     }
 
@@ -62,17 +62,17 @@ public class FallingBackInventoryTest extends InventoryTestBase {
     public void testShouldLoadSkus() throws Exception {
         populateSkus();
 
-        checkout.start();
+        mCheckout.start();
 
         final TestCallback c1 = new TestCallback();
-        inventory.load(Inventory.Request.create().loadSkus(SUBSCRIPTION, asList("subX", "sub2", "sub3")), c1);
+        mInventory.load(Inventory.Request.create().loadSkus(SUBSCRIPTION, asList("subX", "sub2", "sub3")), c1);
         final TestCallback c2 = new TestCallback();
-        inventory.load(Inventory.Request.create().loadSkus(IN_APP, asList("1", "2", "5")), c2);
+        mInventory.load(Inventory.Request.create().loadSkus(IN_APP, asList("1", "2", "5")), c2);
 
-        Tests.waitWhileLoading(inventory);
+        Tests.waitWhileLoading(mInventory);
 
-        assertEquals(0, c1.products.get(SUBSCRIPTION).getSkus().size());
-        assertEquals(2, c2.products.get(IN_APP).getSkus().size());
+        assertEquals(0, c1.mProducts.get(SUBSCRIPTION).getSkus().size());
+        assertEquals(2, c2.mProducts.get(IN_APP).getSkus().size());
     }
 
     @Nonnull
@@ -97,7 +97,7 @@ public class FallingBackInventoryTest extends InventoryTestBase {
     @Override
     protected void insertPurchases(@Nonnull String product, @Nonnull List<Purchase> purchases) throws Exception {
         if (IN_APP.equals(product)) {
-            Tests.mockGetPurchases(billing, product, purchases);
+            Tests.mockGetPurchases(mBilling, product, purchases);
         } else {
             RobotmediaInventoryTest.insertPurchases(new BillingDB(RuntimeEnvironment.application), purchases);
         }
@@ -105,7 +105,7 @@ public class FallingBackInventoryTest extends InventoryTestBase {
 
     @Override
     protected void insertSkus(@Nonnull String product, @Nonnull List<Sku> skus) throws Exception {
-        Tests.mockGetSkuDetails(billing, product, skus);
+        Tests.mockGetSkuDetails(mBilling, product, skus);
     }
 
     @Test

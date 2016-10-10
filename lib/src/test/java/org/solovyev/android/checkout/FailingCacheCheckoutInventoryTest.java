@@ -22,15 +22,6 @@
 
 package org.solovyev.android.checkout;
 
-import static java.util.Arrays.asList;
-import static org.junit.Assert.assertTrue;
-import static org.solovyev.android.checkout.ProductTypes.IN_APP;
-import static org.solovyev.android.checkout.ProductTypes.SUBSCRIPTION;
-import static org.solovyev.android.checkout.Purchase.State.CANCELLED;
-import static org.solovyev.android.checkout.Purchase.State.EXPIRED;
-import static org.solovyev.android.checkout.Purchase.State.PURCHASED;
-import static org.solovyev.android.checkout.Purchase.State.REFUNDED;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -43,30 +34,36 @@ import java.util.concurrent.Executor;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+import static java.util.Arrays.asList;
+import static org.junit.Assert.assertTrue;
+import static org.solovyev.android.checkout.ProductTypes.IN_APP;
+import static org.solovyev.android.checkout.ProductTypes.SUBSCRIPTION;
+import static org.solovyev.android.checkout.Purchase.State.CANCELLED;
+import static org.solovyev.android.checkout.Purchase.State.EXPIRED;
+import static org.solovyev.android.checkout.Purchase.State.PURCHASED;
+import static org.solovyev.android.checkout.Purchase.State.REFUNDED;
+
 @RunWith(RobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class FailingCacheCheckoutInventoryTest {
     @Nonnull
-    protected FailingCache failingCache;
+    protected FailingCache mFailingCache;
     @Nonnull
-    protected Billing billing;
+    protected Billing mBilling;
     @Nonnull
-    private Checkout checkout;
-    @Nonnull
-    private Inventory inventory;
+    private Checkout mCheckout;
     @Nonnull
     private Inventory.Request mRequest;
 
     @Before
     public void setUp() throws Exception {
-        failingCache = new FailingCache();
-        billing = newBilling();
+        mFailingCache = new FailingCache();
+        mBilling = newBilling();
         mRequest = Inventory.Request.create()
                 .loadAllPurchases()
                 .loadSkus(IN_APP, asList("1", "2", "3", "4", "6"))
                 .loadSkus(SUBSCRIPTION, asList("sub1", "sub2", "sub3", "sub4"));
-        checkout = Checkout.forApplication(billing);
-        inventory = new CheckoutInventory(checkout);
+        mCheckout = Checkout.forApplication(mBilling);
     }
 
     protected void populatePurchases() throws Exception {
@@ -76,7 +73,7 @@ public class FailingCacheCheckoutInventoryTest {
                 Purchase.fromJson(PurchaseTest.newJson(3, REFUNDED), ""),
                 Purchase.fromJson(PurchaseTest.newJson(4, EXPIRED), "")
         );
-        Tests.mockGetPurchases(billing, IN_APP, expectedInApps);
+        Tests.mockGetPurchases(mBilling, IN_APP, expectedInApps);
 
         final List<Purchase> expectedSubs = asList(
                 Purchase.fromJson(PurchaseTest.newJsonSubscription(1, PURCHASED), ""),
@@ -84,21 +81,21 @@ public class FailingCacheCheckoutInventoryTest {
                 Purchase.fromJson(PurchaseTest.newJsonSubscription(3, REFUNDED), ""),
                 Purchase.fromJson(PurchaseTest.newJsonSubscription(4, EXPIRED), "")
         );
-        Tests.mockGetPurchases(billing, SUBSCRIPTION, expectedSubs);
+        Tests.mockGetPurchases(mBilling, SUBSCRIPTION, expectedSubs);
     }
 
     @Test
     public void testShouldContinueAfterCacheException() throws Exception {
         populatePurchases();
 
-        final CheckoutInventory inventory = new CheckoutInventory(checkout);
+        final CheckoutInventory inventory = new CheckoutInventory(mCheckout);
         final InventoryTestBase.TestCallback listener = new InventoryTestBase.TestCallback();
-        checkout.start();
+        mCheckout.start();
         inventory.load(mRequest, listener);
 
         Tests.waitWhileLoading(inventory);
 
-        assertTrue(failingCache.exceptionThrown);
+        assertTrue(mFailingCache.mExceptionThrown);
     }
 
     @Nonnull
@@ -113,7 +110,7 @@ public class FailingCacheCheckoutInventoryTest {
             @Nullable
             @Override
             public Cache getCache() {
-                return failingCache;
+                return mFailingCache;
             }
 
             @Nonnull
@@ -136,8 +133,7 @@ public class FailingCacheCheckoutInventoryTest {
     }
 
     private class FailingCache implements Cache {
-
-        boolean exceptionThrown;
+        boolean mExceptionThrown;
 
         @Nullable
         @Override
@@ -153,7 +149,7 @@ public class FailingCacheCheckoutInventoryTest {
         }
 
         private void throwException() {
-            exceptionThrown = true;
+            mExceptionThrown = true;
             throw new RuntimeException("Hello there!");
         }
 

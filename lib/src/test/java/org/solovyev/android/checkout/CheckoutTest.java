@@ -35,7 +35,6 @@ import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Nonnull;
 
-import static java.util.Arrays.asList;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
@@ -55,30 +54,24 @@ import static org.solovyev.android.checkout.Tests.newBilling;
 public class CheckoutTest {
 
     @Nonnull
-    private Billing billing;
-
-    @Nonnull
-    private Checkout checkout;
+    private Checkout mCheckout;
 
     @Before
     public void setUp() throws Exception {
-        billing = newBilling();
+        Billing billing = newBilling();
         billing.connect();
-        final IInAppBillingService service = ((TestServiceConnector) billing.getConnector()).service;
+        final IInAppBillingService service = ((TestServiceConnector) billing.getConnector()).mService;
         when(service.isBillingSupported(eq(3), anyString(), eq(IN_APP))).thenReturn(OK);
         when(service.isBillingSupported(eq(3), anyString(), eq(SUBSCRIPTION))).thenReturn(OK);
-        final Inventory.Request request = Inventory.Request.create()
-                .loadSkus(IN_APP, asList("1", "2", "3", "4", "6"))
-                .loadSkus(SUBSCRIPTION, asList("sub1", "sub2", "sub3", "sub4"));
-        checkout = Checkout.forApplication(billing);
+        mCheckout = Checkout.forApplication(billing);
     }
 
     @Test
     public void testAllProductsShouldBeSupported() throws Exception {
         final CountDownListener l = new CountDownListener();
 
-        checkout.whenReady(l);
-        checkout.start();
+        mCheckout.whenReady(l);
+        mCheckout.start();
 
         l.waitWhileLoading();
 

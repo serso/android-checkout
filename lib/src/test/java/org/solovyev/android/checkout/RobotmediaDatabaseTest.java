@@ -22,15 +22,6 @@
 
 package org.solovyev.android.checkout;
 
-import static java.util.Arrays.asList;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static org.solovyev.android.checkout.ProductTypes.IN_APP;
-import static org.solovyev.android.checkout.RobotmediaDatabase.makeInClause;
-import static org.solovyev.android.checkout.Tests.sameThreadExecutor;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -44,16 +35,23 @@ import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Nonnull;
 
+import static java.util.Arrays.asList;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.solovyev.android.checkout.ProductTypes.IN_APP;
+import static org.solovyev.android.checkout.RobotmediaDatabase.makeInClause;
+import static org.solovyev.android.checkout.Tests.sameThreadExecutor;
+
 @RunWith(RobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class RobotmediaDatabaseTest {
 
     @Nonnull
-    private Checkout checkout;
-
+    private Checkout mCheckout;
     @Nonnull
-    private BillingDB db;
-
+    private BillingDB mDb;
     @Nonnull
     private Inventory.Request mRequest;
 
@@ -62,16 +60,16 @@ public class RobotmediaDatabaseTest {
         final Billing billing = Tests.newBilling();
         billing.setMainThread(sameThreadExecutor());
         mRequest = Inventory.Request.create().loadSkus(IN_APP, asList("sku_0", "sku_1", "sku_2", "sku_3", "sku_4", "sku_6")).loadAllPurchases();
-        checkout = Checkout.forApplication(billing);
-        db = new BillingDB(RuntimeEnvironment.application);
+        mCheckout = Checkout.forApplication(billing);
+        mDb = new BillingDB(RuntimeEnvironment.application);
     }
 
     @Test
     public void testShouldCreateEmptyProductsIfError() throws Exception {
-        db.close();
+        mDb.close();
         RuntimeEnvironment.application.deleteDatabase(RobotmediaDatabase.NAME);
 
-        final RobotmediaInventory inventory = new RobotmediaInventory(checkout, sameThreadExecutor(), sameThreadExecutor());
+        final RobotmediaInventory inventory = new RobotmediaInventory(mCheckout, sameThreadExecutor(), sameThreadExecutor());
         final CountDownCallback l = new CountDownCallback();
         inventory.load(mRequest, l);
 
@@ -83,14 +81,14 @@ public class RobotmediaDatabaseTest {
 
     @Test
     public void testShouldReadTransactions() throws Exception {
-        db.insert(newTransaction(0));
-        db.insert(newTransaction(1));
-        db.insert(newTransaction(2));
-        db.insert(newTransaction(3));
-        db.insert(newTransaction(4));
-        db.insert(newTransaction(5));
+        mDb.insert(newTransaction(0));
+        mDb.insert(newTransaction(1));
+        mDb.insert(newTransaction(2));
+        mDb.insert(newTransaction(3));
+        mDb.insert(newTransaction(4));
+        mDb.insert(newTransaction(5));
 
-        final RobotmediaInventory inventory = new RobotmediaInventory(checkout, sameThreadExecutor(), sameThreadExecutor());
+        final RobotmediaInventory inventory = new RobotmediaInventory(mCheckout, sameThreadExecutor(), sameThreadExecutor());
         final CountDownCallback l = new CountDownCallback();
         inventory.load(mRequest, l);
 
@@ -108,7 +106,7 @@ public class RobotmediaDatabaseTest {
 
     @Test
     public void testShouldReadEmptyList() throws Exception {
-        final RobotmediaInventory inventory = new RobotmediaInventory(checkout, sameThreadExecutor(), sameThreadExecutor());
+        final RobotmediaInventory inventory = new RobotmediaInventory(mCheckout, sameThreadExecutor(), sameThreadExecutor());
         final CountDownCallback l = new CountDownCallback();
         inventory.load(mRequest, l);
 

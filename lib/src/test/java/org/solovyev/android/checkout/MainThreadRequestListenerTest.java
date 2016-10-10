@@ -81,18 +81,18 @@ public class MainThreadRequestListenerTest {
 
     private static class TestExecutor implements CancellableExecutor {
 
-        private Runnable executing;
+        private Runnable mExecuting;
 
         @Override
         public void execute(@Nonnull Runnable runnable) {
-            assertNull(executing);
-            executing = runnable;
+            assertNull(mExecuting);
+            mExecuting = runnable;
         }
 
         @Override
         public void cancel(@Nonnull Runnable runnable) {
-            assertNotNull(executing);
-            assertSame(executing, runnable);
+            assertNotNull(mExecuting);
+            assertSame(mExecuting, runnable);
         }
     }
 }

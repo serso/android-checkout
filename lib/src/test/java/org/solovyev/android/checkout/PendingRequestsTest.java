@@ -78,7 +78,7 @@ public class PendingRequestsTest {
                 case 3:
                     final RequestRunnable request = requests.pop();
                     if (request != null) {
-                        if (((CountingRequest) request).done.compareAndSet(false, true)) {
+                        if (((CountingRequest) request).mDone.compareAndSet(false, true)) {
                             counter.incrementAndGet();
                         }
                     }
@@ -90,8 +90,8 @@ public class PendingRequestsTest {
             Thread.sleep(50);
         }
 
-        if (!eh.exceptions.isEmpty()) {
-            throw new AssertionError(eh.exceptions.get(0));
+        if (!eh.mExceptions.isEmpty()) {
+            throw new AssertionError(eh.mExceptions.get(0));
         }
         Assert.assertEquals(expected.get(), counter.get());
     }
@@ -102,34 +102,34 @@ public class PendingRequestsTest {
     }
 
     private static class CountingRequest implements RequestRunnable {
-        private final int id;
+        private final int mId;
         @Nonnull
-        private final AtomicInteger counter;
-        private final long sleep;
+        private final AtomicInteger mCounter;
+        private final long mSleep;
         @Nonnull
-        private final AtomicBoolean done = new AtomicBoolean();
+        private final AtomicBoolean mDone = new AtomicBoolean();
 
         public CountingRequest(int id, @Nonnull AtomicInteger counter, long sleep) {
-            this.id = id;
-            this.counter = counter;
-            this.sleep = sleep;
+            mId = id;
+            mCounter = counter;
+            mSleep = sleep;
         }
 
         @Override
         public int getId() {
-            return id;
+            return mId;
         }
 
         @Nullable
         @Override
         public Object getTag() {
-            return id / 10;
+            return mId / 10;
         }
 
         @Override
         public void cancel() {
-            if (done.compareAndSet(false, true)) {
-                counter.incrementAndGet();
+            if (mDone.compareAndSet(false, true)) {
+                mCounter.incrementAndGet();
             }
         }
 
@@ -141,12 +141,12 @@ public class PendingRequestsTest {
 
         @Override
         public boolean run() {
-            if (!done.compareAndSet(false, true)) {
+            if (!mDone.compareAndSet(false, true)) {
                 return true;
             }
-            counter.incrementAndGet();
+            mCounter.incrementAndGet();
             try {
-                Thread.sleep(sleep);
+                Thread.sleep(mSleep);
             } catch (InterruptedException e) {
                 Assert.fail(e.getMessage());
             }
@@ -155,13 +155,12 @@ public class PendingRequestsTest {
     }
 
     private static class ListUncaughtExceptionHandler implements Thread.UncaughtExceptionHandler {
-
         @Nonnull
-        private final List<Throwable> exceptions = Collections.synchronizedList(new ArrayList<Throwable>());
+        private final List<Throwable> mExceptions = Collections.synchronizedList(new ArrayList<Throwable>());
 
         @Override
         public void uncaughtException(Thread t, Throwable e) {
-            exceptions.add(e);
+            mExceptions.add(e);
         }
     }
 }

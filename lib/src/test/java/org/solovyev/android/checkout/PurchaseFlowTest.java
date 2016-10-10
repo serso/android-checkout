@@ -50,13 +50,11 @@ import static org.solovyev.android.checkout.ResponseCodes.OK;
 public class PurchaseFlowTest {
 
     @Nonnull
-    private RequestListener listener;
-
+    private RequestListener mListener;
     @Nonnull
-    private PurchaseFlow flow;
-
+    private PurchaseFlow mFlow;
     @Nonnull
-    private PurchaseVerifier verifier;
+    private PurchaseVerifier mVerifier;
 
     @Nonnull
     static Intent newOkIntent() {
@@ -74,70 +72,70 @@ public class PurchaseFlowTest {
 
     @Before
     public void setUp() throws Exception {
-        listener = mock(RequestListener.class);
-        verifier = mock(PurchaseVerifier.class);
-        Tests.mockVerifier(verifier, false);
-        flow = new PurchaseFlow(new Activity(), 1, listener, verifier);
+        mListener = mock(RequestListener.class);
+        mVerifier = mock(PurchaseVerifier.class);
+        Tests.mockVerifier(mVerifier, false);
+        mFlow = new PurchaseFlow(new Activity(), 1, mListener, mVerifier);
     }
 
     @Test
     public void testShouldErrorIfIntentIsNull() throws Exception {
-        flow.onActivityResult(1, 1, null);
+        mFlow.onActivityResult(1, 1, null);
 
         verifyError(ResponseCodes.NULL_INTENT, BillingException.class);
     }
 
     private void verifyError(int responseCode, Class<? extends Exception> exceptionClass) {
-        verify(listener).onError(eq(responseCode), any(exceptionClass));
-        verify(listener, never()).onSuccess(anyObject());
+        verify(mListener).onError(eq(responseCode), any(exceptionClass));
+        verify(mListener, never()).onSuccess(anyObject());
     }
 
     @Test
     public void testShouldErrorIfRequestCodeIsDifferent() throws Exception {
-        flow.onActivityResult(2, 1, new Intent());
+        mFlow.onActivityResult(2, 1, new Intent());
 
         verifyError(ResponseCodes.EXCEPTION, RuntimeException.class);
     }
 
     @Test
     public void testShouldErrorIfResultCodeItNotOk() throws Exception {
-        flow.onActivityResult(1, Activity.RESULT_CANCELED, new Intent());
+        mFlow.onActivityResult(1, Activity.RESULT_CANCELED, new Intent());
 
         verifyError(OK, BillingException.class);
     }
 
     @Test
     public void testShouldErrorIfResponseCodeItNotOk() throws Exception {
-        flow.onActivityResult(1, RESULT_OK, newIntent(ResponseCodes.ACCOUNT_ERROR, null, null));
+        mFlow.onActivityResult(1, RESULT_OK, newIntent(ResponseCodes.ACCOUNT_ERROR, null, null));
 
         verifyError(ResponseCodes.ACCOUNT_ERROR, BillingException.class);
     }
 
     @Test
     public void testShouldErrorWithNoData() throws Exception {
-        flow.onActivityResult(1, RESULT_OK, newIntent(OK, null, "signature"));
+        mFlow.onActivityResult(1, RESULT_OK, newIntent(OK, null, "signature"));
 
         verifyError(ResponseCodes.EXCEPTION, RuntimeException.class);
     }
 
     @Test
     public void testShouldErrorWithNoSignature() throws Exception {
-        flow.onActivityResult(1, RESULT_OK, newIntent(OK, "data", null));
+        mFlow.onActivityResult(1, RESULT_OK, newIntent(OK, "data", null));
 
         verifyError(ResponseCodes.EXCEPTION, RuntimeException.class);
     }
 
     @Test
     public void testShouldErrorWithEmptySignature() throws Exception {
-        flow.onActivityResult(1, RESULT_OK, newIntent(OK, "{productId:'test', purchaseTime:1000}", ""));
+        mFlow.onActivityResult(1, RESULT_OK, newIntent(OK, "{productId:'test', purchaseTime:1000}", ""));
 
         verifyError(ResponseCodes.WRONG_SIGNATURE, RuntimeException.class);
     }
 
     @Test
     public void testShouldErrorIfVerificationFailed() throws Exception {
-        Tests.mockVerifier(verifier, false);
-        flow.onActivityResult(1, RESULT_OK, newIntent(OK, "{productId:'test', purchaseTime:1000}", "signature"));
+        Tests.mockVerifier(mVerifier, false);
+        mFlow.onActivityResult(1, RESULT_OK, newIntent(OK, "{productId:'test', purchaseTime:1000}", "signature"));
 
         verifyError(ResponseCodes.WRONG_SIGNATURE, RuntimeException.class);
 
@@ -145,20 +143,20 @@ public class PurchaseFlowTest {
 
     @Test
     public void testShouldFinishSuccessfully() throws Exception {
-        Tests.mockVerifier(verifier, true);
-        flow.onActivityResult(1, RESULT_OK, newOkIntent());
+        Tests.mockVerifier(mVerifier, true);
+        mFlow.onActivityResult(1, RESULT_OK, newOkIntent());
 
-        verify(listener, never()).onError(anyInt(), any(Exception.class));
-        verify(listener).onSuccess(any(Purchase.class));
+        verify(mListener, never()).onError(anyInt(), any(Exception.class));
+        verify(mListener).onSuccess(any(Purchase.class));
     }
 
     @Test
     public void testShouldNotCallListenerIfCancelled() throws Exception {
-        Tests.mockVerifier(verifier, true);
-        flow.cancel();
-        flow.onActivityResult(1, RESULT_OK, newOkIntent());
-        flow.onActivityResult(1, RESULT_OK, newIntent(ACCOUNT_ERROR, "{productId:'test', purchaseTime:1000}", "signature"));
-        verify(listener, never()).onError(anyInt(), any(Exception.class));
-        verify(listener, never()).onSuccess(any(Purchase.class));
+        Tests.mockVerifier(mVerifier, true);
+        mFlow.cancel();
+        mFlow.onActivityResult(1, RESULT_OK, newOkIntent());
+        mFlow.onActivityResult(1, RESULT_OK, newIntent(ACCOUNT_ERROR, "{productId:'test', purchaseTime:1000}", "signature"));
+        verify(mListener, never()).onError(anyInt(), any(Exception.class));
+        verify(mListener, never()).onSuccess(any(Purchase.class));
     }
 }

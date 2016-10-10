@@ -198,7 +198,7 @@ public class ConcurrentCacheTest extends CacheTestBase {
             });
         }
 
-        for (AssertionError exception : c.exceptions) {
+        for (AssertionError exception : c.mException) {
             throw exception;
         }
     }
@@ -206,10 +206,9 @@ public class ConcurrentCacheTest extends CacheTestBase {
     private static final class OneThreadCache implements Cache {
 
         @Nonnull
-        private final AtomicBoolean lock = new AtomicBoolean();
-
+        private final AtomicBoolean mLock = new AtomicBoolean();
         @Nonnull
-        private final List<AssertionError> exceptions = Collections.synchronizedList(new ArrayList<AssertionError>());
+        private final List<AssertionError> mException = Collections.synchronizedList(new ArrayList<AssertionError>());
 
         @Nullable
         @Override
@@ -219,17 +218,17 @@ public class ConcurrentCacheTest extends CacheTestBase {
         }
 
         private void doOnThread() {
-            if (lock.getAndSet(true)) {
-                exceptions.add(new AssertionError());
+            if (mLock.getAndSet(true)) {
+                mException.add(new AssertionError());
             }
 
             try {
                 Thread.sleep(10);
             } catch (InterruptedException e) {
-                exceptions.add(new AssertionError());
+                mException.add(new AssertionError());
             }
 
-            lock.set(false);
+            mLock.set(false);
         }
 
         @Override

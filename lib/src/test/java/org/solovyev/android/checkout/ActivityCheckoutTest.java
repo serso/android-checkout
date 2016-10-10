@@ -22,7 +22,22 @@
 
 package org.solovyev.android.checkout;
 
-import static java.util.Arrays.asList;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.robolectric.RobolectricTestRunner;
+import org.robolectric.annotation.Config;
+
+import android.app.Activity;
+
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+
+import javax.annotation.Nonnull;
+
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
@@ -33,78 +48,55 @@ import static org.mockito.Mockito.verify;
 import static org.solovyev.android.checkout.PurchaseFlowTest.newOkIntent;
 import static org.solovyev.android.checkout.ResponseCodes.NULL_INTENT;
 
-import android.app.Activity;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
-import org.robolectric.annotation.Config;
-
-import java.util.List;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
-
-import javax.annotation.Nonnull;
-
 @RunWith(RobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class ActivityCheckoutTest {
 
     @Nonnull
-    private Billing billing;
-
+    private Billing mBilling;
     @Nonnull
-    private ActivityCheckout checkout;
-
-    @Nonnull
-    private Inventory.Request mRequest;
+    private ActivityCheckout mCheckout;
 
     @Before
     public void setUp() throws Exception {
-        mRequest = Inventory.Request.create().
-                loadSkus(ProductTypes.IN_APP, asList("sku1", "sku2", "sku3")).
-                loadSkus(ProductTypes.SUBSCRIPTION, asList("sku1", "sku2", "sku3"));
-        billing = Tests.newBilling();
-        checkout = Checkout.forActivity(new Activity(), billing);
+        mBilling = Tests.newBilling();
+        mCheckout = Checkout.forActivity(new Activity(), mBilling);
     }
 
     @Test
     public void testShouldCreatePurchaseFlow() throws Exception {
-        checkout.createPurchaseFlow(100, mock(RequestListener.class));
-        assertNotNull(checkout.getPurchaseFlow(100));
+        mCheckout.createPurchaseFlow(100, mock(RequestListener.class));
+        assertNotNull(mCheckout.getPurchaseFlow(100));
     }
 
     @Test
     public void testShouldCreateDefaultPurchaseFlow() throws Exception {
-        checkout.createPurchaseFlow(mock(RequestListener.class));
-        assertNotNull(checkout.getPurchaseFlow());
+        mCheckout.createPurchaseFlow(mock(RequestListener.class));
+        assertNotNull(mCheckout.getPurchaseFlow());
     }
 
     @Test
     public void testShouldCreateOneShotPurchaseFlow() throws Exception {
-        checkout.createOneShotPurchaseFlow(101, mock(RequestListener.class));
-        assertNotNull(checkout.getPurchaseFlow(101));
+        mCheckout.createOneShotPurchaseFlow(101, mock(RequestListener.class));
+        assertNotNull(mCheckout.getPurchaseFlow(101));
     }
 
     @Test
     public void testShouldCreateDefaultOneShotPurchaseFlow() throws Exception {
-        checkout.createPurchaseFlow(mock(RequestListener.class));
-        assertNotNull(checkout.getPurchaseFlow());
+        mCheckout.createPurchaseFlow(mock(RequestListener.class));
+        assertNotNull(mCheckout.getPurchaseFlow());
     }
 
     @Test
     public void testDestroyShouldRemovePurchaseFlow() throws Exception {
-        checkout.createPurchaseFlow(102, mock(RequestListener.class));
-        checkout.destroyPurchaseFlow(102);
+        mCheckout.createPurchaseFlow(102, mock(RequestListener.class));
+        mCheckout.destroyPurchaseFlow(102);
         verifyPurchaseFlowDoesntExist(102);
     }
 
     private void verifyPurchaseFlowDoesntExist(int requestCode) {
         try {
-            checkout.getPurchaseFlow(requestCode);
+            mCheckout.getPurchaseFlow(requestCode);
             fail();
         } catch (IllegalArgumentException e) {
             // ok
@@ -113,7 +105,7 @@ public class ActivityCheckoutTest {
 
     private void verifyPurchaseFlowDoesntExist() {
         try {
-            checkout.getPurchaseFlow();
+            mCheckout.getPurchaseFlow();
             fail();
         } catch (IllegalArgumentException e) {
             // ok
@@ -122,16 +114,16 @@ public class ActivityCheckoutTest {
 
     @Test
     public void testDestroyShouldRemoveDefaultPurchaseFlow() throws Exception {
-        checkout.createPurchaseFlow(mock(RequestListener.class));
-        checkout.destroyPurchaseFlow();
+        mCheckout.createPurchaseFlow(mock(RequestListener.class));
+        mCheckout.destroyPurchaseFlow();
         verifyPurchaseFlowDoesntExist();
     }
 
     @Test
     public void testDestroyShouldCancelPurchaseFlow() throws Exception {
         final CancellableRequestListener l = mock(CancellableRequestListener.class);
-        checkout.createPurchaseFlow(l);
-        checkout.destroyPurchaseFlow();
+        mCheckout.createPurchaseFlow(l);
+        mCheckout.destroyPurchaseFlow();
 
         verify(l).cancel();
     }
@@ -139,9 +131,9 @@ public class ActivityCheckoutTest {
     @Test
     public void testOneShotPurchaseFlowShouldBeRemovedOnError() throws Exception {
         RequestListener l = mock(RequestListener.class);
-        checkout.createOneShotPurchaseFlow(l);
+        mCheckout.createOneShotPurchaseFlow(l);
 
-        checkout.onActivityResult(ActivityCheckout.DEFAULT_REQUEST_CODE, Activity.RESULT_CANCELED, null);
+        mCheckout.onActivityResult(ActivityCheckout.DEFAULT_REQUEST_CODE, Activity.RESULT_CANCELED, null);
 
         verify(l).onError(eq(NULL_INTENT), any(Exception.class));
         verifyPurchaseFlowDoesntExist();
@@ -151,12 +143,12 @@ public class ActivityCheckoutTest {
     public void testOneShotPurchaseFlowShouldBeRemovedOnSuccess() throws Exception {
         final PurchaseVerifier verifier = mock(PurchaseVerifier.class);
         Tests.mockVerifier(verifier, true);
-        billing.setPurchaseVerifier(verifier);
+        mBilling.setPurchaseVerifier(verifier);
 
         final RequestListener l = mock(RequestListener.class);
-        checkout.createOneShotPurchaseFlow(l);
+        mCheckout.createOneShotPurchaseFlow(l);
 
-        checkout.onActivityResult(ActivityCheckout.DEFAULT_REQUEST_CODE, Activity.RESULT_OK, newOkIntent());
+        mCheckout.onActivityResult(ActivityCheckout.DEFAULT_REQUEST_CODE, Activity.RESULT_OK, newOkIntent());
 
         verify(l).onSuccess(anyObject());
         verifyPurchaseFlowDoesntExist();
@@ -167,7 +159,7 @@ public class ActivityCheckoutTest {
         final PurchaseVerifier verifier = mock(PurchaseVerifier.class);
         Tests.mockVerifier(verifier, true);
         final CountDownLatch verifierWaiter = new CountDownLatch(1);
-        billing.setPurchaseVerifier(new PurchaseVerifier() {
+        mBilling.setPurchaseVerifier(new PurchaseVerifier() {
             @Nonnull
             private Executor background = Executors.newSingleThreadExecutor();
 
@@ -198,9 +190,9 @@ public class ActivityCheckoutTest {
 
             }
         };
-        checkout.createOneShotPurchaseFlow(l);
+        mCheckout.createOneShotPurchaseFlow(l);
 
-        checkout.onActivityResult(ActivityCheckout.DEFAULT_REQUEST_CODE, Activity.RESULT_OK, newOkIntent());
+        mCheckout.onActivityResult(ActivityCheckout.DEFAULT_REQUEST_CODE, Activity.RESULT_OK, newOkIntent());
         verifierWaiter.countDown();
         listenerWaiter.await(200, TimeUnit.MILLISECONDS);
         verifyPurchaseFlowDoesntExist();

@@ -22,6 +22,23 @@
 
 package org.solovyev.android.checkout;
 
+import com.android.vending.billing.IInAppBillingService;
+
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
+import org.robolectric.RuntimeEnvironment;
+
+import android.os.Bundle;
+import android.os.RemoteException;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.Executor;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyInt;
@@ -34,23 +51,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.solovyev.android.checkout.RequestTestBase.newBundle;
 import static org.solovyev.android.checkout.ResponseCodes.OK;
-
-import android.os.Bundle;
-import android.os.RemoteException;
-
-import com.android.vending.billing.IInAppBillingService;
-
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
-import org.robolectric.RuntimeEnvironment;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.concurrent.Executor;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 
 public final class Tests {
 
@@ -172,7 +172,7 @@ public final class Tests {
     }
 
     static void mockGetPurchases(@Nonnull Billing billing, @Nonnull String product,
-            @Nonnull List<Purchase> purchases) throws RemoteException {
+                                 @Nonnull List<Purchase> purchases) throws RemoteException {
         final Bundle bundle = newBundle(OK);
         final ArrayList<String> list = new ArrayList<String>();
         for (Purchase purchase : purchases) {
@@ -180,15 +180,15 @@ public final class Tests {
         }
         bundle.putStringArrayList(Purchases.BUNDLE_DATA_LIST, list);
         final IInAppBillingService service =
-                ((TestServiceConnector) billing.getConnector()).service;
+                ((TestServiceConnector) billing.getConnector()).mService;
         when(service.getPurchases(anyInt(), anyString(), eq(product), isNull(String.class)))
                 .thenReturn(bundle);
     }
 
     static void mockGetSkuDetails(@Nonnull Billing billing, @Nonnull String product,
-            @Nonnull final List<Sku> skus) throws RemoteException {
+                                  @Nonnull final List<Sku> skus) throws RemoteException {
         final IInAppBillingService service =
-                ((TestServiceConnector) billing.getConnector()).service;
+                ((TestServiceConnector) billing.getConnector()).mService;
         when(service.getSkuDetails(anyInt(), anyString(), eq(product), any(Bundle.class)))
                 .thenAnswer(new Answer<Bundle>() {
                     @Override
