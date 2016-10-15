@@ -34,7 +34,7 @@ public interface PurchaseVerifier {
      * thread listener methods should be also called on the main thread).
      * The actual verification though might use a background thread for communicating with a remote
      * server. {@link BasePurchaseVerifier} can be used as a base class for purchase verifiers that
-     * should be executed on a background thread..
+     * should be executed on a background thread.
      *
      * @param purchases purchases to be verified
      * @param listener  callback which gets a list of verified purchases
