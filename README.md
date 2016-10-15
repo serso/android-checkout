@@ -3,37 +3,45 @@
 ## Description
 
 <img src="https://github.com/serso/android-checkout/blob/master/app/misc/res/logo256x256.png" align="right" />
-**Checkout** is a library for [Android In-App Billing (v3)](http://developer.android.com/google/play/billing/api.html).
-The main goal is to reduce work which should be done by developers who want to integrate in-app purchases in
-their products. The project is inspired by [Volley](https://android.googlesource.com/platform/frameworks/volley/) library and
-is designed to be easy to use, fast and flexible.
+
+**Checkout** is an implementation of [Android In-App Billing API(v3+)](http://developer.android.com/google/play/billing/api.html).
+Its main goal is to make integration of in-app products as simple and
+straightforward as possible: developers should not spend much time on
+implementing boring In-App Billing API but should focus on more important
+things - their apps. With this in mind, the library was designed to be
+fast, flexible and secure.
 
 **Current version:** 0.7.5
 
-### Why do I need it?
+### Why?
 
-Though In-App Billing Version 3 is much easier to use than Version 2 there are still some things you have to face while
-integrating it, like:
-* Concurrency, see, for example, warning in
-[Querying for Items Available for Purchase](http://developer.android.com/google/play/billing/billing_integrate.html#QueryDetails)
-* Security, see [Security And Design](http://developer.android.com/google/play/billing/billing_best_practices.html)
+**Checkout** solves common problems that developers face while working 
+with billing on Android, such as:
+- How to cancel all billing requests when Activity is destroyed?
+- How to query purchase information in the background?
+  See also [Querying for Items Available for Purchase](http://developer.android.com/google/play/billing/billing_integrate.html#QueryDetails)
+- How to verify a purchase?
+  See also [Security And Design](http://developer.android.com/google/play/billing/billing_best_practices.html)
+- How to load all the purchases using ```continuationToken``` or SKU
+  details (one request is limited by 20 items)?
+- How to add billing with a minimum amount of boilerplate code?
 
-**Checkout** has a good test coverage and is build continuously on Travis CI: 
-[![Build Status](https://travis-ci.org/serso/android-checkout.svg)](https://travis-ci.org/serso/android-checkout)
-
-### Who else uses it?
-
-* Say it right! ([Google Play](https://play.google.com/store/apps/details?id=org.solovyev.android.dictionary.forvo))
-* Calculator++ ([Google Play](https://play.google.com/store/apps/details?id=org.solovyev.android.calculator), [sources](https://github.com/serso/android-calculatorpp))
-* AcDisplay ([Google Play](http://get.acdisplay.org), [sources](http://repo.acdisplay.org))
+**Checkout** can be used with any dependency injection framework or
+without it. It has a clear distinction of a functionality available in
+different contexts: purchase can be done only from ```Activity``` while
+SKU information can be loaded in ```Service``` or ```Application```. 
+Moreover, it has a good test coverage and is continuously build on Travis
+CI:  [![Build Status](https://travis-ci.org/serso/android-checkout.svg)](https://travis-ci.org/serso/android-checkout)
 
 ## Getting started
 
-### Installation
+### Setup
 
-There are several ways how you can get the library:
-- Download sources from github and either copy them to your project or import them as a project dependency
-- For Maven users:
+- Gradle/Android Studio in ```build.gradle```:
+```groovy
+compile 'org.solovyev.android:checkout:x.x.x@aar'
+```
+- Maven in ```pom.xml```:
 ```xml
 <dependency>
     <groupId>org.solovyev.android</groupId>
@@ -42,98 +50,79 @@ There are several ways how you can get the library:
     <type>apklib</type>
 </dependency>
 ```
-- For Gradle users:
-```groovy
-compile 'org.solovyev.android:checkout:x.x.x@aar'
-```
+- Download sources from github and either copy them to your project or import them as a project dependency
 - Download artifacts from the [repository](https://oss.sonatype.org/content/repositories/releases/org/solovyev/android/checkout/)
 
-**Checkout** requires `com.android.vending.BILLING` permission in runtime. 
-If you use **Checkout** as a library project then nothing should be done - permission will be merged automatically during
-the manifest merging step. In any other cases you need to include it into your application's manifest:
+In-app billing requires `com.android.vending.BILLING` permission to be
+set in the app. This permission is automatically added to your app's
+```AndroidManifest.xml``` by Gradle. You can declare this permission
+explicitly by adding the following line to the ```AndroidManifest.xml```:  
 ```xml
 <uses-permission android:name="com.android.vending.BILLING" />
 ```
 
-### Usage
+### Example
 
-**Checkout** contains 3 classes which likely to be used in any app: [Billing](https://github.com/serso/android-checkout/blob/master/lib/src/main/java/org/solovyev/android/checkout/Billing.java),
-[Checkout](https://github.com/serso/android-checkout/blob/master/lib/src/main/java/org/solovyev/android/checkout/Checkout.java)
-and [Inventory](https://github.com/serso/android-checkout/blob/master/lib/src/main/java/org/solovyev/android/checkout/Inventory.java).
-The code for the project with one in-app product might look like this:
+Say there is an app that contains one in-app product with "sku_01" id.
+Then ```Application``` class might look like this:
 ```java
 public class MyApplication extends Application {
-    /**
-     * For better performance billing class should be used as singleton
-     */
-    @Nonnull
-    private final Billing billing = new Billing(this, new Billing.DefaultConfiguration() {
-        @Nonnull
+
+    private final Billing mBilling = new Billing(this, new Billing.DefaultConfiguration() {
         @Override
         public String getPublicKey() {
-            return "Your public key, don't forget to encrypt it somehow";
+            return "Your public key, don't forget abput encryption";
         }
     });
 
-    /**
-     * Application wide {@link org.solovyev.android.checkout.Checkout} instance (can be used anywhere in the app).
-     * This instance contains all available products in the app.
-     */
-    @Nonnull
-    private final Checkout checkout = Checkout.forApplication(billing, Products.create().add(IN_APP, asList("product")));
-
-    @Nonnull
-    private static MyApplication instance;
-
-    public MyApplication() {
-        instance = this;
+    public Billing getBilling() {
+        return mBilling;
     }
-
-    public static MyApplication get() {
-        return instance;
-    }
-    
-    @Nonnull
-    public Checkout getCheckout() {
-        return checkout;
-    }
-
-    //...
 }
 ```
-
+And ```Activity``` class like this:
 ```java
 public class MyActivity extends Activity {
-    @Nonnull
-    private final ActivityCheckout checkout = Checkout.forActivity(this, MyApplication.get().getCheckout());
 
-    @Nonnull
-    private Inventory inventory;
+    private final ActivityCheckout mCheckout = Checkout.forActivity(this, MyApplication.get().getBilling());
+
+    private Inventory mInventory;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        checkout.start();
-        // you only need this if this activity starts purchase process
-        checkout.createPurchaseFlow(new PurchaseListener());
-        // you only need this if this activity needs information about purchases/SKUs
-        inventory = checkout.loadInventory();
-        inventory.whenLoaded(new InventoryLoadedListener())
+        mCheckout.start();
+
+        mCheckout.createPurchaseFlow(new PurchaseListener());
+
+        mInventory = checkout.makeInventory();
+        mInventory.load(Inventory.Request.create()
+                            .loadAllPurchases()
+                            .loadSkus(IN_APP, IN_APPS),
+                            new InventoryCallback()))
+    }
+    
+    @Override
+    public void onClick(Veiw v) {
+        mCheckout.whenReady(new Checkout.EmptyListener() {
+            @Override
+            public void onReady(BillingRequests requests) {
+                requests.purchase("sku_01", null, checkout.getPurchaseFlow());
+            }
+        });
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        checkout.onActivityResult(requestCode, resultCode, data);
+        mCheckout.onActivityResult(requestCode, resultCode, data);
     }
 
     @Override
     protected void onDestroy() {
-        checkout.stop();
+        mCheckout.stop();
         super.onDestroy();
     }
-
-    //...
 }
 ``` 
 
@@ -141,54 +130,61 @@ public class MyActivity extends Activity {
 
 ### Samples
 
-Checkout sample app on [Google Play](https://play.google.com/store/apps/details?id=org.solovyev.android.checkout.app).
-Sources are available [here](https://github.com/serso/android-checkout/tree/master/app).
+Sample app is available on [Google Play](https://play.google.com/store/apps/details?id=org.solovyev.android.checkout.app)
+and its sources on [gitbug](https://github.com/serso/android-checkout/tree/master/app).
 
 ### Building from sources
 
-**Checkout** is built by Gradle. The project structure and build procedure are standard for Android libraries.
-An environmental variable with name ANDROID_HOME must be set before building and should point to Android SDK installation folder (f.e. /opt/android/sdk).
-Please
-refer to [Gradle User Guide](http://tools.android.com/tech-docs/new-build-system/user-guide) for more information about building.
-
-Android Studio/IDEA project configuration files are also checked into the repository. Use "File->Open..." to open the project.
+**Checkout** is built by Gradle. The project structure and build procedure
+are standard for Android libraries. An environmental variable ANDROID_HOME
+must be set before building and should point to Android SDK installation
+folder (f.e. /opt/android/sdk).
+Please refer to [Gradle User Guide](http://tools.android.com/tech-docs/new-build-system/user-guide) for more information about the building.
 
 ### Classes overview
 
-**Checkout** contains 3 main classes: [Billing](https://github.com/serso/android-checkout/blob/master/lib/src/main/java/org/solovyev/android/checkout/Billing.java),
-[Checkout](https://github.com/serso/android-checkout/blob/master/lib/src/main/java/org/solovyev/android/checkout/Checkout.java)
-and [Inventory](https://github.com/serso/android-checkout/blob/master/lib/src/main/java/org/solovyev/android/checkout/Inventory.java).
+**Checkout** contains three main classes that represent different levels
+of abstractions: [Billing](https://github.com/serso/android-checkout/blob/master/lib/src/main/java/org/solovyev/android/checkout/Billing.java), [Checkout](https://github.com/serso/android-checkout/blob/master/lib/src/main/java/org/solovyev/android/checkout/Checkout.java) and [Inventory](https://github.com/serso/android-checkout/blob/master/lib/src/main/java/org/solovyev/android/checkout/Inventory.java).
 
-**Billing** class is the main controller which:
-* connects to the [Billing service](https://github.com/serso/android-checkout/blob/master/lib/src/main/aidl/com/android/vending/billing/IInAppBillingService.aidl)
-* executes all incoming requests (and caches responses)
-* provides access to [BillingRequests](https://github.com/serso/android-checkout/blob/master/lib/src/main/java/org/solovyev/android/checkout/BillingRequests.java)
-It should be used as a singleton in order to avoid several connections to the Billing service.
-Though this class might be used directly usually it's better to interact with [Checkout](https://github.com/serso/android-checkout/blob/master/lib/src/main/java/org/solovyev/android/checkout/Checkout.java).
+**Billing** is a core class of **Checkout**'s implementation of the
+billing API. It is responsible for:
+- connecting and disconnecting to the [billing service](https://github.com/serso/android-checkout/blob/master/lib/src/main/aidl/com/android/vending/billing/IInAppBillingService.aidl)
+- performing [billing requests](https://github.com/serso/android-checkout/blob/master/lib/src/main/java/org/solovyev/android/checkout/BillingRequests.java)
+- caching the requests results
+- creating [Checkout](https://github.com/serso/android-checkout/blob/master/lib/src/main/java/org/solovyev/android/checkout/Checkout.java) objects
+- logging
 
-**Checkout** provides access to [Billing](https://github.com/serso/android-checkout/blob/master/lib/src/main/java/org/solovyev/android/checkout/Billing.java) for set of products.
-It checks if billing is supported and executes requests if it is ready. [ActivityCheckout](https://github.com/serso/android-checkout/blob/master/lib/src/main/java/org/solovyev/android/checkout/ActivityCheckout.java)
-is a subclass which also provides access to [PurchaseFlow](https://github.com/serso/android-checkout/blob/master/lib/src/main/java/org/solovyev/android/checkout/PurchaseFlow.java).
+Only one instance of **Billing** should be used in the app in order to
+avoid multiple connections to the billing service. Though this class
+might be used directly usually it's better to work with [Checkout](https://github.com/serso/android-checkout/blob/master/lib/src/main/java/org/solovyev/android/checkout/Checkout.java)
+instead.
 
-**Inventory** contains static information abouts products, purchases and SKUs. It should be reloaded every time the purchase state is changed in order to be actual.
+**Checkout** is a middle tier of the library. It uses **Billing** in a
+certain context, e.g. in ```Application```, ```Activity``` or ```Service```,
+checks whether billing is supported and executes the requests. [ActivityCheckout](https://github.com/serso/android-checkout/blob/master/lib/src/main/java/org/solovyev/android/checkout/ActivityCheckout.java)
+is a subclass capable of purchasing items.
+
+**Inventory** loads information about products, SKUs and purchases. Its
+lifecycle is bound to the lifecycle of **Checkout** in which it was created.
 
 ### Purchase verification
 
-By default **Checkout** uses simple purchase verification algorithm (see [DefaultPurchaseVerifier](https://github.com/serso/android-checkout/blob/master/lib/src/main/java/org/solovyev/android/checkout/DefaultPurchaseVerifier.java)). As exmplained in Android [documentation](http://developer.android.com/google/play/billing/billing_best_practices.html#sign) it's better to verify purchases on remote server. **Checkout** allows you to provide your own [PurchaseVerifier](https://github.com/serso/android-checkout/blob/master/lib/src/main/java/org/solovyev/android/checkout/PurchaseVerifier.java) by implementing ```Billing.Configuration#getPurchaseVerifier```. Note that ```PurchaseVerifier#verify``` is called every time purchases information is requested from Android Billing API and might be called on both main and background threads. [BasePurchaseVerifier](https://github.com/serso/android-checkout/blob/master/lib/src/main/java/org/solovyev/android/checkout/BasePurchaseVerifier.java) deals with thread management and it is recommended to extend this class if you want to provide custom verification procedure. It is safe to do network requests from ```BasePurchaseVerifier#doVerify``` as this method is guaranteed to be called on the background thread.
-
-### Billing Version 2
-
-Some users might not have Google Play Services supporting Billing Version 3. As these users might have purchases it should be possible to retrieve purchase information for them. You can provide fallback functionality for such users by returning not null object from ```Billing.Configuration#getFallbackInventory``` method.
-If you used [Robotmedia Android Billing Library](https://github.com/robotmedia/AndroidBillingLibrary) before fallback is already implemented, see [RobotmediaInvenotry](https://github.com/serso/android-checkout/blob/master/lib/src/main/java/org/solovyev/android/checkout/RobotmediaInventory.java) class ([sample code](https://github.com/serso/android-checkout/blob/master/app/src/main/java/org/solovyev/android/checkout/app/CheckoutApplication.java))
+By default, **Checkout** uses simple purchase verification algorithm (see
+[DefaultPurchaseVerifier](https://github.com/serso/android-checkout/blob/master/lib/src/main/java/org/solovyev/android/checkout/DefaultPurchaseVerifier.java)). As explained in [Android documentation](http://developer.android.com/google/play/billing/billing_best_practices.html#sign)
+it's better to verify purchases on a remote server. **Checkout** allows
+you to provide your own [PurchaseVerifier](https://github.com/serso/android-checkout/blob/master/lib/src/main/java/org/solovyev/android/checkout/PurchaseVerifier.java) via ```Billing.Configuration#getPurchaseVerifier```.
+[BasePurchaseVerifier](https://github.com/serso/android-checkout/blob/master/lib/src/main/java/org/solovyev/android/checkout/BasePurchaseVerifier.java)  can be used as a base class for purchase verifiers that
+should be executed on a background thread.
 
 ### Proguard
 
-You need to include the contents of [proguard rules](https://github.com/serso/android-checkout/blob/master/lib/proguard-rules.txt)
-into your proguard configuration.
+Library's proguard rules are automatically added to the app project by
+Gradle. You can declare them explicitly by copying the contents of [proguard-rules.txt](https://github.com/serso/android-checkout/blob/master/lib/proguard-rules.txt)
+to your proguard configuration.
 
 ## License
 
-Copyright 2014 serso aka se.solovyev
+Copyright 2016 serso aka se.solovyev
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
