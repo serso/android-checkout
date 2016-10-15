@@ -37,7 +37,6 @@ import javax.annotation.Nullable;
 import javax.annotation.concurrent.GuardedBy;
 
 /**
- * <p/>
  * Billing API helper class. Can be be used in the context of {@link android.app.Activity} or
  * {@link android.app.Service}. In such case its lifespan should be bound to the lifecycle of the
  * bound activity/service. For example, {@link #start()} and {@link #stop()} methods of this class
