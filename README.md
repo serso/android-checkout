@@ -53,6 +53,8 @@ compile 'org.solovyev.android:checkout:x.x.x@aar'
 - Download sources from github and either copy them to your project or import them as a project dependency
 - Download artifacts from the [repository](https://oss.sonatype.org/content/repositories/releases/org/solovyev/android/checkout/)
 
+### Permissions
+
 In-app billing requires `com.android.vending.BILLING` permission to be
 set in the app. This permission is automatically added to your app's
 ```AndroidManifest.xml``` by Gradle. You can declare this permission
@@ -130,10 +132,9 @@ public class MyActivity extends Activity {
 
 ### Samples
 
-Sample app is available on [Google Play](https://play.google.com/store/apps/details?id=org.solovyev.android.checkout.app)
-and its sources on [gitbug](https://github.com/serso/android-checkout/tree/master/app).
+Sample app is available on [Google Play](https://play.google.com/store/apps/details?id=org.solovyev.android.checkout.app) ([source code](https://github.com/serso/android-checkout/tree/master/app)).
 
-### Building from sources
+### Building from the sources
 
 **Checkout** is built by Gradle. The project structure and build procedure
 are standard for Android libraries. An environmental variable ANDROID_HOME
@@ -156,7 +157,7 @@ billing API. It is responsible for:
 
 Only one instance of **Billing** should be used in the app in order to
 avoid multiple connections to the billing service. Though this class
-might be used directly usually it's better to work with [Checkout](https://github.com/serso/android-checkout/blob/master/lib/src/main/java/org/solovyev/android/checkout/Checkout.java)
+might be used directly it's easier to work with [Checkout](https://github.com/serso/android-checkout/blob/master/lib/src/main/java/org/solovyev/android/checkout/Checkout.java)
 instead.
 
 **Checkout** is a middle tier of the library. It uses **Billing** in a
