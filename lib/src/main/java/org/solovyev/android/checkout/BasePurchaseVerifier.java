@@ -34,9 +34,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import javax.annotation.Nonnull;
 
 /**
- * Common base class of common implementation for {@link PurchaseVerifier} that performs a
- * purchases
- * verification on a background thread.
+ * Common base class of common implementation for {@link PurchaseVerifier} that verifies purchases
+ * on a background thread.
  */
 public abstract class BasePurchaseVerifier implements PurchaseVerifier {
 
