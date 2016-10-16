@@ -31,4 +31,5 @@
     <string name="cd_info">Информация</string>
     <string name="join">Вступить</string>
     <string name="cd_sku_icon">Иконка товара</string>
+    <string name="change_subscription">Изменить подписку</string>
 </resources>
