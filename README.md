@@ -4,7 +4,7 @@
 
 <img src="https://github.com/serso/android-checkout/blob/master/app/misc/res/logo256x256.png" align="right" />
 
-**Checkout** is an implementation of [Android In-App Billing API(v3+)](http://developer.android.com/google/play/billing/api.html).
+**Checkout** is an implementation of [Android In-App Billing API (v3+)](http://developer.android.com/google/play/billing/api.html).
 Its main goal is to make integration of in-app products as simple and
 straightforward as possible: developers should not spend much time on
 implementing boring In-App Billing API but should focus on more important
@@ -144,8 +144,7 @@ Please refer to [Gradle User Guide](http://tools.android.com/tech-docs/new-build
 
 ### Classes overview
 
-**Checkout** contains three main classes that represent different levels
-of abstractions: [Billing](https://github.com/serso/android-checkout/blob/master/lib/src/main/java/org/solovyev/android/checkout/Billing.java), [Checkout](https://github.com/serso/android-checkout/blob/master/lib/src/main/java/org/solovyev/android/checkout/Checkout.java) and [Inventory](https://github.com/serso/android-checkout/blob/master/lib/src/main/java/org/solovyev/android/checkout/Inventory.java).
+**Checkout** contains three main classes: [Billing](https://github.com/serso/android-checkout/blob/master/lib/src/main/java/org/solovyev/android/checkout/Billing.java), [Checkout](https://github.com/serso/android-checkout/blob/master/lib/src/main/java/org/solovyev/android/checkout/Checkout.java) and [Inventory](https://github.com/serso/android-checkout/blob/master/lib/src/main/java/org/solovyev/android/checkout/Inventory.java).
 
 **Billing** is a core class of **Checkout**'s implementation of the
 billing API. It is responsible for:
