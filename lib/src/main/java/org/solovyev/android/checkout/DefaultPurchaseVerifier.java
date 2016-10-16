@@ -30,7 +30,7 @@ import javax.annotation.Nonnull;
 import static android.text.TextUtils.isEmpty;
 
 /**
- * Checks the purchase signature with default Android implementation {@link Security}
+ * Checks a purchase signature using the default Android implementation - {@link Security} class.
  */
 class DefaultPurchaseVerifier implements PurchaseVerifier {
 
