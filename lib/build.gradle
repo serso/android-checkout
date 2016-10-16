@@ -55,6 +55,7 @@ tasks.withType(Test) {
 }
 
 task androidJavadocs(type: Javadoc) {
+    failOnError = false
     source = android.sourceSets.main.java.srcDirs
     classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
     configurations.compile.each { File file -> classpath += project.files(file.path) }
