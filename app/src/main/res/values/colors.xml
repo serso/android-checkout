@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <color name="bg">#eeeeee</color>
-    <color name="pressed_bg">#ebebeb</color>
-    <color name="pressed_text">#4285f4</color>
-    <color name="text">#707070</color>
-</resources>
