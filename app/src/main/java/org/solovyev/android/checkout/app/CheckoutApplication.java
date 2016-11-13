@@ -2,6 +2,7 @@ package org.solovyev.android.checkout.app;
 
 import org.solovyev.android.checkout.Billing;
 
+import android.app.Activity;
 import android.app.Application;
 
 import javax.annotation.Nonnull;
@@ -26,6 +27,13 @@ public class CheckoutApplication extends Application {
             return Encryption.decrypt(s, "se.solovyev@gmail.com");
         }
     });
+
+    /**
+     * Returns an instance of {@link CheckoutApplication} attached to the passed activity.
+     */
+    public static CheckoutApplication get(Activity activity) {
+        return (CheckoutApplication) activity.getApplication();
+    }
 
     @Nonnull
     public Billing getBilling() {
