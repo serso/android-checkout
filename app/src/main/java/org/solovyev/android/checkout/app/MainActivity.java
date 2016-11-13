@@ -35,7 +35,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private enum UseCase {
-        STATIC(StaticActivity.class, R.string.use_case_title_static, R.string.use_case_desc_static);
+        STATIC(StaticActivity.class, R.string.use_case_title_static, R.string.use_case_desc_static),
+        BANNER(BannerActivity.class, R.string.use_case_title_banner, R.string.use_case_desc_banner);
 
         // activity to be started on click
         final Class<? extends Activity> activity;
