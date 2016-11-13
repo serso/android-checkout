@@ -221,6 +221,27 @@ public final class ActivityCheckout extends Checkout {
         return flow;
     }
 
+    /**
+     * Creates a one-shot {@link PurchaseFlow} and tries starting it. If {@link Checkout} is not
+     * ready the start is postponed.
+     */
+    public void startPurchaseFlow(final String product, final String sku, @Nullable final String payload, final RequestListener<Purchase> listener) {
+        createOneShotPurchaseFlow(listener);
+        whenReady(new EmptyListener() {
+            @Override
+            public void onReady(@Nonnull BillingRequests requests) {
+                requests.purchase(product, sku, payload, getPurchaseFlow());
+            }
+        });
+    }
+
+    /**
+     * @see #startPurchaseFlow(String, String, String, RequestListener)
+     */
+    public void startPurchaseFlow(final Sku sku, @Nullable final String payload, final RequestListener<Purchase> listener) {
+        startPurchaseFlow(sku.id.product, sku.id.code, payload, listener);
+    }
+
     private Activity getActivity() {
         return (Activity) mContext;
     }
