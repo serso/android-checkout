@@ -3,7 +3,9 @@ package org.solovyev.android.checkout;
 import javax.annotation.Nonnull;
 
 /**
- * Logger interface that can be used in {@link Billing} via {@link Billing#setLogger(Logger)}
+ * Logger interface that can be used in {@link Billing} via {@link Billing#setLogger(Logger)}.
+ * Methods of this class can be invoked on any thread, use
+ * {@link Billing#newMainThreadLogger(Logger)} to perform logging only on the main thread.
  */
 public interface Logger {
 

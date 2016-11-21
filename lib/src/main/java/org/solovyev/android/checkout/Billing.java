@@ -78,7 +78,7 @@ public final class Billing {
     @Nonnull
     private static final EmptyRequestListener sEmptyListener = new EmptyRequestListener();
     @Nonnull
-    private static Logger sLogger = new DefaultLogger();
+    private static Logger sLogger = newLogger();
 
     @Nonnull
     private final Context mContext;
@@ -211,6 +211,22 @@ public final class Billing {
     @Nonnull
     public static PurchaseVerifier newPurchaseVerifier(@Nonnull String publicKey) {
         return new DefaultPurchaseVerifier(publicKey);
+    }
+
+    /**
+     * @return default logger
+     */
+    @Nonnull
+    public static Logger newLogger() {
+        return new DefaultLogger();
+    }
+
+    /**
+     * @return logger whose methods are called only on the main thread
+     */
+    @Nonnull
+    public static Logger newMainThreadLogger(@Nonnull Logger logger) {
+        return new MainThreadLogger(logger);
     }
 
     /**
