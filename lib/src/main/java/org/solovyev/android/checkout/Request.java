@@ -142,7 +142,7 @@ abstract class Request<R> {
     }
 
     protected void onError(int response) {
-        Billing.error("Error response: " + response + " in " + this + " request");
+        Billing.error("Error response: " + ResponseCodes.toString(response) + " in " + this + " request");
         onError(response, new BillingException(response));
     }
 

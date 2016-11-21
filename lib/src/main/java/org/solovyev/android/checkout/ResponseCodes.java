@@ -89,4 +89,40 @@ public final class ResponseCodes {
     private ResponseCodes() {
         throw new AssertionError();
     }
+
+    /**
+     * @return a name of the given response code
+     */
+    public static String toString(int code) {
+        switch (code) {
+            case OK:
+                return "OK";
+            case USER_CANCELED:
+                return "USER_CANCELED";
+            case ACCOUNT_ERROR:
+                return "ACCOUNT_ERROR";
+            case BILLING_UNAVAILABLE:
+                return "BILLING_UNAVAILABLE";
+            case ITEM_UNAVAILABLE:
+                return "ITEM_UNAVAILABLE";
+            case DEVELOPER_ERROR:
+                return "DEVELOPER_ERROR";
+            case ERROR:
+                return "ERROR";
+            case ITEM_ALREADY_OWNED:
+                return "ITEM_ALREADY_OWNED";
+            case ITEM_NOT_OWNED:
+                return "ITEM_NOT_OWNED";
+            case SERVICE_NOT_CONNECTED:
+                return "SERVICE_NOT_CONNECTED";
+            case EXCEPTION:
+                return "EXCEPTION";
+            case WRONG_SIGNATURE:
+                return "WRONG_SIGNATURE";
+            case NULL_INTENT:
+                return "NULL_INTENT";
+            default:
+                return "UNKNOWN";
+        }
+    }
 }
