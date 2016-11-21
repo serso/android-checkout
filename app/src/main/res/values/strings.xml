@@ -1,4 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Checkout</string>
+    <string name="use_case_title_static">Use case #1. Static responses</string>
+    <string name="use_case_desc_static">Use static responses to test in-app billing</string>
+    <string name="buy">Buy</string>
 </resources>
