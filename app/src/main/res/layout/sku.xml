@@ -11,6 +11,7 @@
 
     <ImageView
         android:id="@+id/sku_icon"
+        android:contentDescription="@string/icon"
         android:layout_width="64dp"
         android:layout_height="64dp"
         android:layout_alignParentLeft="true"

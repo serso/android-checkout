@@ -11,4 +11,5 @@
     <string name="remove_ad_banner">Remove ad banner</string>
     <string name="use_case_title_skus">Use case #3. List of SKUs</string>
     <string name="use_case_desc_skus">Show a list of SKUs available for purchase. Click an item to purchase or consume it</string>
+    <string name="icon">icon</string>
 </resources>

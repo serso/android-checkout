@@ -2,9 +2,12 @@ package org.solovyev.android.checkout.app;
 
 import org.solovyev.android.checkout.ActivityCheckout;
 import org.solovyev.android.checkout.Billing;
+import org.solovyev.android.checkout.BillingRequests;
 import org.solovyev.android.checkout.Checkout;
 import org.solovyev.android.checkout.Inventory;
 import org.solovyev.android.checkout.ProductTypes;
+import org.solovyev.android.checkout.Purchase;
+import org.solovyev.android.checkout.RequestListener;
 import org.solovyev.android.checkout.Sku;
 
 import android.content.Intent;
@@ -91,8 +94,40 @@ public class SkusActivity extends AppCompatActivity {
         super.onDestroy();
     }
 
+    private void purchase(Sku sku) {
+        final RequestListener<Purchase> listener = makeRequestListener();
+        mCheckout.startPurchaseFlow(sku, null, listener);
+    }
+
+    /**
+     * @return {@link RequestListener} that reloads inventory when the action is finished
+     */
+    private <T> RequestListener<T> makeRequestListener() {
+        return new RequestListener<T>() {
+            @Override
+            public void onSuccess(@Nonnull T result) {
+                reloadInventory();
+            }
+
+            @Override
+            public void onError(int response, @Nonnull Exception e) {
+                reloadInventory();
+            }
+        };
+    }
+
+    private void consume(final Purchase purchase) {
+        mCheckout.whenReady(new Checkout.EmptyListener() {
+            @Override
+            public void onReady(@Nonnull BillingRequests requests) {
+                requests.consume(purchase.token, makeRequestListener());
+            }
+        });
+    }
+
     static class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
+        private final Adapter mAdapter;
         @BindView(R.id.sku_title)
         TextView mTitle;
         @BindView(R.id.sku_description)
@@ -102,8 +137,12 @@ public class SkusActivity extends AppCompatActivity {
         @BindView(R.id.sku_icon)
         ImageView mIcon;
 
-        ViewHolder(View view) {
+        @Nullable
+        private Sku mSku;
+
+        ViewHolder(View view, Adapter adapter) {
             super(view);
+            mAdapter = adapter;
             ButterKnife.bind(this, view);
 
             view.setOnClickListener(this);
@@ -120,6 +159,7 @@ public class SkusActivity extends AppCompatActivity {
         }
 
         void onBind(Sku sku, boolean purchased) {
+            mSku = sku;
             mTitle.setText(getTitle(sku));
             mDescription.setText(sku.description);
             strikeThrough(mTitle, purchased);
@@ -141,6 +181,10 @@ public class SkusActivity extends AppCompatActivity {
 
         @Override
         public void onClick(View v) {
+            if (mSku == null) {
+                return;
+            }
+            mAdapter.onClick(mSku);
         }
     }
 
@@ -172,7 +216,7 @@ public class SkusActivity extends AppCompatActivity {
         @Override
         public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
             final View view = mInflater.inflate(R.layout.sku, parent, false);
-            return new ViewHolder(view);
+            return new ViewHolder(view, this);
         }
 
         @Override
@@ -189,6 +233,15 @@ public class SkusActivity extends AppCompatActivity {
         public void update(Inventory.Product product) {
             mProduct = product;
             notifyDataSetChanged();
+        }
+
+        public void onClick(Sku sku) {
+            final Purchase purchase = mProduct.getPurchaseInState(sku, Purchase.State.PURCHASED);
+            if (purchase != null) {
+                consume(purchase);
+            } else {
+                purchase(sku);
+            }
         }
     }
 }
