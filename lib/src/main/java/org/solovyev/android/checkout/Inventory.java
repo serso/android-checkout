@@ -106,6 +106,11 @@ public interface Inventory {
             }
         }
 
+        @Nonnull
+        public static Products empty() {
+            return sEmpty;
+        }
+
         void add(@Nonnull Inventory.Product product) {
             mMap.put(product.id, product);
         }
