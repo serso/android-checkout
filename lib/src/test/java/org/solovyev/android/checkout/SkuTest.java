@@ -114,4 +114,37 @@ public class SkuTest {
         assertEquals(currency, sku.detailedPrice.currency);
         assertEquals(amount, sku.detailedPrice.amount);
     }
+
+    @Test
+    public void testShouldStripSimpleAppNameFromTitle() throws Exception {
+        final JSONObject json = newJsonObject("1");
+        json.put("title", "Test #1 (Test App name)");
+        final Sku sku = Sku.fromJson(json.toString(), "test");
+
+        final String displayTitle = sku.getDisplayTitle();
+
+        assertEquals("Test #1", displayTitle);
+    }
+
+    @Test
+    public void testShouldStripSimpleAppNameFromTitleWithBrackets() throws Exception {
+        final JSONObject json = newJsonObject("1");
+        json.put("title", "Test #1 (test) (Test App name)");
+        final Sku sku = Sku.fromJson(json.toString(), "test");
+
+        final String displayTitle = sku.getDisplayTitle();
+
+        assertEquals("Test #1 (test)", displayTitle);
+    }
+
+    @Test
+    public void testShouldStripSimpleAppNameWithBracketsFromTitleWithBrackets() throws Exception {
+        final JSONObject json = newJsonObject("1");
+        json.put("title", "Test #1 (test) (Test App name (test))");
+        final Sku sku = Sku.fromJson(json.toString(), "test");
+
+        final String displayTitle = sku.getDisplayTitle();
+
+        assertEquals("Test #1 (test)", displayTitle);
+    }
 }

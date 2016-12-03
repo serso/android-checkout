@@ -28,6 +28,7 @@ import org.json.JSONObject;
 import android.text.TextUtils;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -54,6 +55,9 @@ public final class Sku {
     // description of the product
     @Nonnull
     public final String description;
+
+    @Nullable
+    private String mDisplayTitle;
 
     Sku(@Nonnull String product, @Nonnull String code, @Nonnull String price, @Nonnull Price detailedPrice, @Nonnull String title, @Nonnull String description) {
         this.id = new Id(product, code);
@@ -96,7 +100,57 @@ public final class Sku {
 
     @Override
     public String toString() {
-        return id + "{" + title + ", " + price + "}";
+        return id + "{" + getDisplayTitle() + ", " + price + "}";
+    }
+
+    /**
+     * @return {@link #title} without application name in it (the last group of characters
+     * surrounded by brackets is removed)
+     */
+    @Nonnull
+    public String getDisplayTitle() {
+        if (mDisplayTitle == null) {
+            mDisplayTitle = makeDisplayTitle(title);
+        }
+        return mDisplayTitle;
+    }
+
+    @Nonnull
+    private static String makeDisplayTitle(String title) {
+        if (TextUtils.isEmpty(title)) {
+            return "";
+        }
+        final char lastChar = title.charAt(title.length() - 1);
+        if (lastChar != ')') {
+            return title;
+        }
+        final int i = indexOfAppName(title);
+        if (i > 0) {
+            return title.substring(0, i).trim();
+        }
+        return title;
+    }
+
+    /**
+     * This method assumes that SKU's title has the following format: "$title$ ($app_name$)", where
+     * $title$ is the SKU's name and $title$ is the application name.
+     * @param title SKU's title
+     * @return position in the title where application name begins
+     */
+    private static int indexOfAppName(String title) {
+        int depth = 0;
+        for (int i = title.length() - 1; i >= 0; i--) {
+            final char c = title.charAt(i);
+            if (c == ')') {
+                depth++;
+            } else if (c == '(') {
+                depth--;
+            }
+            if (depth == 0) {
+                return i;
+            }
+        }
+        return -1;
     }
 
     @Override
