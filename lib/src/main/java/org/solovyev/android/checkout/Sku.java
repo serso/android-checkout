@@ -22,10 +22,10 @@
 
 package org.solovyev.android.checkout;
 
-import android.text.TextUtils;
-
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import android.text.TextUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.concurrent.Immutable;
@@ -94,6 +94,26 @@ public final class Sku {
         return json;
     }
 
+    @Override
+    public String toString() {
+        return id + "{" + title + ", " + price + "}";
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        final Sku that = (Sku) o;
+        return id.equals(that.id);
+
+    }
+
+    @Override
+    public int hashCode() {
+        return id.hashCode();
+    }
+
     public boolean isInApp() {
         return id.isInApp();
     }
@@ -119,6 +139,30 @@ public final class Sku {
 
         public boolean isSubscription() {
             return product.equals(ProductTypes.SUBSCRIPTION);
+        }
+
+        @Override
+        public String toString() {
+            return product + "/" + code;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            final Id that = (Id) o;
+
+            if (!product.equals(that.product)) return false;
+            return code.equals(that.code);
+
+        }
+
+        @Override
+        public int hashCode() {
+            int result = product.hashCode();
+            result = 31 * result + code.hashCode();
+            return result;
         }
     }
 
@@ -161,6 +205,11 @@ public final class Sku {
          */
         public boolean isValid() {
             return amount > 0 && !TextUtils.isEmpty(currency);
+        }
+
+        @Override
+        public String toString() {
+            return currency + amount;
         }
     }
 }
