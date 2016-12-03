@@ -56,6 +56,9 @@ final class BillingSupportedRequest extends Request<Object> {
     @Nullable
     @Override
     protected String getCacheKey() {
-        return mProduct;
+        if (mApiVersion == Billing.V3) {
+            return mProduct;
+        }
+        return mProduct + "_" + mApiVersion;
     }
 }
