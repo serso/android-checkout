@@ -59,7 +59,7 @@ public final class Sku {
     @Nullable
     private String mDisplayTitle;
 
-    Sku(@Nonnull String product, @Nonnull String code, @Nonnull String price, @Nonnull Price detailedPrice, @Nonnull String title, @Nonnull String description) {
+    public Sku(@Nonnull String product, @Nonnull String code, @Nonnull String price, @Nonnull Price detailedPrice, @Nonnull String title, @Nonnull String description) {
         this.id = new Id(product, code);
         this.price = price;
         this.detailedPrice = detailedPrice;
@@ -227,7 +227,7 @@ public final class Sku {
     public static final class Price {
 
         @Nonnull
-        static final Price EMPTY = new Price(0, "");
+        public static final Price EMPTY = new Price(0, "");
 
         // price in micro-units, where 1,000,000 micro-units equal one unit of the currency.
         // For example, if price is "€7.99", price_amount_micros is "7990000"
@@ -238,7 +238,7 @@ public final class Sku {
         @Nonnull
         public final String currency;
 
-        private Price(long amount, @Nonnull String currency) {
+        public Price(long amount, @Nonnull String currency) {
             this.amount = amount;
             this.currency = currency;
         }
