@@ -241,6 +241,16 @@ public interface Inventory {
             Check.isTrue(mSkus.isEmpty(), "Must be called only once");
             mSkus.addAll(skus);
         }
+
+        @Nullable
+        public Sku getSku(@Nonnull String sku) {
+            for (Sku s : mSkus) {
+                if (s.id.code.equals(sku)) {
+                    return s;
+                }
+            }
+            return null;
+        }
     }
 
     /**
