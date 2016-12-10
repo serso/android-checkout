@@ -26,19 +26,17 @@
 
 # keep this around for some enums that ACRA needs
 -keep class org.acra.ReportingInteractionMode {
-   *;
+    *;
 }
 
 # keep this otherwise it is removed by ProGuard
--keep public class org.acra.ErrorReporter
-{
-public void addCustomData(java.lang.String,java.lang.String);
+-keep public class org.acra.ErrorReporter {
+    public void addCustomData(java.lang.String,java.lang.String);
 }
 
 # keep this otherwise it is removed by ProGuard
--keep public class org.acra.ErrorReporter
-{
-public org.acra.ErrorReporter$ReportsSenderWorker handleSilentException(java.lang.Throwable);
+-keep public class org.acra.ErrorReporter {
+    public org.acra.ErrorReporter$ReportsSenderWorker handleSilentException(java.lang.Throwable);
 }
 
 #
