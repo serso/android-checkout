@@ -1,4 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Checkout</string>
+    <string name="_1_buy">1. Купи</string>
+    <string name="_2_select">2. Выбери</string>
+    <string name="_3_change">3. Измени</string>
+    <string name="ad_banner_text">Чекаут - лучшая библиотека для покупок внутри приложения</string>
+    <string name="buy">Купить</string>
+    <string name="change">Изменить</string>
+    <string name="purchases_changed">Play Маркет: изменения в покупках!</string>
+    <string name="remove_ad_banner">Убрать рекламу</string>
+    <string name="use_case_desc_banner">Показать рекламный баннер. Убрать его после совершения покупки</string>
+    <string name="use_case_desc_skus">Показать список продуктов. Пользователь может купить или потребить продукт нажав на него</string>
+    <string name="use_case_desc_static">Использование статичных ответов для тестирования покупок</string>
+    <string name="use_case_title_static">Сценарий №1. Статичные ответы</string>
+    <string name="use_case_title_subscriptions">Сценарий №4. Подписки</string>
+    <string name="use_case_title_skus">Сценарий №3. Список продуктов</string>
+    <string name="use_case_title_banner">Сценарий №2. Рекламный баннер</string>
+    <string name="use_case_desc_subscriptions">Показать список подписок. Дать возможность пользователю купить подписку и изменить её</string>
+    <string name="icon">иконка</string>
 </resources>
