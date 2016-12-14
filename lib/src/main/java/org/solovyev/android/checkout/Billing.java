@@ -111,6 +111,16 @@ public final class Billing {
     private ServiceConnector mConnector = new DefaultServiceConnector();
     @GuardedBy("mLock")
     private int mCheckoutCount;
+    @GuardedBy("mLock")
+    @Nonnull
+    private final PlayStoreBroadcastReceiver mPlayStoreBroadcastReceiver;
+    @Nonnull
+    private final PlayStoreListener mPlayStoreListener = new PlayStoreListener() {
+        @Override
+        public void onPurchasesChanged() {
+            mCache.removeAll(RequestType.GET_PURCHASES.getCacheKeyType());
+        }
+    };
 
     public Billing(@Nonnull Context context, @Nonnull Configuration configuration) {
         this(context, new Handler(), configuration);
@@ -135,6 +145,7 @@ public final class Billing {
         Check.isNotEmpty(mConfiguration.getPublicKey());
         final Cache cache = configuration.getCache();
         mCache = new ConcurrentCache(cache == null ? null : new SafeCache(cache));
+        mPlayStoreBroadcastReceiver = new PlayStoreBroadcastReceiver(mContext, mLock);
     }
 
     /**
@@ -348,6 +359,7 @@ public final class Billing {
                 warning("Auto connection feature is turned on. There is no need in calling Billing.connect() manually. See Billing.Configuration.isAutoConnect");
             }
             setState(State.CONNECTING);
+            mPlayStoreBroadcastReceiver.addListener(mPlayStoreListener);
             mMainThread.execute(new Runnable() {
                 @Override
                 public void run() {
@@ -366,6 +378,32 @@ public final class Billing {
     }
 
     /**
+     * Adds {@link PlayStoreListener} possibly registering a {@link android.content.BroadcastReceiver}
+     * responsible for getting "com.android.vending.billing.PURCHASES_UPDATED" intent from the Play
+     * Store.
+     *
+     * @param listener listener to be added
+     */
+    public void addPlayStoreListener(@Nonnull PlayStoreListener listener) {
+        synchronized (mLock) {
+            mPlayStoreBroadcastReceiver.addListener(listener);
+        }
+    }
+
+    /**
+     * Removes previously added {@link PlayStoreListener}. This method might also unregister the
+     * {@link android.content.BroadcastReceiver}.
+     *
+     * @param listener listener to be removed
+     */
+    public void removePlayStoreListener(@Nonnull PlayStoreListener listener) {
+        synchronized (mLock) {
+            mPlayStoreBroadcastReceiver.removeListener(listener);
+        }
+    }
+
+
+    /**
      * Disconnects from the Billing service cancelling all pending requests if any. Any subsequent
      * request will automatically reconnect the Billing service. Thus, no more requests should be
      * scheduled after this method has been called (otherwise the service will be connected again).
@@ -378,6 +416,7 @@ public final class Billing {
                 return;
             }
             setState(State.DISCONNECTING);
+            mPlayStoreBroadcastReceiver.removeListener(mPlayStoreListener);
             mMainThread.execute(new Runnable() {
                 @Override
                 public void run() {
