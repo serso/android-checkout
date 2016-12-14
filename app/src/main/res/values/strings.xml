@@ -18,4 +18,5 @@
     <string name="_1_buy">1. Buy</string>
     <string name="_2_select">2. Select</string>
     <string name="_3_change">3. Change</string>
+    <string name="purchases_changed">Play Store: purchases have changed!</string>
 </resources>

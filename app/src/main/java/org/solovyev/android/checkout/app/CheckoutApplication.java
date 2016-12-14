@@ -1,9 +1,11 @@
 package org.solovyev.android.checkout.app;
 
 import org.solovyev.android.checkout.Billing;
+import org.solovyev.android.checkout.PlayStoreListener;
 
 import android.app.Activity;
 import android.app.Application;
+import android.widget.Toast;
 
 import javax.annotation.Nonnull;
 
@@ -33,6 +35,17 @@ public class CheckoutApplication extends Application {
      */
     public static CheckoutApplication get(Activity activity) {
         return (CheckoutApplication) activity.getApplication();
+    }
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        mBilling.addPlayStoreListener(new PlayStoreListener() {
+            @Override
+            public void onPurchasesChanged() {
+                Toast.makeText(CheckoutApplication.this, R.string.purchases_changed, Toast.LENGTH_LONG).show();
+            }
+        });
     }
 
     @Nonnull
