@@ -325,10 +325,23 @@ public final class Billing {
             }
             mState = newState;
             switch (mState) {
+                case DISCONNECTING:
+                    // as we can jump directly from DISCONNECTING to CONNECTED state let's remove
+                    // the listener here instead of in DISCONNECTED state. That also will protect
+                    // us from getting in the following trap: CONNECTED->DISCONNECTING->CONNECTING->FAILED
+                    mPlayStoreBroadcastReceiver.removeListener(mPlayStoreListener);
+                    break;
                 case CONNECTED:
+                    // CONNECTED is the only state when we know for sure that Play Store is available.
+                    // Registering the listener here also means that it should be never registered
+                    // in the FAILED state
+                    mPlayStoreBroadcastReceiver.addListener(mPlayStoreListener);
                     executePendingRequests();
                     break;
                 case FAILED:
+                    // the play store listener should be registered in the receiver in case of
+                    // failure as FAILED state can't occur after CONNECTED
+                    Check.isFalse(mPlayStoreBroadcastReceiver.contains(mPlayStoreListener), "Leaking the listener");
                     mMainThread.execute(new Runnable() {
                         @Override
                         public void run() {
@@ -359,7 +372,6 @@ public final class Billing {
                 warning("Auto connection feature is turned on. There is no need in calling Billing.connect() manually. See Billing.Configuration.isAutoConnect");
             }
             setState(State.CONNECTING);
-            mPlayStoreBroadcastReceiver.addListener(mPlayStoreListener);
             mMainThread.execute(new Runnable() {
                 @Override
                 public void run() {
@@ -415,8 +427,14 @@ public final class Billing {
             if (mState == State.DISCONNECTED || mState == State.DISCONNECTING || mState == State.INITIAL) {
                 return;
             }
+            if (mState == State.FAILED) {
+                // it would be strange to change the state from FAILED to DISCONNECTING/DISCONNECTED,
+                // thus, just cancelling all pending the requested here and returning without updating
+                // the state
+                mPendingRequests.cancelAll();
+                return;
+            }
             setState(State.DISCONNECTING);
-            mPlayStoreBroadcastReceiver.removeListener(mPlayStoreListener);
             mMainThread.execute(new Runnable() {
                 @Override
                 public void run() {

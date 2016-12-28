@@ -53,6 +53,12 @@ class PlayStoreBroadcastReceiver extends BroadcastReceiver {
         }
     }
 
+    boolean contains(@Nonnull PlayStoreListener listener) {
+        synchronized (mLock) {
+            return mListeners.contains(listener);
+        }
+    }
+
     @Override
     public void onReceive(Context context, Intent intent) {
         if (intent == null || !TextUtils.equals(intent.getAction(), ACTION)) {
