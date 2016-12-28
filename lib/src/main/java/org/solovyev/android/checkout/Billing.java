@@ -36,6 +36,9 @@ import android.os.IBinder;
 import android.os.RemoteException;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.EnumMap;
 import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -77,8 +80,20 @@ public final class Billing {
     private static final String TAG = "Checkout";
     @Nonnull
     private static final EmptyRequestListener sEmptyListener = new EmptyRequestListener();
+    // a list of states from which transition to this state is allowed
+    @Nonnull
+    private static final EnumMap<State, List<State>> sPreviousStates = new EnumMap<>(State.class);
     @Nonnull
     private static Logger sLogger = newLogger();
+
+    static {
+        sPreviousStates.put(State.INITIAL, Collections.<State>emptyList());
+        sPreviousStates.put(State.CONNECTING, Arrays.asList(State.INITIAL, State.FAILED, State.DISCONNECTED, State.DISCONNECTING));
+        sPreviousStates.put(State.CONNECTED, Collections.singletonList(State.CONNECTING));
+        sPreviousStates.put(State.DISCONNECTING, Collections.singletonList(State.CONNECTED));
+        sPreviousStates.put(State.DISCONNECTED, Collections.singletonList(State.DISCONNECTING));
+        sPreviousStates.put(State.FAILED, Collections.singletonList(State.CONNECTING));
+    }
 
     @Nonnull
     private final Context mContext;
@@ -92,6 +107,16 @@ public final class Billing {
     private final PendingRequests mPendingRequests = new PendingRequests();
     @Nonnull
     private final BillingRequests mRequests = newRequestsBuilder().withTag(null).onBackgroundThread().create();
+    @GuardedBy("mLock")
+    @Nonnull
+    private final PlayStoreBroadcastReceiver mPlayStoreBroadcastReceiver;
+    @Nonnull
+    private final PlayStoreListener mPlayStoreListener = new PlayStoreListener() {
+        @Override
+        public void onPurchasesChanged() {
+            mCache.removeAll(RequestType.GET_PURCHASES.getCacheKeyType());
+        }
+    };
     @GuardedBy("mLock")
     @Nullable
     private IInAppBillingService mService;
@@ -111,16 +136,6 @@ public final class Billing {
     private ServiceConnector mConnector = new DefaultServiceConnector();
     @GuardedBy("mLock")
     private int mCheckoutCount;
-    @GuardedBy("mLock")
-    @Nonnull
-    private final PlayStoreBroadcastReceiver mPlayStoreBroadcastReceiver;
-    @Nonnull
-    private final PlayStoreListener mPlayStoreListener = new PlayStoreListener() {
-        @Override
-        public void onPurchasesChanged() {
-            mCache.removeAll(RequestType.GET_PURCHASES.getCacheKeyType());
-        }
-    };
 
     public Billing(@Nonnull Context context, @Nonnull Configuration configuration) {
         this(context, new Handler(), configuration);
@@ -277,17 +292,18 @@ public final class Billing {
                 if (mState != State.CONNECTING) {
                     return;
                 }
-                if (service == null) {
-                    newState = State.FAILED;
-                } else {
-                    newState = State.CONNECTED;
-                }
+                newState = service == null ? State.FAILED : State.CONNECTED;
             } else {
-                if (mState == State.INITIAL) {
-                    // preserve initial state
+                if (mState == State.INITIAL || mState == State.DISCONNECTED) {
+                    // preserve the state
+                    Check.isNull(mService);
                     return;
                 }
-                // service might be disconnected abruptly
+                // service might be disconnected abruptly but we must go through XXX->DISCONNECTING->DISCONNECTED
+                // routine to free the acquired resources
+                if (mState != State.DISCONNECTING) {
+                    setState(State.DISCONNECTING);
+                }
                 newState = State.DISCONNECTED;
             }
             mService = service;
@@ -323,6 +339,7 @@ public final class Billing {
             if (mState == newState) {
                 return;
             }
+            Check.isTrue(sPreviousStates.get(newState).contains(mState), "State " + newState + " can't come right after " + mState + " state");
             mState = newState;
             switch (mState) {
                 case DISCONNECTING:
@@ -414,7 +431,6 @@ public final class Billing {
         }
     }
 
-
     /**
      * Disconnects from the Billing service cancelling all pending requests if any. Any subsequent
      * request will automatically reconnect the Billing service. Thus, no more requests should be
@@ -441,6 +457,8 @@ public final class Billing {
                     disconnectOnMainThread();
                 }
             });
+            // requests should be cancelled only when Billing#disconnect() is called explicitly as
+            // it's only then we know for sure that no more work should be done
             mPendingRequests.cancelAll();
         }
     }
@@ -619,7 +637,7 @@ public final class Billing {
         /**
          * Service failed to connect
          */
-        FAILED,
+        FAILED
     }
 
     interface ServiceConnector {

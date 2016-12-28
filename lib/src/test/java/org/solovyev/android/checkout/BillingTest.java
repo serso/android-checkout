@@ -146,11 +146,15 @@ public class BillingTest {
 
         assertEquals(Billing.State.INITIAL, mBilling.getState());
 
+        mBilling.setState(Billing.State.CONNECTING);
+        mBilling.setState(Billing.State.CONNECTED);
+
         mBilling.setState(Billing.State.DISCONNECTING);
         mBilling.setService(null, false);
 
         assertEquals(Billing.State.DISCONNECTED, mBilling.getState());
 
+        mBilling.setState(Billing.State.CONNECTING);
         mBilling.setState(Billing.State.CONNECTED);
         mBilling.setService(null, false);
 
@@ -159,6 +163,7 @@ public class BillingTest {
 
     @Test
     public void testShouldConnectOnlyIfConnecting() throws Exception {
+        mBilling.setState(Billing.State.CONNECTING);
         mBilling.setState(Billing.State.FAILED);
         mBilling.setService(mock(IInAppBillingService.class), true);
 
@@ -186,6 +191,8 @@ public class BillingTest {
                 if (mRandom.nextBoolean()) {
                     b.connect();
                 } else {
+                    // connector is called directly in order to avoid cancelling the pending
+                    // requests
                     c.disconnect();
                 }
             }
