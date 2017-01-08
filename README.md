@@ -11,7 +11,7 @@ implementing boring In-App Billing API but should focus on more important
 things - their apps. With this in mind, the library was designed to be
 fast, flexible and secure.
 
-**Current version:** 0.9.1
+**Current version:** 0.9.2
 
 ### Why?
 
@@ -39,14 +39,14 @@ CI:  [![Build Status](https://travis-ci.org/serso/android-checkout.svg)](https:/
 
 - Gradle/Android Studio in ```build.gradle```:
 ```groovy
-compile 'org.solovyev.android:checkout:x.x.x@aar'
+compile 'org.solovyev.android:checkout:0.9.2@aar'
 ```
 - Maven in ```pom.xml```:
 ```xml
 <dependency>
     <groupId>org.solovyev.android</groupId>
     <artifactId>checkout</artifactId>
-    <version>x.x.x</version>
+    <version>0.9.2</version>
     <type>apklib</type>
 </dependency>
 ```
