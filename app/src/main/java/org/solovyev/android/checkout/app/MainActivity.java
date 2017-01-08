@@ -1,81 +1,118 @@
-/*
- * Copyright 2014 serso aka se.solovyev
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *    http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
- * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Contact details
- *
- * Email: se.solovyev@gmail.com
- * Site:  http://se.solovyev.org
- */
-
 package org.solovyev.android.checkout.app;
 
-import android.app.AlertDialog;
-import android.content.DialogInterface;
+import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
+import android.support.annotation.StringRes;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.TextView;
 
-import javax.annotation.Nullable;
+import butterknife.BindView;
+import butterknife.ButterKnife;
 
-public class MainActivity extends BaseActivity {
+/**
+ * Shows a list of use cases covered in the app.
+ */
+public class MainActivity extends AppCompatActivity {
 
-    @Nullable
-    private AlertDialog infoDialog;
+    @BindView(R.id.recycler)
+    RecyclerView mRecycler;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        if (savedInstanceState == null) {
-            addFragment(new SkusFragment(), R.id.fragment_skus, false);
-        }
-        final View infoButton = findViewById(R.id.info_button);
-        infoButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                showInfoDialog();
-            }
-        });
+        ButterKnife.bind(this);
+
+        mRecycler.setLayoutManager(new LinearLayoutManager(this));
+        mRecycler.setAdapter(new Adapter(this));
     }
 
-    private void showInfoDialog() {
-        final AlertDialog.Builder b = new AlertDialog.Builder(this);
-        b.setMessage(getString(R.string.msg_info));
-        b.setPositiveButton(R.string.join, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                CheckoutApplication.openUri(MainActivity.this, "https://plus.google.com/communities/115918337136768532130");
-            }
-        });
+    private enum UseCase {
+        STATIC(StaticActivity.class, R.string.use_case_title_static, R.string.use_case_desc_static),
+        BANNER(BannerActivity.class, R.string.use_case_title_banner, R.string.use_case_desc_banner),
+        SKUS(SkusActivity.class, R.string.use_case_title_skus, R.string.use_case_desc_skus),
+        SUBSCRIPTIONS(SubscriptionsActivity.class, R.string.use_case_title_subscriptions, R.string.use_case_desc_subscriptions);
 
-        infoDialog = b.create();
-        infoDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
-            @Override
-            public void onDismiss(DialogInterface dialog) {
-                infoDialog = null;
-            }
-        });
-        infoDialog.show();
+        // activity to be started on click
+        final Class<? extends Activity> activity;
+        @StringRes
+        final int title;
+        @StringRes
+        final int description;
+
+        UseCase(Class<? extends Activity> activity, @StringRes int title, @StringRes int description) {
+            this.activity = activity;
+            this.title = title;
+            this.description = description;
+        }
     }
 
-    @Override
-    protected void onDestroy() {
-        if (infoDialog != null) {
-            infoDialog.dismiss();
-            infoDialog = null;
+    static class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+
+        private final Activity mActivity;
+        @BindView(R.id.use_case_title)
+        TextView mTitle;
+        @BindView(R.id.use_case_description)
+        TextView mDescription;
+        @Nullable
+        private UseCase mUseCase;
+
+
+        ViewHolder(Activity activity, View view) {
+            super(view);
+            mActivity = activity;
+            ButterKnife.bind(this, view);
+
+            view.setOnClickListener(this);
         }
-        super.onDestroy();
+
+        void onBind(UseCase useCase) {
+            mUseCase = useCase;
+            mTitle.setText(useCase.title);
+            mDescription.setText(useCase.description);
+        }
+
+        @Override
+        public void onClick(View v) {
+            if (mUseCase == null) {
+                return;
+            }
+            mActivity.startActivity(new Intent(mActivity, mUseCase.activity));
+        }
+    }
+
+    private static class Adapter extends RecyclerView.Adapter<ViewHolder> {
+
+        private final Activity mActivity;
+        private final UseCase[] mUseCases = UseCase.values();
+        private final LayoutInflater mInflater;
+
+        private Adapter(Activity activity) {
+            mActivity = activity;
+            mInflater = LayoutInflater.from(activity);
+        }
+
+        @Override
+        public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+            final View view = mInflater.inflate(R.layout.use_case, parent, false);
+            return new ViewHolder(mActivity, view);
+        }
+
+        @Override
+        public void onBindViewHolder(ViewHolder holder, int position) {
+            holder.onBind(mUseCases[position]);
+        }
+
+        @Override
+        public int getItemCount() {
+            return mUseCases.length;
+        }
     }
 }
