@@ -52,9 +52,6 @@ dependencies {
     compile "com.android.support:recyclerview-v7:${versions.libs.support}"
     compile 'com.jakewharton:butterknife:8.4.0'
     annotationProcessor 'com.jakewharton:butterknife-compiler:8.4.0'
-    compile('ch.acra:acra:4.9.0') {
-        exclude group: 'org.json'
-    }
     compile project(':lib')
 }
 
