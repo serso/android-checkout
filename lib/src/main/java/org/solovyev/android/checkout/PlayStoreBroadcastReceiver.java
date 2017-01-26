@@ -48,7 +48,11 @@ class PlayStoreBroadcastReceiver extends BroadcastReceiver {
             Check.isTrue(mListeners.contains(listener), "Listener " + listener + " is not in the list");
             mListeners.remove(listener);
             if (mListeners.size() == 0) {
-                mContext.unregisterReceiver(this);
+                try {
+                    mContext.unregisterReceiver(this);
+                } catch (IllegalArgumentException e) {
+                    // Ignore
+                }
             }
         }
     }
