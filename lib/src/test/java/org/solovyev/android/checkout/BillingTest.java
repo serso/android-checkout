@@ -176,6 +176,35 @@ public class BillingTest {
     }
 
     @Test
+    public void testShouldJumpToDisconnectedStateIfWasConnecting() throws Exception {
+        mBilling.setState(Billing.State.CONNECTING);
+        mBilling.setService(null, false);
+
+        assertEquals(Billing.State.FAILED, mBilling.getState());
+    }
+
+    @Test
+    public void testShouldDisconnectServiceIfBillingIsInactive() throws Exception {
+        final Billing.ServiceConnector connector = mock(Billing.ServiceConnector.class);
+        mBilling.setConnector(connector);
+        mBilling.setState(Billing.State.CONNECTING);
+        mBilling.setState(Billing.State.DISCONNECTED);
+
+        mBilling.setService(mock(IInAppBillingService.class), true);
+
+        assertEquals(Billing.State.DISCONNECTED, mBilling.getState());
+        verify(connector, times(1)).disconnect();
+    }
+
+    @Test
+    public void testShouldGoToDisconnectedStateFromConnectingIfBillingDies() throws Exception {
+        mBilling.setState(Billing.State.CONNECTING);
+        mBilling.disconnect();
+
+        assertEquals(Billing.State.DISCONNECTED, mBilling.getState());
+    }
+
+    @Test
     public void testShouldRunAllRequests() throws Exception {
         final int REQUESTS = 100;
         final int SLEEP = 10;

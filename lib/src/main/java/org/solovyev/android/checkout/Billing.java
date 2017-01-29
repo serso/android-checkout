@@ -91,7 +91,7 @@ public final class Billing {
         sPreviousStates.put(State.CONNECTING, Arrays.asList(State.INITIAL, State.FAILED, State.DISCONNECTED, State.DISCONNECTING));
         sPreviousStates.put(State.CONNECTED, Collections.singletonList(State.CONNECTING));
         sPreviousStates.put(State.DISCONNECTING, Collections.singletonList(State.CONNECTED));
-        sPreviousStates.put(State.DISCONNECTED, Collections.singletonList(State.DISCONNECTING));
+        sPreviousStates.put(State.DISCONNECTED, Arrays.asList(State.DISCONNECTING, State.CONNECTING));
         sPreviousStates.put(State.FAILED, Collections.singletonList(State.CONNECTING));
     }
 
@@ -290,21 +290,34 @@ public final class Billing {
             final State newState;
             if (connecting) {
                 if (mState != State.CONNECTING) {
+                    // don't leak the service and disconnect directly without going through Billing#setState
+                    if (service != null) {
+                        mConnector.disconnect();
+                    }
                     return;
                 }
                 newState = service == null ? State.FAILED : State.CONNECTED;
             } else {
-                if (mState == State.INITIAL || mState == State.DISCONNECTED) {
+                if (mState == State.INITIAL || mState == State.DISCONNECTED || mState == State.FAILED) {
                     // preserve the state
                     Check.isNull(mService);
                     return;
                 }
-                // service might be disconnected abruptly but we must go through XXX->DISCONNECTING->DISCONNECTED
-                // routine to free the acquired resources
-                if (mState != State.DISCONNECTING) {
+                // service might be disconnected abruptly but we must go through CONNECTED->DISCONNECTING->DISCONNECTED
+                // routine to free the acquired resources. If, however, the current state was not
+                // CONNECTED (only one option left is CONNECTING) then we should directly jump to
+                // FAILED state as something strange has happened on the billing service side
+                if (mState == State.CONNECTED) {
                     setState(State.DISCONNECTING);
                 }
-                newState = State.DISCONNECTED;
+                if (mState == State.DISCONNECTING) {
+                    newState = State.DISCONNECTED;
+                } else {
+                    Check.isTrue(mState == State.CONNECTING, "Unexpected state: " + mState);
+                    // DISCONNECTED state can occur only after the established connection. If the
+                    // connection was never established it's a
+                    newState = State.FAILED;
+                }
             }
             mService = service;
             setState(newState);
@@ -356,9 +369,9 @@ public final class Billing {
                     executePendingRequests();
                     break;
                 case FAILED:
-                    // the play store listener should be registered in the receiver in case of
+                    // the play store listener should not be registered in the receiver in case of
                     // failure as FAILED state can't occur after CONNECTED
-                    Check.isFalse(mPlayStoreBroadcastReceiver.contains(mPlayStoreListener), "Leaking the listener");
+                    Check.isTrue(!mPlayStoreBroadcastReceiver.contains(mPlayStoreListener), "Leaking the listener");
                     mMainThread.execute(new Runnable() {
                         @Override
                         public void run() {
@@ -450,13 +463,18 @@ public final class Billing {
                 mPendingRequests.cancelAll();
                 return;
             }
-            setState(State.DISCONNECTING);
-            mMainThread.execute(new Runnable() {
-                @Override
-                public void run() {
-                    disconnectOnMainThread();
-                }
-            });
+            if (mState == State.CONNECTED) {
+                setState(State.DISCONNECTING);
+                mMainThread.execute(new Runnable() {
+                    @Override
+                    public void run() {
+                        disconnectOnMainThread();
+                    }
+                });
+            } else {
+                // if we're still CONNECTING - skip DISCONNECTING state
+                setState(State.DISCONNECTED);
+            }
             // requests should be cancelled only when Billing#disconnect() is called explicitly as
             // it's only then we know for sure that no more work should be done
             mPendingRequests.cancelAll();
