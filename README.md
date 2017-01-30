@@ -39,15 +39,26 @@ CI:  [![Build Status](https://travis-ci.org/serso/android-checkout.svg)](https:/
 
 - Gradle/Android Studio in ```build.gradle```:
 ```groovy
-compile 'org.solovyev.android:checkout:0.9.3@aar'
+compile 'org.solovyev.android:checkout:0.9.3'
 ```
+**Note:** if you get the following warning
+> Conflict with dependency 'com.google.code.findbugs:jsr305'. Resolved versions for app (a.b.c) and test app (x.y.z) differ.
+
+you should change the dependencies of `com.android.support.test.espresso:espresso-core` to
+```groovy
+androidTestCompile('com.android.support.test.espresso:espresso-core:x.y.z', {
+    // use version of jsr305 provided by Checkout
+    exclude group: 'com.google.code.findbugs', module: 'jsr305'
+})
+```
+See [Android Studio](http://g.co/androidstudio/app-test-app-conflict) and [Gradle](https://docs.gradle.org/current/dsl/org.gradle.api.artifacts.ResolutionStrategy.html) documentation for details.
 - Maven in ```pom.xml```:
 ```xml
 <dependency>
     <groupId>org.solovyev.android</groupId>
     <artifactId>checkout</artifactId>
     <version>0.9.3</version>
-    <type>apklib</type>
+    <type>aar</type>
 </dependency>
 ```
 - Download sources from github and either copy them to your project or import them as a project dependency
