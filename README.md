@@ -70,12 +70,22 @@ Then ```Application``` class might look like this:
 ```java
 public class MyApplication extends Application {
 
+    private static MyApplication sInstance;
+
     private final Billing mBilling = new Billing(this, new Billing.DefaultConfiguration() {
         @Override
         public String getPublicKey() {
             return "Your public key, don't forget abput encryption";
         }
     });
+
+    public MyApplication() {
+        sInstance = this;
+    }
+
+    public static MyApplication get() {
+        return sInstance;
+    }
 
     public Billing getBilling() {
         return mBilling;
@@ -84,10 +94,20 @@ public class MyApplication extends Application {
 ```
 And ```Activity``` class like this:
 ```java
-public class MyActivity extends Activity {
+public class MyActivity extends Activity implements View.OnClickListener {
+
+    private class PurchaseListener extends EmptyRequestListener<Purchase> {
+        // your code here
+    }
+
+    private class InventoryCallback implements Inventory.Callback {
+        @Override
+        public void onLoaded(Inventory.Products products) {
+            // your code here
+        }
+    }
 
     private final ActivityCheckout mCheckout = Checkout.forActivity(this, MyApplication.get().getBilling());
-
     private Inventory mInventory;
 
     @Override
@@ -97,21 +117,16 @@ public class MyActivity extends Activity {
 
         mCheckout.createPurchaseFlow(new PurchaseListener());
 
-        mInventory = checkout.makeInventory();
+        mInventory = mCheckout.makeInventory();
         mInventory.load(Inventory.Request.create()
-                            .loadAllPurchases()
-                            .loadSkus(IN_APP, IN_APPS),
-                            new InventoryCallback()))
+                .loadAllPurchases()
+                .loadSkus(ProductTypes.IN_APP, "sku_01"), new InventoryCallback());
     }
-    
+
     @Override
-    public void onClick(Veiw v) {
-        mCheckout.whenReady(new Checkout.EmptyListener() {
-            @Override
-            public void onReady(BillingRequests requests) {
-                requests.purchase("sku_01", null, checkout.getPurchaseFlow());
-            }
-        });
+    protected void onDestroy() {
+        mCheckout.stop();
+        super.onDestroy();
     }
 
     @Override
@@ -121,9 +136,13 @@ public class MyActivity extends Activity {
     }
 
     @Override
-    protected void onDestroy() {
-        mCheckout.stop();
-        super.onDestroy();
+    public void onClick(View v) {
+        mCheckout.whenReady(new Checkout.EmptyListener() {
+            @Override
+            public void onReady(BillingRequests requests) {
+                requests.purchase(ProductTypes.IN_APP, "sku_01", null, mCheckout.getPurchaseFlow());
+            }
+        });
     }
 }
 ``` 
