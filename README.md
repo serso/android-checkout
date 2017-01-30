@@ -22,14 +22,14 @@ with billing on Android, such as:
   See also [Querying for Items Available for Purchase](http://developer.android.com/google/play/billing/billing_integrate.html#QueryDetails)
 - How to verify a purchase?
   See also [Security And Design](http://developer.android.com/google/play/billing/billing_best_practices.html)
-- How to load all the purchases using ```continuationToken``` or SKU
+- How to load all the purchases using `continuationToken` or SKU
   details (one request is limited by 20 items)?
 - How to add billing with a minimum amount of boilerplate code?
 
 **Checkout** can be used with any dependency injection framework or
 without it. It has a clear distinction of a functionality available in
-different contexts: purchase can be done only from ```Activity``` while
-SKU information can be loaded in ```Service``` or ```Application```. 
+different contexts: purchase can be done only from `Activity` while
+SKU information can be loaded in `Service` or `Application`.
 Moreover, it has a good test coverage and is continuously build on Travis
 CI:  [![Build Status](https://travis-ci.org/serso/android-checkout.svg)](https://travis-ci.org/serso/android-checkout)
 
@@ -37,7 +37,7 @@ CI:  [![Build Status](https://travis-ci.org/serso/android-checkout.svg)](https:/
 
 ### Setup
 
-- Gradle/Android Studio in ```build.gradle```:
+- Gradle/Android Studio in `build.gradle`:
 ```groovy
 compile 'org.solovyev.android:checkout:0.9.4'
 ```
@@ -52,7 +52,7 @@ androidTestCompile('com.android.support.test.espresso:espresso-core:x.y.z', {
 })
 ```
 See [Android Studio](http://g.co/androidstudio/app-test-app-conflict) and [Gradle](https://docs.gradle.org/current/dsl/org.gradle.api.artifacts.ResolutionStrategy.html) documentation for details.
-- Maven in ```pom.xml```:
+- Maven in `pom.xml`:
 ```xml
 <dependency>
     <groupId>org.solovyev.android</groupId>
@@ -68,8 +68,8 @@ See [Android Studio](http://g.co/androidstudio/app-test-app-conflict) and [Gradl
 
 In-app billing requires `com.android.vending.BILLING` permission to be
 set in the app. This permission is automatically added to your app's
-```AndroidManifest.xml``` by Gradle. You can declare this permission
-explicitly by adding the following line to the ```AndroidManifest.xml```:  
+`AndroidManifest.xml` by Gradle. You can declare this permission
+explicitly by adding the following line to the `AndroidManifest.xml`:
 ```xml
 <uses-permission android:name="com.android.vending.BILLING" />
 ```
@@ -77,7 +77,7 @@ explicitly by adding the following line to the ```AndroidManifest.xml```:
 ### Example
 
 Say there is an app that contains one in-app product with "sku_01" id.
-Then ```Application``` class might look like this:
+Then `Application` class might look like this:
 ```java
 public class MyApplication extends Application {
 
@@ -103,7 +103,7 @@ public class MyApplication extends Application {
     }
 }
 ```
-And ```Activity``` class like this:
+And `Activity` class like this:
 ```java
 public class MyActivity extends Activity implements View.OnClickListener {
 
@@ -156,7 +156,7 @@ public class MyActivity extends Activity implements View.OnClickListener {
         });
     }
 }
-``` 
+```
 
 ## Advanced usage
 
@@ -190,7 +190,7 @@ might be used directly it's easier to work with [Checkout](https://github.com/se
 instead.
 
 **Checkout** is a middle tier of the library. It uses **Billing** in a
-certain context, e.g. in ```Application```, ```Activity``` or ```Service```,
+certain context, e.g. in `Application`, `Activity` or `Service`,
 checks whether billing is supported and executes the requests. [ActivityCheckout](https://github.com/serso/android-checkout/blob/master/lib/src/main/java/org/solovyev/android/checkout/ActivityCheckout.java)
 is a subclass capable of purchasing items.
 
@@ -202,7 +202,7 @@ lifecycle is bound to the lifecycle of **Checkout** in which it was created.
 By default, **Checkout** uses simple purchase verification algorithm (see
 [DefaultPurchaseVerifier](https://github.com/serso/android-checkout/blob/master/lib/src/main/java/org/solovyev/android/checkout/DefaultPurchaseVerifier.java)). As explained in [Android documentation](http://developer.android.com/google/play/billing/billing_best_practices.html#sign)
 it's better to verify purchases on a remote server. **Checkout** allows
-you to provide your own [PurchaseVerifier](https://github.com/serso/android-checkout/blob/master/lib/src/main/java/org/solovyev/android/checkout/PurchaseVerifier.java) via ```Billing.Configuration#getPurchaseVerifier```.
+you to provide your own [PurchaseVerifier](https://github.com/serso/android-checkout/blob/master/lib/src/main/java/org/solovyev/android/checkout/PurchaseVerifier.java) via `Billing.Configuration#getPurchaseVerifier`.
 [BasePurchaseVerifier](https://github.com/serso/android-checkout/blob/master/lib/src/main/java/org/solovyev/android/checkout/BasePurchaseVerifier.java)  can be used as a base class for purchase verifiers that
 should be executed on a background thread.
 
