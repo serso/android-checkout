@@ -71,26 +71,9 @@ task androidSourcesJar(type: Jar) {
     from android.sourceSets.main.java.srcDirs
 }
 
-task apklib(type: Zip) {
-    appendix = extension = 'apklib'
-
-    from 'src/main/AndroidManifest.xml'
-    into('res') {
-        from android.sourceSets.main.res.srcDirs
-    }
-    into('src') {
-        from android.sourceSets.main.java.srcDirs
-    }
-    into('src') {
-        from android.sourceSets.main.aidl.srcDirs
-    }
-}
-
-
 artifacts {
     archives androidSourcesJar
     archives androidJavadocsJar
-    archives apklib
 }
 
 signing {
