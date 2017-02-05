@@ -1271,6 +1271,11 @@ public final class Billing {
                 // even though we set package name explicitly. Let's not crash the app and catch
                 // such exceptions here, the billing on such devices will not work.
                 return false;
+            } catch (NullPointerException e) {
+                // Meizu M3s phones might throw an NPE in Context#bindService (Attempt to read from field 'int com.android.server.am.ProcessRecord.uid' on a null object reference).
+                // As in-app purchases don't work if connection to the billing service can't be
+                // established let's not crash and allow users to continue using the app
+                return false;
             }
         }
 
