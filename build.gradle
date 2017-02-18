@@ -15,6 +15,7 @@ buildscript {
 
 allprojects {
     repositories {
+        mavenLocal()
         maven {
             url "file://${System.env.ANDROID_HOME}/extras/android/m2repository/"
         }
