@@ -74,6 +74,11 @@ explicitly by adding the following line to the `AndroidManifest.xml`:
 <uses-permission android:name="com.android.vending.BILLING" />
 ```
 
+### Tutorial
+
+A tutorial for the sample app is available on [Medium](https://medium.com/@se.solovyev/implementing-in-app-billing-in-android-4896232c7d6b).
+Take a look if you prefer step-by-step guides over documentation.
+
 ### Example
 
 Say there is an app that contains one in-app product with "sku_01" id.
@@ -162,7 +167,8 @@ public class MyActivity extends Activity implements View.OnClickListener {
 
 ### Samples
 
-Sample app is available on [Google Play](https://play.google.com/store/apps/details?id=org.solovyev.android.checkout.app) ([source code](https://github.com/serso/android-checkout/tree/master/app)).
+A sample app is available on [Google Play](https://play.google.com/store/apps/details?id=org.solovyev.android.checkout.app) ([source code](https://github.com/serso/android-checkout/tree/master/app)).
+There is also a tutorial for it on [Medium](https://medium.com/@se.solovyev/implementing-in-app-billing-in-android-4896232c7d6b).
 
 ### Building from the sources
 
