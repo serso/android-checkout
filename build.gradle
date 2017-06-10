@@ -3,11 +3,11 @@ buildscript {
         jcenter()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:2.2.3'
+        classpath 'com.android.tools.build:gradle:2.3.3'
     }
     ext {
         versions = [libs: [support: "25.1.1"],
-                    sdk : [compile: 24, buildTools: "24.0.1", min: 9, target: 24],
+                    sdk : [compile: 25, buildTools: "25.0.3", min: 9, target: 25],
                     code: 40,
                     name: "1.0.0"]
     }
