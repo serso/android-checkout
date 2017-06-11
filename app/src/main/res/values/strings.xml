@@ -4,6 +4,7 @@
     <string name="use_case_title_static">Use case #1. Static responses</string>
     <string name="use_case_desc_static">Use static responses to test in-app billing</string>
     <string name="buy">Buy</string>
+    <string name="consume">Consume</string>
     <string name="use_case_title_banner">Use case #2. Ad banner</string>
     <string name="use_case_desc_banner">Show an ad banner. Remove it if user purchases an ad-free version</string>
     <string name="ad_banner_text">Checkout - the best in-app billing library</string>
@@ -19,4 +20,6 @@
     <string name="_2_select">2. Select</string>
     <string name="_3_change">3. Change</string>
     <string name="purchases_changed">Play Store: purchases have changed!</string>
+    <string name="use_case_title_fragment">Use case #5. Fragments</string>
+    <string name="use_case_desc_fragment">Buy and consume from a fragment</string>
 </resources>
