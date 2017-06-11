@@ -81,7 +81,7 @@ public final class ResponseCodes {
      */
     public static final int WRONG_SIGNATURE = 10002;
     /**
-     * Intent passed to {@link ActivityCheckout#onActivityResult(int, int, android.content.Intent)}
+     * Intent passed to {@link UiCheckout#onActivityResult(int, int, android.content.Intent)}
      * is null
      */
     public static final int NULL_INTENT = 10003;

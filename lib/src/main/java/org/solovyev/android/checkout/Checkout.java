@@ -23,6 +23,7 @@
 package org.solovyev.android.checkout;
 
 import android.app.Activity;
+import android.app.Fragment;
 import android.app.Service;
 import android.content.Context;
 
@@ -37,14 +38,15 @@ import javax.annotation.Nullable;
 import javax.annotation.concurrent.GuardedBy;
 
 /**
- * Billing API helper class. Can be be used in the context of {@link android.app.Activity} or
- * {@link android.app.Service}. In such case its lifespan should be bound to the lifecycle of the
- * bound activity/service. For example, {@link #start()} and {@link #stop()} methods of this class
+ * Billing API helper class. Can be be used in the context of {@link android.app.Activity},
+ * {@link Fragment}, {@link android.app.Service} or any other UI. In such case its lifespan should
+ * be bound to the lifecycle of the bound activity/fragment/service.
+ * For example, {@link #start()} and {@link #stop()} methods of this class
  * should be called from the appropriate methods of activity:<br/>
  * <pre>{@code
  * public class MainActivity extends Activity {
  *
- *    private final ActivityCheckout mCheckout = Checkout.forActivity(this, getCheckout());
+ *    private final UiCheckout mCheckout = Checkout.forActivity(this, getCheckout());
  *
  *    private final RequestListener<Purchase> mPurchaseListener = new BillingListener<Purchase>() {
  *        public void onSuccess(Purchase purchase) {
@@ -99,7 +101,7 @@ import javax.annotation.concurrent.GuardedBy;
 public class Checkout {
 
     @Nullable
-    protected final Context mContext;
+    private final Object mTag;
     @Nonnull
     protected final Billing mBilling;
     @Nonnull
@@ -118,9 +120,9 @@ public class Checkout {
     @Nonnull
     private State mState = State.INITIAL;
 
-    Checkout(@Nullable Context context, @Nonnull Billing billing) {
+    Checkout(@Nullable Object tag, @Nonnull Billing billing) {
+        mTag = tag;
         mBilling = billing;
-        mContext = context;
     }
 
     @Nonnull
@@ -164,7 +166,7 @@ public class Checkout {
             Check.isNull(mRequests, "Already started");
             mState = State.STARTED;
             mBilling.onCheckoutStarted();
-            mRequests = mBilling.getRequests(mContext);
+            mRequests = mBilling.getRequests(mTag);
             if (listener != null) {
                 mListeners.add(listener);
             }

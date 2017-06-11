@@ -26,7 +26,6 @@ import com.android.vending.billing.IInAppBillingService;
 
 import android.app.Activity;
 import android.app.Application;
-import android.app.Service;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -539,32 +538,6 @@ public final class Billing {
     }
 
     /**
-     * A factory method of {@link BillingRequests}. The constructed object is tagged with the given
-     * <var>activity</var>. All methods of {@link RequestListener} used in this {@link
-     * BillingRequests} are called on the main application thread.
-     *
-     * @param activity activity
-     * @return requests for given <var>activity</var>
-     */
-    @Nonnull
-    public BillingRequests getRequests(@Nonnull Activity activity) {
-        return new RequestsBuilder().withTag(activity).onMainThread().create();
-    }
-
-    /**
-     * A factory method of {@link BillingRequests}. The constructed object is tagged with the given
-     * <var>service</var> context. All methods of {@link RequestListener} used in this
-     * {@link BillingRequests} are called on the main application thread.
-     *
-     * @param service service
-     * @return requests for given <var>mContext</var>
-     */
-    @Nonnull
-    public BillingRequests getRequests(@Nonnull Service service) {
-        return new RequestsBuilder().withTag(service).onMainThread().create();
-    }
-
-    /**
      * @return default requests object associated with this {@link Billing} class. All methods of
      * {@link RequestListener} used in it are called on the main application thread.
      */
@@ -573,16 +546,20 @@ public final class Billing {
         return mRequests;
     }
 
+    /**
+     * A factory method of {@link BillingRequests}. The constructed object is marked with the given
+     * <var>tag</var>. All methods of {@link RequestListener} used in this {@link BillingRequests}
+     * are called on the main application thread.
+     *
+     * @param tag requests marker
+     * @return requests for the given <var>tag</var>
+     */
     @Nonnull
-    Requests getRequests(@Nullable Context context) {
-        if (context instanceof Activity) {
-            return (Requests) getRequests((Activity) context);
-        } else if (context instanceof Service) {
-            return (Requests) getRequests((Service) context);
-        } else {
-            Check.isNull(context);
+    public Requests getRequests(@Nullable Object tag) {
+        if (tag == null) {
             return (Requests) getRequests();
         }
+        return (Requests) new RequestsBuilder().withTag(tag).onMainThread().create();
     }
 
     @Nonnull

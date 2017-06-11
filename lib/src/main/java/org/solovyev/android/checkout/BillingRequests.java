@@ -126,8 +126,8 @@ public interface BillingRequests {
 
     /**
      * Purchases an item with the given <var>sku</var> of a <var>product</var> type. This method
-     * only works in conjunction with {@link ActivityCheckout}.
-     * See {@link ActivityCheckout} for more information.
+     * only works in conjunction with {@link UiCheckout}.
+     * See {@link UiCheckout} for more information.
      * See also <a href="http://developer.android.com/google/play/billing/billing_integrate.html#Purchase">Purchase</a>
      * docs.
      * Note that cancelling of a purchase process is not simple as it is a multi-step process. If
@@ -150,8 +150,8 @@ public interface BillingRequests {
 
     /**
      * Upgrades/downgrades a list of the current subscriptions to a given subscription. This method
-     * only works in conjunction with {@link ActivityCheckout}
-     * See {@link ActivityCheckout} for more information.
+     * only works in conjunction with {@link UiCheckout}
+     * See {@link UiCheckout} for more information.
      * See also <a href="https://developer.android.com/google/play/billing/billing_reference.html#upgrade-getBuyIntentToReplaceSkus">getBuyIntentToReplaceSkus()</a>
      * docs.
      *
