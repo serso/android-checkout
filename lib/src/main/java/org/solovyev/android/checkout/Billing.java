@@ -24,7 +24,6 @@ package org.solovyev.android.checkout;
 
 import com.android.vending.billing.IInAppBillingService;
 
-import android.app.Activity;
 import android.app.Application;
 import android.content.ComponentName;
 import android.content.Context;
@@ -563,7 +562,7 @@ public final class Billing {
     }
 
     @Nonnull
-    PurchaseFlow createPurchaseFlow(@Nonnull Activity activity, int requestCode, @Nonnull RequestListener<Purchase> listener) {
+    PurchaseFlow createPurchaseFlow(@Nonnull IntentStarter intentStarter, int requestCode, @Nonnull RequestListener<Purchase> listener) {
         if (mCache.hasCache()) {
             listener = new RequestListenerWrapper<Purchase>(listener) {
                 @Override
@@ -573,7 +572,7 @@ public final class Billing {
                 }
             };
         }
-        return new PurchaseFlow(activity, requestCode, listener, mConfiguration.getPurchaseVerifier());
+        return new PurchaseFlow(intentStarter, requestCode, listener, mConfiguration.getPurchaseVerifier());
     }
 
     @Nonnull

@@ -1,6 +1,7 @@
 package org.solovyev.android.checkout;
 
 import android.app.Activity;
+import android.app.Fragment;
 import android.content.Intent;
 import android.util.SparseArray;
 
@@ -44,6 +45,8 @@ import javax.annotation.Nullable;
  * Another usage with "one-shot" purchase flows can be found in documentation for {@link
  * UiCheckout#createOneShotPurchaseFlow(int, RequestListener)}.
  *
+ * @see Checkout#forFragment(Fragment, Billing)
+ * @see Checkout#forUi(IntentStarter, Object, Billing)
  * @see Checkout#forActivity(Activity, Billing)
  */
 public abstract class UiCheckout extends Checkout {
@@ -197,13 +200,13 @@ public abstract class UiCheckout extends Checkout {
         if (oneShot) {
             listener = new OneShotRequestListener(listener, requestCode);
         }
-        flow = mBilling.createPurchaseFlow(getActivity(), requestCode, listener);
+        flow = mBilling.createPurchaseFlow(makeIntentStarter(), requestCode, listener);
         mFlows.append(requestCode, flow);
         return flow;
     }
 
     @Nonnull
-    protected abstract Activity getActivity();
+    protected abstract IntentStarter makeIntentStarter();
 
     /**
      * Creates a one-shot {@link PurchaseFlow} and tries starting it. If {@link Checkout} is not

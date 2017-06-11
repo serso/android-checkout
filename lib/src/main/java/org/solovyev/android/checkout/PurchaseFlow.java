@@ -64,17 +64,16 @@ public final class PurchaseFlow implements CancellableRequestListener<PendingInt
     static final String EXTRA_RESPONSE = "RESPONSE_CODE";
     static final String EXTRA_PURCHASE_DATA = "INAPP_PURCHASE_DATA";
     static final String EXTRA_PURCHASE_SIGNATURE = "INAPP_DATA_SIGNATURE";
-
     @Nonnull
-    private final Activity mActivity;
+    private final IntentStarter mIntentStarter;
     private final int mRequestCode;
     @Nonnull
     private final PurchaseVerifier mVerifier;
     @Nullable
     private RequestListener<Purchase> mListener;
 
-    PurchaseFlow(@Nonnull Activity activity, int requestCode, @Nonnull RequestListener<Purchase> listener, @Nonnull PurchaseVerifier verifier) {
-        mActivity = activity;
+    PurchaseFlow(@Nonnull IntentStarter intentStarter, int requestCode, @Nonnull RequestListener<Purchase> listener, @Nonnull PurchaseVerifier verifier) {
+        mIntentStarter = intentStarter;
         mRequestCode = requestCode;
         mListener = listener;
         mVerifier = verifier;
@@ -87,7 +86,7 @@ public final class PurchaseFlow implements CancellableRequestListener<PendingInt
             return;
         }
         try {
-            mActivity.startIntentSenderForResult(purchaseIntent.getIntentSender(), mRequestCode, new Intent(), 0, 0, 0);
+            mIntentStarter.startForResult(purchaseIntent.getIntentSender(), mRequestCode, new Intent());
         } catch (RuntimeException | IntentSender.SendIntentException e) {
             handleError(e);
         }

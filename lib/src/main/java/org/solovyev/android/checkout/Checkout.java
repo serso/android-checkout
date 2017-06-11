@@ -22,10 +22,12 @@
 
 package org.solovyev.android.checkout;
 
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.Fragment;
 import android.app.Service;
 import android.content.Context;
+import android.os.Build;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -123,6 +125,49 @@ public class Checkout {
     Checkout(@Nullable Object tag, @Nonnull Billing billing) {
         mTag = tag;
         mBilling = billing;
+    }
+
+    /**
+     * @param intentStarter {@link android.content.IntentSender} starter
+     * @param tag requests marker
+     * @param billing billing instance
+     */
+    @Nonnull
+    public static UiCheckout forUi(@Nonnull IntentStarter intentStarter, @Nonnull Object tag, @Nonnull Billing billing) {
+        return new CustomUiCheckout(intentStarter, tag, billing);
+    }
+
+    /**
+     * <p>{@link android.os.Build.VERSION_CODES#N} API version is required by {@link
+     * Fragment#startIntentSenderForResult}.</p>
+     * <p>There are two possibilities to make it work on older versions:
+     * <ul>
+     * <li>Either to use {@link #forActivity} and delegate {@link Activity#onActivityResult}
+     * to an appropriate fragment</li>
+     * <li>Or to use {@link #forUi} implementing {@link IntentStarter} in the following manner:
+     * <pre> {@code
+     *  private class MyIntentStarter implements IntentStarter {
+     *      private final Fragment mFragment;
+     *
+     *      public MyIntentStarter(Fragment fragment) {
+     *          mFragment = fragment;
+     *      }
+     *
+     *      public void startForResult(IntentSender intentSender, int requestCode, Intent intent) throws IntentSender.SendIntentException {
+     *          mFragment.startIntentSenderForResult(intentSender, requestCode, intent, 0, 0, 0, null);
+     *      }
+     *   }
+     * }
+     * </pre>
+     * The reason why {@link IntentStarter} is not implemented in the lib is to avoid support-lib
+     * dependency.</li>
+     * </ul>
+     * </p>
+     */
+    @TargetApi(Build.VERSION_CODES.N)
+    @Nonnull
+    public static UiCheckout forFragment(@Nonnull Fragment fragment, @Nonnull Billing billing) {
+        return new FragmentCheckout(fragment, billing);
     }
 
     @Nonnull

@@ -25,6 +25,7 @@ package org.solovyev.android.checkout;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mockito;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
@@ -75,7 +76,7 @@ public class PurchaseFlowTest {
         mListener = mock(RequestListener.class);
         mVerifier = mock(PurchaseVerifier.class);
         Tests.mockVerifier(mVerifier, false);
-        mFlow = new PurchaseFlow(new Activity(), 1, mListener, mVerifier);
+        mFlow = new PurchaseFlow(Mockito.mock(IntentStarter.class), 1, mListener, mVerifier);
     }
 
     @Test

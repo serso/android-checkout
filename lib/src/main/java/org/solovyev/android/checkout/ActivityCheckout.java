@@ -23,6 +23,8 @@
 package org.solovyev.android.checkout;
 
 import android.app.Activity;
+import android.content.Intent;
+import android.content.IntentSender;
 
 import javax.annotation.Nonnull;
 
@@ -45,6 +47,13 @@ import javax.annotation.Nonnull;
 public final class ActivityCheckout extends UiCheckout {
     @Nonnull
     private final Activity mActivity;
+    @Nonnull
+    private final IntentStarter mIntentStarter = new IntentStarter() {
+        @Override
+        public void startForResult(@Nonnull IntentSender intentSender, int requestCode, @Nonnull Intent intent) throws IntentSender.SendIntentException {
+            mActivity.startIntentSenderForResult(intentSender, requestCode, intent, 0, 0, 0);
+        }
+    };
 
     ActivityCheckout(@Nonnull Activity activity, @Nonnull Billing billing) {
         super(activity, billing);
@@ -53,7 +62,7 @@ public final class ActivityCheckout extends UiCheckout {
 
     @Nonnull
     @Override
-    protected Activity getActivity() {
-        return mActivity;
+    protected IntentStarter makeIntentStarter() {
+        return mIntentStarter;
     }
 }
