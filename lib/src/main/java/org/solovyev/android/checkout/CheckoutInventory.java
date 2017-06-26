@@ -41,7 +41,7 @@ final class CheckoutInventory extends BaseInventory {
         @GuardedBy("mLock")
         private final Products mProducts = new Products();
 
-        public Worker(@Nonnull Task task) {
+        Worker(@Nonnull Task task) {
             mTask = task;
         }
 
@@ -140,7 +140,7 @@ final class CheckoutInventory extends BaseInventory {
 
     @Nonnull
     @Override
-    protected Runnable createWorker(Task task) {
+    protected Runnable createWorker(@Nonnull Task task) {
         return new Worker(task);
     }
 }

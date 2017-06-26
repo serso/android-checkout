@@ -36,7 +36,7 @@ public final class RobotmediaInventory extends BaseInventory {
         @Nonnull
         private final Task mTask;
 
-        public Worker(@Nonnull Task task) {
+        Worker(@Nonnull Task task) {
             mTask = task;
         }
 
@@ -87,7 +87,7 @@ public final class RobotmediaInventory extends BaseInventory {
 
     @Nonnull
     @Override
-    protected Runnable createWorker(Task task) {
+    protected Runnable createWorker(@Nonnull Task task) {
         return new Worker(task);
     }
 }

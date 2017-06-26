@@ -39,7 +39,7 @@ class FallingBackInventory extends BaseInventory {
         @Nonnull
         private final Task mTask;
 
-        public Worker(@Nonnull Task task) {
+        Worker(@Nonnull Task task) {
             mTask = task;
         }
 
