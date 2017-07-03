@@ -82,7 +82,7 @@ public final class Sku {
     }
 
     @Nonnull
-    String toJson() throws JSONException {
+    public String toJson() throws JSONException {
         return toJsonObject().toString();
     }
 
