@@ -86,21 +86,17 @@ group = "org.solovyev.android"
 version = android.defaultConfig.versionName
 
 uploadArchives {
-    doFirst {
-        // for some reason Gradle :uploadArchives tries to upload null.txt.asc and null.map artifacts.
-        // As we don't want those let's filter them now (note that these files are not included in the
-        // list of project artifacts, so their origin is not clear)
-        configurations.archives.artifacts.removeAll { artifact ->
-            def removing = artifact.classifier == null && (artifact.type == 'txt.asc' || artifact.type == 'map')
-            if (removing) {
-                println "Removing artifacts: ${artifact.name}-${artifact.classifier}.${artifact.type}"
-            }
-            return removing
-        }
-    }
     repositories {
         mavenDeployer {
-            beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+            beforeDeployment { MavenDeployment deployment ->
+                signing.signPom(deployment)
+                // for some reason Gradle :uploadArchives tries to upload null.txt.asc and null.map artifacts.
+                // As we don't want those let's filter them now (note that these files are not included in the
+                // list of project artifacts, so their origin is not clear)
+                def removeCond = { artifact -> return !artifact.classifier && (artifact.type == "map" || artifact.type == "txt.asc") }
+                deployment.artifacts.removeAll(removeCond)
+                deployment.attachedArtifacts.removeAll(removeCond)
+            }
 
             repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
                 authentication(userName: ossrhUsername, password: ossrhPassword)
