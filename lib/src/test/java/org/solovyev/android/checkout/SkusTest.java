@@ -96,10 +96,10 @@ public class SkusTest {
     @Test
     public void testShouldReadSkus() throws Exception {
         final ArrayList<String> list = new ArrayList<String>();
-        list.add(SkuTest.newJson("1"));
-        list.add(SkuTest.newJson("2"));
-        list.add(SkuTest.newJson("3"));
-        list.add(SkuTest.newJson("4"));
+        list.add(SkuTest.newIAPJson("1"));
+        list.add(SkuTest.newIAPJson("2"));
+        list.add(SkuTest.newSubscriptionJson("3"));
+        list.add(SkuTest.newSubscriptionJson("4"));
 
         final Bundle bundle = new Bundle();
         bundle.putStringArrayList(Skus.BUNDLE_LIST, list);
@@ -110,6 +110,6 @@ public class SkusTest {
     }
 
     private Sku newSku(String id) {
-        return new Sku("test", id, id, Sku.Price.EMPTY, id, id);
+        return new Sku("test", id, id, Sku.Price.EMPTY, id, id, Sku.Price.EMPTY, id, id, id);
     }
 }

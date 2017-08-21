@@ -132,19 +132,19 @@ public abstract class InventoryTestBase {
 
     protected void populateSkus() throws Exception {
         final List<Sku> expectedInAppSkus = asList(
-                Sku.fromJson(SkuTest.newJson("1"), IN_APP),
-                Sku.fromJson(SkuTest.newJson("2"), IN_APP),
-                Sku.fromJson(SkuTest.newJson("3"), IN_APP),
-                Sku.fromJson(SkuTest.newJson("4"), IN_APP),
-                Sku.fromJson(SkuTest.newJson("6"), IN_APP)
+                Sku.fromJson(SkuTest.newIAPJson("1"), IN_APP),
+                Sku.fromJson(SkuTest.newIAPJson("2"), IN_APP),
+                Sku.fromJson(SkuTest.newIAPJson("3"), IN_APP),
+                Sku.fromJson(SkuTest.newIAPJson("4"), IN_APP),
+                Sku.fromJson(SkuTest.newIAPJson("6"), IN_APP)
         );
         insertSkus(IN_APP, expectedInAppSkus);
 
         final List<Sku> expectedSubSkus = asList(
-                Sku.fromJson(SkuTest.newJson("sub1"), SUBSCRIPTION),
-                Sku.fromJson(SkuTest.newJson("sub2"), SUBSCRIPTION),
-                Sku.fromJson(SkuTest.newJson("sub3"), SUBSCRIPTION),
-                Sku.fromJson(SkuTest.newJson("sub4"), SUBSCRIPTION)
+                Sku.fromJson(SkuTest.newSubscriptionJson("sub1"), SUBSCRIPTION),
+                Sku.fromJson(SkuTest.newSubscriptionJson("sub2"), SUBSCRIPTION),
+                Sku.fromJson(SkuTest.newSubscriptionJson("sub3"), SUBSCRIPTION),
+                Sku.fromJson(SkuTest.newSubscriptionJson("sub4"), SUBSCRIPTION)
         );
         insertSkus(SUBSCRIPTION, expectedSubSkus);
     }

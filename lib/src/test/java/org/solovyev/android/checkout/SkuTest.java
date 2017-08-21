@@ -33,6 +33,7 @@ import javax.annotation.Nonnull;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -44,33 +45,60 @@ public class SkuTest {
         assertEquals("price_" + id, sku.price);
         assertEquals("description_" + id, sku.description);
         assertEquals("title_" + id, sku.title);
+
+        assertTrue(sku.subscriptionPeriod == null || sku.subscriptionPeriod.equals("subscriptionPeriod_" + id));
+        assertTrue(sku.freeTrialPeriod == null || sku.freeTrialPeriod.equals("freeTrialPeriod_" + id));
+        assertTrue(sku.introductoryPricePeriod == null || sku.introductoryPricePeriod.equals("introductoryPricePeriod_" + id));
     }
 
     @Nonnull
-    static String newJson(@Nonnull String id) throws JSONException {
-        return newJsonObject(id).toString();
+    static String newSubscriptionJson(@Nonnull String id) throws JSONException {
+        return newSubscriptionJsonObject(id).toString();
     }
 
     @Nonnull
-    static JSONObject newJsonObject(String id) throws JSONException {
+    static String newIAPJson(@Nonnull String id) throws JSONException {
+        return newIAPJsonObject(id).toString();
+    }
+
+    @Nonnull
+    static JSONObject newSubscriptionJsonObject(String id) throws JSONException {
+        final JSONObject json = newIAPJsonObject(id);
+        json.put("subscriptionPeriod", "subscriptionPeriod_" + id);
+        json.put("freeTrialPeriod", "freeTrialPeriod_" + id);
+        json.put("introductoryPricePeriod", "introductoryPricePeriod_" + id);
+
+        return json;
+    }
+
+    @Nonnull
+    static JSONObject newIAPJsonObject(String id) throws JSONException {
         final JSONObject json = new JSONObject();
         json.put("productId", id);
         json.put("price", "price_" + id);
         json.put("title", "title_" + id);
         json.put("description", "description_" + id);
+
         return json;
     }
 
     @Test
-    public void testShouldBeCreatedFromJson() throws Exception {
-        final Sku sku = Sku.fromJson(newJson("1"), "test");
+    public void testIAPSkuShouldBeCreatedFromJson() throws Exception {
+        final Sku sku = Sku.fromJson(newIAPJson("1"), "test");
+
+        verifySku(sku, "1");
+    }
+
+    @Test
+    public void testSubscriptionSkuShouldBeCreatedFromJson() throws Exception {
+        final Sku sku = Sku.fromJson(newSubscriptionJson("1"), "test");
 
         verifySku(sku, "1");
     }
 
     @Test
     public void testShouldNotCreateIfNoId() throws Exception {
-        final JSONObject json = newJsonObject("2");
+        final JSONObject json = newIAPJsonObject("2");
         json.remove("productId");
         try {
             Sku.fromJson(json.toString(), "test");
@@ -81,7 +109,7 @@ public class SkuTest {
 
     @Test
     public void testShouldCreateWithoutDescription() throws Exception {
-        final JSONObject json = newJsonObject("3");
+        final JSONObject json = newIAPJsonObject("3");
         json.remove("description");
         final Sku sku = Sku.fromJson(json.toString(), "test");
         assertEquals("3", sku.id.code);
@@ -92,9 +120,17 @@ public class SkuTest {
 
     @Test
     public void testShouldHaveNotValidPriceIfNoDetailedDataAvailable() throws Exception {
-        final Sku sku = Sku.fromJson(newJson("1"), "test");
+        final Sku sku = Sku.fromJson(newIAPJson("1"), "test");
 
         assertFalse(sku.detailedPrice.isValid());
+    }
+
+    @Test
+    public void testShouldHaveNotValidIntroductoryPriceIfNoDetailedDataAvailable() throws Exception {
+        final Sku sku = Sku.fromJson(newSubscriptionJson("1"), "test");
+
+        assertNotNull(sku.introductoryPrice);
+        assertFalse(sku.introductoryPrice.isValid());
     }
 
     @Test
@@ -104,8 +140,15 @@ public class SkuTest {
         testDetailedPrice(111, "руб");
     }
 
+    @Test
+    public void testShouldHaveIntroductoryPrice() throws Exception {
+        testDetailedPrice(Long.MAX_VALUE, "USD");
+        testDetailedPrice(1, "RUB");
+        testDetailedPrice(111, "руб");
+    }
+
     private void testDetailedPrice(long amount, @Nonnull String currency) throws JSONException {
-        final JSONObject json = newJsonObject("1");
+        final JSONObject json = newIAPJsonObject("1");
         json.put("price_amount_micros", amount);
         json.put("price_currency_code", currency);
         final Sku sku = Sku.fromJson(json.toString(), "test");
@@ -115,9 +158,21 @@ public class SkuTest {
         assertEquals(amount, sku.detailedPrice.amount);
     }
 
+    private void testIntroductoryPrice(long amount, @Nonnull String currency) throws JSONException {
+        final JSONObject json = newSubscriptionJsonObject("1");
+        json.put("introductoryPriceAmountMicros", amount);
+        json.put("price_currency_code", currency);
+        final Sku sku = Sku.fromJson(json.toString(), "test");
+
+        assertNotNull(sku.introductoryPrice);
+        assertTrue(sku.introductoryPrice.isValid());
+        assertEquals(currency, sku.introductoryPrice.currency);
+        assertEquals(amount, sku.introductoryPrice.amount);
+    }
+
     @Test
     public void testShouldStripSimpleAppNameFromTitle() throws Exception {
-        final JSONObject json = newJsonObject("1");
+        final JSONObject json = newIAPJsonObject("1");
         json.put("title", "Test #1 (Test App name)");
         final Sku sku = Sku.fromJson(json.toString(), "test");
 
@@ -128,7 +183,7 @@ public class SkuTest {
 
     @Test
     public void testShouldStripSimpleAppNameFromTitleWithBrackets() throws Exception {
-        final JSONObject json = newJsonObject("1");
+        final JSONObject json = newIAPJsonObject("1");
         json.put("title", "Test #1 (test) (Test App name)");
         final Sku sku = Sku.fromJson(json.toString(), "test");
 
@@ -139,7 +194,7 @@ public class SkuTest {
 
     @Test
     public void testShouldStripSimpleAppNameWithBracketsFromTitleWithBrackets() throws Exception {
-        final JSONObject json = newJsonObject("1");
+        final JSONObject json = newIAPJsonObject("1");
         json.put("title", "Test #1 (test) (Test App name (test))");
         final Sku sku = Sku.fromJson(json.toString(), "test");
 
