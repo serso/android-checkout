@@ -22,17 +22,27 @@
 
 package org.solovyev.android.checkout;
 
+import static android.text.TextUtils.isEmpty;
+
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.annotation.Nonnull;
-
-import static android.text.TextUtils.isEmpty;
 
 /**
  * Checks a purchase signature using the default Android implementation - {@link Security} class.
  */
 class DefaultPurchaseVerifier implements PurchaseVerifier {
+
+    static final Set<String> TEST_SKUS = new HashSet<>(Arrays.asList(
+            "android.test.purchased",
+            "android.test.canceled",
+            "android.test.refunded",
+            "android.test.item_unavailable"
+    ));
 
     @Nonnull
     private final String mPublicKey;
@@ -45,14 +55,20 @@ class DefaultPurchaseVerifier implements PurchaseVerifier {
     public void verify(@Nonnull List<Purchase> purchases, @Nonnull RequestListener<List<Purchase>> listener) {
         final List<Purchase> verifiedPurchases = new ArrayList<Purchase>(purchases.size());
         for (Purchase purchase : purchases) {
+            // test purchases don't contain signatures let's auto-verify them
+            if (TEST_SKUS.contains(purchase.sku)) {
+                Billing.debug("Auto-verifying a test purchase: " + purchase);
+                verifiedPurchases.add(purchase);
+                continue;
+            }
             if (Security.verifyPurchase(mPublicKey, purchase.data, purchase.signature)) {
                 verifiedPurchases.add(purchase);
+                continue;
+            }
+            if (isEmpty(purchase.signature)) {
+                Billing.error("Cannot verify purchase: " + purchase + ". Signature is empty");
             } else {
-                if (isEmpty(purchase.signature)) {
-                    Billing.error("Cannot verify purchase: " + purchase + ". Signature is empty");
-                } else {
-                    Billing.error("Cannot verify purchase: " + purchase + ". Wrong signature");
-                }
+                Billing.error("Cannot verify purchase: " + purchase + ". Wrong signature");
             }
         }
         listener.onSuccess(verifiedPurchases);
