@@ -47,6 +47,7 @@ final class CheckoutInventory extends BaseInventory {
 
         @Override
         public void run() {
+            Check.isTrue(Thread.holdsLock(mLock), "Must be synchronized");
             // for each product we wait for:
             // 1. onReady to be called
             // 2. loadPurchased to be finished
