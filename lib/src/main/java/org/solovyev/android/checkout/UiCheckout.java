@@ -3,6 +3,7 @@ package org.solovyev.android.checkout;
 import android.app.Activity;
 import android.app.Fragment;
 import android.content.Intent;
+import android.os.Bundle;
 import android.util.SparseArray;
 
 import javax.annotation.Nonnull;
@@ -213,11 +214,19 @@ public abstract class UiCheckout extends Checkout {
      * ready the start is postponed.
      */
     public void startPurchaseFlow(final String product, final String sku, @Nullable final String payload, final RequestListener<Purchase> listener) {
+        startPurchaseFlow(product, sku, payload, null, listener);
+    }
+
+    /**
+     * Same as {@link #startPurchaseFlow(String, String, String, RequestListener)} but with extra
+     * parameters. The extra parameters work only in the billing API v6.
+     */
+    public void startPurchaseFlow(final String product, final String sku, @Nullable final String payload, @Nullable final Bundle extraParams, final RequestListener<Purchase> listener) {
         createOneShotPurchaseFlow(listener);
         whenReady(new EmptyListener() {
             @Override
             public void onReady(@Nonnull BillingRequests requests) {
-                requests.purchase(product, sku, payload, getPurchaseFlow());
+                requests.purchase(product, sku, payload, extraParams, getPurchaseFlow());
             }
         });
     }
@@ -225,8 +234,12 @@ public abstract class UiCheckout extends Checkout {
     /**
      * @see #startPurchaseFlow(String, String, String, RequestListener)
      */
-    public void startPurchaseFlow(final Sku sku, @Nullable final String payload, final RequestListener<Purchase> listener) {
-        startPurchaseFlow(sku.id.product, sku.id.code, payload, listener);
+    public void startPurchaseFlow(Sku sku, @Nullable String payload, RequestListener<Purchase> listener) {
+        startPurchaseFlow(sku, payload, null, listener);
+    }
+
+    public void startPurchaseFlow(Sku sku, @Nullable String payload, @Nullable Bundle extraParams, RequestListener<Purchase> listener) {
+        startPurchaseFlow(sku.id.product, sku.id.code, payload, extraParams, listener);
     }
 
     /**

@@ -35,23 +35,29 @@ final class PurchaseRequest extends Request<PendingIntent> {
 
     @Nonnull
     private final String mProduct;
-
     @Nonnull
     private final String mSku;
-
     @Nullable
     private final String mPayload;
+    @Nullable
+    private final Bundle mExtraParams;
 
     PurchaseRequest(@Nonnull String product, @Nonnull String sku, @Nullable String payload) {
-        super(RequestType.PURCHASE);
+        this(product, sku, payload, null);
+    }
+
+    PurchaseRequest(@Nonnull String product, @Nonnull String sku, @Nullable String payload, @Nullable Bundle extraParams) {
+        super(RequestType.PURCHASE, extraParams != null ? Billing.V6 : Billing.V3);
         mProduct = product;
         mSku = sku;
         mPayload = payload;
+        mExtraParams = extraParams;
     }
 
     @Override
     void start(@Nonnull IInAppBillingService service, @Nonnull String packageName) throws RemoteException, RequestException {
-        final Bundle bundle = service.getBuyIntent(mApiVersion, packageName, mSku, mProduct, mPayload == null ? "" : mPayload);
+        final String payload = mPayload == null ? "" : mPayload;
+        final Bundle bundle = mExtraParams != null ? service.getBuyIntentExtraParams(mApiVersion, packageName, mSku, mProduct, payload, mExtraParams) : service.getBuyIntent(mApiVersion, packageName, mSku, mProduct, payload);
         if (handleError(bundle)) {
             return;
         }

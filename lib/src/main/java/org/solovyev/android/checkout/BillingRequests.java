@@ -22,6 +22,8 @@
 
 package org.solovyev.android.checkout;
 
+import android.os.Bundle;
+
 import java.util.List;
 
 import javax.annotation.Nonnull;
@@ -142,6 +144,20 @@ public interface BillingRequests {
      * @return request id
      */
     int purchase(@Nonnull String product, @Nonnull String sku, @Nullable String payload, @Nonnull PurchaseFlow purchaseFlow);
+
+    /**
+     * Same as {@link #purchase(String, String, String, PurchaseFlow)} but with a bundle of extra
+     * parameters.
+     * This method is only supported in Billing API v.6.
+     */
+    int purchase(@Nonnull String product, @Nonnull String sku, @Nullable String payload, @Nullable Bundle extraParams, @Nonnull PurchaseFlow purchaseFlow);
+
+    /**
+     * Checks whether it is possible to call {@link #purchase(String, String, String, Bundle, PurchaseFlow)}
+     * in this version of Billing API. It is equivalent of calling {@link #isBillingSupported(String, int)}
+     * with {@code version=6}.
+     */
+    int isPurchaseWithExtraParamsSupported(@Nonnull String product, @Nonnull RequestListener<Object> listener);
 
     /**
      * @see #purchase(String, String, String, PurchaseFlow)

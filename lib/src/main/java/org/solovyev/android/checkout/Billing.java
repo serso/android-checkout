@@ -29,6 +29,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.RemoteException;
@@ -68,6 +69,7 @@ public final class Billing {
 
     static final int V3 = 3;
     static final int V5 = 5;
+    static final int V6 = 6;
 
     static final long SECOND = 1000L;
     static final long MINUTE = SECOND * 60L;
@@ -1033,6 +1035,19 @@ public final class Billing {
             Check.isNotEmpty(product);
             Check.isNotEmpty(sku);
             return runWhenConnected(new PurchaseRequest(product, sku, payload), wrapListener(purchaseFlow), mTag);
+        }
+
+        @Override
+        public int purchase(@Nonnull String product, @Nonnull String sku, @Nullable String payload, @Nullable Bundle extraParams, @Nonnull PurchaseFlow purchaseFlow) {
+            Check.isNotEmpty(product);
+            Check.isNotEmpty(sku);
+            return runWhenConnected(new PurchaseRequest(product, sku, payload, extraParams), wrapListener(purchaseFlow), mTag);
+        }
+
+        @Override
+        public int isPurchaseWithExtraParamsSupported(@Nonnull String product, @Nonnull RequestListener<Object> listener) {
+            Check.isNotEmpty(product);
+            return isBillingSupported(product, Billing.V6, listener);
         }
 
         @Override

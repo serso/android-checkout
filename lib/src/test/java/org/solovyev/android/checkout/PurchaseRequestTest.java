@@ -22,10 +22,32 @@
 
 package org.solovyev.android.checkout;
 
+import com.android.vending.billing.IInAppBillingService;
+
+import org.junit.Test;
+
+import android.os.Bundle;
+
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+
 public class PurchaseRequestTest extends RequestTestBase {
 
     @Override
     protected Request newRequest() {
         return new PurchaseRequest("test", "sku", null);
+    }
+
+    @Test
+    public void testShouldUseExtraParams() throws Exception {
+        final Bundle extraParams = new Bundle();
+        extraParams.putString("extra", "test");
+        final PurchaseRequest request = new PurchaseRequest("product", "sku", "payload", extraParams);
+        final IInAppBillingService service = mock(IInAppBillingService.class);
+
+        request.start(service, "package");
+
+        verify(service).getBuyIntentExtraParams(eq(Billing.V6), eq("package"), eq("sku"), eq("product"), eq("payload"), eq(extraParams));
     }
 }
