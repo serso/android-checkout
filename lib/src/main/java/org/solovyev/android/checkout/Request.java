@@ -66,8 +66,8 @@ abstract class Request<R> {
         mId = sCounter.getAndIncrement();
     }
 
-    Request(@Nonnull RequestType type, @Nonnull Request<R> request) {
-        mType = type;
+    Request(@Nonnull Request<R> request) {
+        mType = request.mType;
         mId = request.mId;
         mApiVersion = request.mApiVersion;
         synchronized (request) {

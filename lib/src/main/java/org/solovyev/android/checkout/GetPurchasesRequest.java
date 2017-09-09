@@ -24,8 +24,6 @@ package org.solovyev.android.checkout;
 
 import com.android.vending.billing.IInAppBillingService;
 
-import org.json.JSONException;
-
 import android.os.Bundle;
 import android.os.RemoteException;
 
@@ -36,72 +34,33 @@ import javax.annotation.Nullable;
 
 import static org.solovyev.android.checkout.ResponseCodes.EXCEPTION;
 
-final class GetPurchasesRequest extends Request<Purchases> {
-
-    @Nonnull
-    private final String mProduct;
-
-    @Nullable
-    private final String mContinuationToken;
+final class GetPurchasesRequest extends BasePurchasesRequest {
 
     @Nonnull
     private final PurchaseVerifier mVerifier;
 
     GetPurchasesRequest(@Nonnull String product, @Nullable String continuationToken, @Nonnull PurchaseVerifier verifier) {
-        super(RequestType.GET_PURCHASES);
-        mProduct = product;
-        mContinuationToken = continuationToken;
+        super(RequestType.GET_PURCHASES, Billing.V3, product, continuationToken);
         mVerifier = verifier;
     }
 
     GetPurchasesRequest(@Nonnull GetPurchasesRequest request, @Nonnull String continuationToken) {
-        super(RequestType.GET_PURCHASES, request);
-        mProduct = request.mProduct;
-        mContinuationToken = continuationToken;
+        super(request, continuationToken);
         mVerifier = request.mVerifier;
     }
 
-    @Nonnull
-    String getProduct() {
-        return mProduct;
-    }
-
-    @Nullable
-    String getContinuationToken() {
-        return mContinuationToken;
+    @Override
+    protected void processPurchases(@Nonnull List<Purchase> purchases, @Nullable String continuationToken) {
+        final VerificationListener listener = new VerificationListener(this, mProduct, continuationToken);
+        mVerifier.verify(purchases, listener);
+        if (!listener.mCalled) {
+            listener.onError(ResponseCodes.EXCEPTION, new IllegalStateException("Either onSuccess or onError methods must be called by PurchaseVerifier"));
+        }
     }
 
     @Override
-    void start(@Nonnull IInAppBillingService service, @Nonnull String packageName) throws RemoteException {
-        final Bundle bundle = service.getPurchases(mApiVersion, packageName, mProduct, mContinuationToken);
-        if (handleError(bundle)) {
-            return;
-        }
-        try {
-            final String continuationToken = Purchases.getContinuationTokenFromBundle(bundle);
-            final List<Purchase> purchases = Purchases.getListFromBundle(bundle);
-            if (purchases.isEmpty()) {
-                onSuccess(new Purchases(mProduct, purchases, continuationToken));
-                return;
-            }
-            final VerificationListener listener = new VerificationListener(this, mProduct, continuationToken);
-            mVerifier.verify(purchases, listener);
-            if (!listener.mCalled) {
-                listener.onError(ResponseCodes.EXCEPTION, new IllegalStateException("Either onSuccess or onError methods must be called by PurchaseVerifier"));
-            }
-        } catch (JSONException e) {
-            onError(e);
-        }
-    }
-
-    @Nullable
-    @Override
-    protected String getCacheKey() {
-        if (mContinuationToken != null) {
-            return mProduct + "_" + mContinuationToken;
-        } else {
-            return mProduct;
-        }
+    protected Bundle request(@Nonnull IInAppBillingService service, @Nonnull String packageName) throws RemoteException {
+        return service.getPurchases(mApiVersion, packageName, mProduct, mContinuationToken);
     }
 
     private static class VerificationListener implements RequestListener<List<Purchase>> {
