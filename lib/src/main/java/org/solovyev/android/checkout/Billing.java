@@ -70,6 +70,7 @@ public final class Billing {
     static final int V3 = 3;
     static final int V5 = 5;
     static final int V6 = 6;
+    static final int V7 = 7;
 
     static final long SECOND = 1000L;
     static final long MINUTE = SECOND * 60L;
@@ -981,7 +982,13 @@ public final class Billing {
         public int isBillingSupported(@Nonnull String product, int apiVersion,
                                       @Nonnull RequestListener<Object> listener) {
             Check.isNotEmpty(product);
-            return runWhenConnected(new BillingSupportedRequest(product, apiVersion), wrapListener(listener), mTag);
+            return runWhenConnected(new BillingSupportedRequest(product, apiVersion, null), wrapListener(listener), mTag);
+        }
+
+        @Override
+        public int isBillingSupported(@Nonnull String product, int apiVersion, @Nonnull Bundle extraParams, @Nonnull RequestListener<Object> listener) {
+            Check.isNotEmpty(product);
+            return runWhenConnected(new BillingSupportedRequest(product, apiVersion, extraParams), wrapListener(listener), mTag);
         }
 
         @Override

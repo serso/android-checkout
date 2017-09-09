@@ -81,6 +81,14 @@ public interface BillingRequests {
     int isBillingSupported(@Nonnull String product, int apiVersion, @Nonnull RequestListener<Object> listener);
 
     /**
+     * Checks whether billing for the specified <var>product</var>, <var>version</var> and <var>arguments</var>
+     * is supported.
+     *
+     * @param extraParams bundle with extra arguments
+     */
+    int isBillingSupported(@Nonnull String product, int apiVersion, @Nonnull Bundle extraParams, @Nonnull RequestListener<Object> listener);
+
+    /**
      * Requests a list of purchased items of the given <var>product</var> type.
      * Note: In case if there are more than 700 items - continuation token is returned and might be
      * used for further requests. See <a href="http://developer.android.com/google/play/billing/billing_integrate.html#QueryPurchases">Query

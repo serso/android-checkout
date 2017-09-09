@@ -22,11 +22,19 @@
 
 package org.solovyev.android.checkout;
 
+import com.android.vending.billing.IInAppBillingService;
+
 import org.junit.Test;
+
+import android.os.Bundle;
 
 import javax.annotation.Nonnull;
 
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNull;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 public class BillingSupportedRequestTest extends RequestTestBase {
 
@@ -46,5 +54,23 @@ public class BillingSupportedRequestTest extends RequestTestBase {
     @Nonnull
     private BillingSupportedRequest newRequest(@Nonnull String product) {
         return new BillingSupportedRequest(product);
+    }
+
+    @Test
+    public void testShouldNotBeCachedWithExtraParams() throws Exception {
+        final BillingSupportedRequest request = new BillingSupportedRequest("test", Billing.V7, new Bundle());
+        assertNull(request.getCacheKey());
+    }
+
+    @Test
+    public void testShouldUseExtraParams() throws Exception {
+        final Bundle extraParams = new Bundle();
+        extraParams.putString("extra", "test");
+        final BillingSupportedRequest request = new BillingSupportedRequest("product", Billing.V7, extraParams);
+        final IInAppBillingService service = mock(IInAppBillingService.class);
+
+        request.start(service, "package");
+
+        verify(service).isBillingSupportedExtraParams(eq(Billing.V7), eq("package"), eq("product"), eq(extraParams));
     }
 }
