@@ -1015,10 +1015,8 @@ public final class Billing {
         @Override
         public int getAllPurchases(@Nonnull String product, @Nonnull RequestListener<Purchases> listener) {
             Check.isNotEmpty(product);
-            final GetAllPurchasesListener getAllPurchasesListener = new GetAllPurchasesListener(listener);
             final GetPurchasesRequest request = new GetPurchasesRequest(product, null, mConfiguration.getPurchaseVerifier());
-            getAllPurchasesListener.mRequest = request;
-            return runWhenConnected(request, wrapListener(getAllPurchasesListener), mTag);
+            return runWhenConnected(request, wrapListener(new GetAllPurchasesListener(request, listener)), mTag);
         }
 
         @Override
@@ -1153,29 +1151,46 @@ public final class Billing {
             }
         }
 
-        private final class GetAllPurchasesListener implements CancellableRequestListener<Purchases> {
+        private final class GetAllPurchasesListener extends BaseAllPurchasesListener {
+
+            GetAllPurchasesListener(@Nonnull GetPurchasesRequest initialRequest, @Nonnull RequestListener<Purchases> listener) {
+                super(initialRequest, listener);
+            }
+
+            @Override
+            protected GetPurchasesRequest makeContinuationRequest(@Nonnull BasePurchasesRequest request, @Nonnull String continuationToken) {
+                return new GetPurchasesRequest((GetPurchasesRequest) request, continuationToken);
+            }
+        }
+
+        private abstract class BaseAllPurchasesListener implements CancellableRequestListener<Purchases> {
             @Nonnull
             private final RequestListener<Purchases> mListener;
             @Nonnull
             private final List<Purchase> mPurchases = new ArrayList<>();
             @Nonnull
-            private GetPurchasesRequest mRequest;
+            private BasePurchasesRequest mRequest;
 
-            public GetAllPurchasesListener(@Nonnull RequestListener<Purchases> listener) {
-                this.mListener = listener;
+            BaseAllPurchasesListener(@Nonnull GetPurchasesRequest initialRequest, @Nonnull RequestListener<Purchases> listener) {
+                mRequest = initialRequest;
+                mListener = listener;
             }
 
             @Override
             public void onSuccess(@Nonnull Purchases purchases) {
                 mPurchases.addAll(purchases.list);
                 // we need to check continuation token
-                if (purchases.continuationToken == null) {
+                final String continuationToken = purchases.continuationToken;
+                if (continuationToken == null) {
                     mListener.onSuccess(new Purchases(purchases.product, mPurchases, null));
                     return;
                 }
-                mRequest = new GetPurchasesRequest(mRequest, purchases.continuationToken);
+                mRequest = makeContinuationRequest(mRequest, continuationToken);
                 runWhenConnected(mRequest, mTag);
             }
+
+            @Nonnull
+            protected abstract BasePurchasesRequest makeContinuationRequest(@Nonnull BasePurchasesRequest request, @Nonnull String continuationToken);
 
             @Override
             public void onError(int response, @Nonnull Exception e) {
