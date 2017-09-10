@@ -1020,6 +1020,25 @@ public final class Billing {
         }
 
         @Override
+        public int getPurchaseHistory(@Nonnull String product, @Nullable String continuationToken, @Nullable Bundle extraParams, @Nonnull RequestListener<Purchases> listener) {
+            Check.isNotEmpty(product);
+            return runWhenConnected(new GetPurchaseHistoryRequest(product, continuationToken, extraParams), wrapListener(listener), mTag);
+        }
+
+        @Override
+        public int getWholePurchaseHistory(@Nonnull String product, @Nullable Bundle extraParams, @Nonnull RequestListener<Purchases> listener) {
+            Check.isNotEmpty(product);
+            final GetPurchaseHistoryRequest request = new GetPurchaseHistoryRequest(product, null, extraParams);
+            return runWhenConnected(request, wrapListener(new GetWholePurchaseHistoryListener(request, listener)), mTag);
+        }
+
+        @Override
+        public int isGetPurchaseHistorySupported(@Nonnull String product, @Nonnull RequestListener<Object> listener) {
+            Check.isNotEmpty(product);
+            return isBillingSupported(product, Billing.V6, listener);
+        }
+
+        @Override
         public int isPurchased(@Nonnull final String product, @Nonnull final String sku, @Nonnull final RequestListener<Boolean> listener) {
             Check.isNotEmpty(sku);
             final IsPurchasedListener isPurchasedListener = new IsPurchasedListener(sku, listener);
@@ -1163,6 +1182,18 @@ public final class Billing {
             }
         }
 
+        private final class GetWholePurchaseHistoryListener extends BaseAllPurchasesListener {
+            GetWholePurchaseHistoryListener(@Nonnull GetPurchaseHistoryRequest initialRequest, @Nonnull RequestListener<Purchases> listener) {
+                super(initialRequest, listener);
+            }
+
+            @Nonnull
+            @Override
+            protected BasePurchasesRequest makeContinuationRequest(@Nonnull BasePurchasesRequest request, @Nonnull String continuationToken) {
+                return new GetPurchaseHistoryRequest((GetPurchaseHistoryRequest) request, continuationToken);
+            }
+        }
+
         private abstract class BaseAllPurchasesListener implements CancellableRequestListener<Purchases> {
             @Nonnull
             private final RequestListener<Purchases> mListener;
@@ -1171,7 +1202,7 @@ public final class Billing {
             @Nonnull
             private BasePurchasesRequest mRequest;
 
-            BaseAllPurchasesListener(@Nonnull GetPurchasesRequest initialRequest, @Nonnull RequestListener<Purchases> listener) {
+            BaseAllPurchasesListener(@Nonnull BasePurchasesRequest initialRequest, @Nonnull RequestListener<Purchases> listener) {
                 mRequest = initialRequest;
                 mListener = listener;
             }

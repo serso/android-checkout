@@ -74,6 +74,7 @@ abstract class RequestTestBase {
         when(service.isBillingSupported(anyInt(), anyString(), anyString())).thenReturn(BILLING_UNAVAILABLE);
         when(service.consumePurchase(anyInt(), anyString(), anyString())).thenReturn(BILLING_UNAVAILABLE);
         when(service.getPurchases(anyInt(), anyString(), anyString(), anyString())).thenReturn(bundle);
+        when(service.getPurchaseHistory(anyInt(), anyString(), anyString(), anyString(), any(Bundle.class))).thenReturn(bundle);
         when(service.getSkuDetails(anyInt(), anyString(), anyString(), any(Bundle.class))).thenReturn(bundle);
         when(service.getBuyIntent(anyInt(), anyString(), anyString(), anyString(), anyString())).thenReturn(bundle);
 
@@ -95,6 +96,7 @@ abstract class RequestTestBase {
         final Bundle purchases = new Bundle();
         purchases.putStringArrayList("INAPP_PURCHASE_DATA_LIST", new ArrayList<String>());
         when(service.getPurchases(anyInt(), anyString(), anyString(), anyString())).thenReturn(purchases);
+        when(service.getPurchaseHistory(anyInt(), anyString(), anyString(), anyString(), any(Bundle.class))).thenReturn(purchases);
         final Bundle skuDetails = new Bundle();
         skuDetails.putStringArrayList("DETAILS_LIST", new ArrayList<String>());
         when(service.getSkuDetails(anyInt(), anyString(), anyString(), any(Bundle.class))).thenReturn(skuDetails);

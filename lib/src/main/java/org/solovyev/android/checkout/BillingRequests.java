@@ -103,11 +103,42 @@ public interface BillingRequests {
     int getPurchases(@Nonnull String product, @Nullable String continuationToken, @Nonnull RequestListener<Purchases> listener);
 
     /**
-     * Same as {@link #getPurchases(String, String, RequestListener)} but it will automatically
-     * load all the purchases passing "continuationToken" recursively until there are more items
+     * Same as {@link #getPurchases(String, String, RequestListener)} but it automatically
+     * loads all the purchases passing "continuationToken" recursively until there are no more items
      * to load.
      */
     int getAllPurchases(@Nonnull String product, @Nonnull RequestListener<Purchases> listener);
+
+    /**
+     * Requests a list of purchased items of the given <var>product</var> type with the given
+     * <var>extraParams</var> bundle. In contrast to {@link #getPurchases(String, String, RequestListener)}
+     * this method loads a purchase even if it is expired, canceled or consumed. The loaded {@link Purchase}
+     * has only certain fields set such as productId, purchaseTime, developerPayload and purchaseToken.
+     * Values of other fields in {@link Purchase} are *undefined* and should *not* be used.
+     * Note: In case if there are more than 700 items - continuation token is returned that might be
+     * used for further requests.
+     *
+     * @param product           product type, see {@link ProductTypes}
+     * @param continuationToken token which is used for fetching more purchases
+     * @param extraParams       extra arguments, see <a href="https://developer.android.com/google/play/billing/billing_reference.html#getPurchaseHistory">getPurchaseHistory</a> for details.
+     * @param listener          request listener, called asynchronously
+     * @return request id
+     */
+    int getPurchaseHistory(@Nonnull String product, @Nullable String continuationToken, @Nullable Bundle extraParams, @Nonnull RequestListener<Purchases> listener);
+
+    /**
+     * Same as {@link #getPurchaseHistory(String, String, Bundle, RequestListener)} but it automatically
+     * loads all the purchases passing "continuationToken" recursively until there are no more items
+     * to load.
+     */
+    int getWholePurchaseHistory(@Nonnull String product, @Nullable Bundle extraParams, @Nonnull RequestListener<Purchases> listener);
+
+    /**
+     * Checks whether it is possible to call {@link #getPurchaseHistory(String, String, Bundle, RequestListener)}
+     * in this version of Billing API. It is equivalent of calling {@link #isBillingSupported(String, int)}
+     * with {@code version=6}.
+     */
+    int isGetPurchaseHistorySupported(@Nonnull String product, @Nonnull RequestListener<Object> listener);
 
     /**
      * Method checks if an item with the given <var>sku</var> of <var>product</var> type is

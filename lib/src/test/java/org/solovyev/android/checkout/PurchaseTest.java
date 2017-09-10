@@ -88,14 +88,21 @@ public class PurchaseTest {
 
     @Nonnull
     static JSONObject newJsonObject(long id, Purchase.State state) throws JSONException {
+        return newJsonObject(id, state, false);
+    }
+
+    @Nonnull
+    static JSONObject newJsonObject(long id, Purchase.State state, boolean lite) throws JSONException {
         final JSONObject json = new JSONObject();
         json.put("productId", String.valueOf(id));
-        json.put("orderId", "orderId_" + id);
-        json.put("packageName", "packageName_" + id);
         json.put("purchaseTime", id);
-        json.put("purchaseState", state.id);
         json.put("developerPayload", "developerPayload_" + id);
         json.put("purchaseToken", "purchaseToken_" + id);
+        if (!lite) {
+            json.put("orderId", "orderId_" + id);
+            json.put("packageName", "packageName_" + id);
+            json.put("purchaseState", state.id);
+        }
         return json;
     }
 

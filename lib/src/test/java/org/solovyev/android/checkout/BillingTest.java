@@ -57,9 +57,14 @@ public class BillingTest {
 
     @Nonnull
     static Bundle newPurchasesBundle(long id, boolean withContinuationToken) throws JSONException {
+        return newPurchasesBundle(id, withContinuationToken, false);
+    }
+
+    @Nonnull
+    static Bundle newPurchasesBundle(long id, boolean withContinuationToken, boolean lite) throws JSONException {
         final Bundle bundle = newBundle(OK);
         final ArrayList<String> list = new ArrayList<String>();
-        list.add(PurchaseTest.newJson(id, Purchase.State.PURCHASED));
+        list.add(PurchaseTest.newJsonObject(id, Purchase.State.PURCHASED, lite).toString());
         bundle.putStringArrayList(Purchases.BUNDLE_DATA_LIST, list);
         if (withContinuationToken) {
             bundle.putString(Purchases.BUNDLE_CONTINUATION_TOKEN, String.valueOf(id + 1));
@@ -261,7 +266,7 @@ public class BillingTest {
     }
 
     @Test
-    public void testShouldReturnAllPurchases() throws Exception {
+    public void testShouldLoadAllPurchases() throws Exception {
         final Billing billing = prepareMultiPurchasesBilling();
 
         final CountDownLatch latch = new CountDownLatch(1);
@@ -269,25 +274,19 @@ public class BillingTest {
         billing.getRequests().getAllPurchases(ProductTypes.IN_APP, l);
 
         assertTrue(latch.await(1, SECONDS));
-        verify(l.listener).onSuccess(argThat(new BaseMatcher<Purchases>() {
-            @Override
-            public boolean matches(Object item) {
-                if (!(item instanceof Purchases)) {
-                    return false;
-                }
-                final Purchases purchases = (Purchases) item;
-                for (Integer id : asList(0, 1, 2, 3, 4)) {
-                    if (!purchases.hasPurchaseInState(String.valueOf(id), Purchase.State.PURCHASED)) {
-                        return false;
-                    }
-                }
-                return true;
-            }
+        verify(l.listener).onSuccess(argThat(new PurchasesMatcher()));
+    }
 
-            @Override
-            public void describeTo(Description description) {
-            }
-        }));
+    @Test
+    public void testShouldLoadWholePurchaseHistory() throws Exception {
+        final Billing billing = prepareMultiPurchasesBilling();
+
+        final CountDownLatch latch = new CountDownLatch(1);
+        final CountDownListener l = new CountDownListener(latch);
+        billing.getRequests().getWholePurchaseHistory(ProductTypes.IN_APP, null, l);
+
+        assertTrue(latch.await(1, SECONDS));
+        verify(l.listener).onSuccess(argThat(new PurchasesMatcher()));
     }
 
     @Test
@@ -348,11 +347,19 @@ public class BillingTest {
 
     private void prepareMultiPurchasesService(@Nonnull Billing billing) throws RemoteException, JSONException {
         final IInAppBillingService service = mock(IInAppBillingService.class);
+
         when(service.getPurchases(anyInt(), anyString(), anyString(), isNull(String.class))).thenReturn(newPurchasesBundle(0, true));
         when(service.getPurchases(anyInt(), anyString(), anyString(), eq("1"))).thenReturn(newPurchasesBundle(1, true));
         when(service.getPurchases(anyInt(), anyString(), anyString(), eq("2"))).thenReturn(newPurchasesBundle(2, true));
         when(service.getPurchases(anyInt(), anyString(), anyString(), eq("3"))).thenReturn(newPurchasesBundle(3, true));
         when(service.getPurchases(anyInt(), anyString(), anyString(), eq("4"))).thenReturn(newPurchasesBundle(4, false));
+
+        when(service.getPurchaseHistory(anyInt(), anyString(), anyString(), isNull(String.class), any(Bundle.class))).thenReturn(newPurchasesBundle(0, true, true));
+        when(service.getPurchaseHistory(anyInt(), anyString(), anyString(), eq("1"), any(Bundle.class))).thenReturn(newPurchasesBundle(1, true, true));
+        when(service.getPurchaseHistory(anyInt(), anyString(), anyString(), eq("2"), any(Bundle.class))).thenReturn(newPurchasesBundle(2, true, true));
+        when(service.getPurchaseHistory(anyInt(), anyString(), anyString(), eq("3"), any(Bundle.class))).thenReturn(newPurchasesBundle(3, true, true));
+        when(service.getPurchaseHistory(anyInt(), anyString(), anyString(), eq("4"), any(Bundle.class))).thenReturn(newPurchasesBundle(4, false, true));
+
         Tests.setService(billing, service);
     }
 
@@ -394,6 +401,26 @@ public class BillingTest {
         public void onError(int response, @Nonnull Exception e) {
             listener.onError(response, e);
             onEnd();
+        }
+    }
+
+    private static class PurchasesMatcher extends BaseMatcher<Purchases> {
+        @Override
+        public boolean matches(Object item) {
+            if (!(item instanceof Purchases)) {
+                return false;
+            }
+            final Purchases purchases = (Purchases) item;
+            for (Integer id : asList(0, 1, 2, 3, 4)) {
+                if (!purchases.hasPurchaseInState(String.valueOf(id), Purchase.State.PURCHASED)) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        @Override
+        public void describeTo(Description description) {
         }
     }
 

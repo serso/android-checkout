@@ -27,6 +27,7 @@ import javax.annotation.Nonnull;
 enum RequestType {
     BILLING_SUPPORTED("supported", Billing.DAY),
     GET_PURCHASES("purchases", 20L * Billing.MINUTE),
+    GET_PURCHASE_HISTORY("history", 0L),
     GET_SKU_DETAILS("skus", Billing.DAY),
     PURCHASE("purchase", 0L),
     CHANGE_PURCHASE("change", 0L),
