@@ -22,4 +22,6 @@
     <string name="purchases_changed">Play Store: purchases have changed!</string>
     <string name="use_case_title_fragment">Use case #5. Fragments</string>
     <string name="use_case_desc_fragment">Buy and consume from a fragment</string>
+    <string name="use_case_title_history">Use case #6. History</string>
+    <string name="use_case_desc_history">Show billing history</string>
 </resources>

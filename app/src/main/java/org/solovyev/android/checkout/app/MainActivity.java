@@ -39,7 +39,8 @@ public class MainActivity extends AppCompatActivity {
         BANNER(BannerActivity.class, R.string.use_case_title_banner, R.string.use_case_desc_banner),
         SKUS(SkusActivity.class, R.string.use_case_title_skus, R.string.use_case_desc_skus),
         SUBSCRIPTIONS(SubscriptionsActivity.class, R.string.use_case_title_subscriptions, R.string.use_case_desc_subscriptions),
-        FRAGMENT(BuyConsumeFragmentActivity.class, R.string.use_case_title_fragment, R.string.use_case_desc_fragment);
+        FRAGMENT(BuyConsumeFragmentActivity.class, R.string.use_case_title_fragment, R.string.use_case_desc_fragment),
+        HISTORY(HistoryActivity.class, R.string.use_case_title_history, R.string.use_case_desc_history);
 
         // activity to be started on click
         final Class<? extends Activity> activity;

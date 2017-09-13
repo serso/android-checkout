@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="88dp"
+    android:background="?selectableItemBackground"
+    android:minHeight="?listPreferredItemHeightLarge"
+    android:paddingEnd="?listPreferredItemPaddingRight"
+    android:paddingLeft="?listPreferredItemPaddingLeft"
+    android:paddingRight="?listPreferredItemPaddingRight"
+    android:paddingStart="?listPreferredItemPaddingLeft">
+
+    <ImageView
+        android:id="@+id/purchase_icon"
+        android:contentDescription="@string/icon"
+        android:layout_width="64dp"
+        android:layout_height="64dp"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_centerVertical="true"
+        android:layout_marginEnd="?listPreferredItemPaddingLeft"
+        android:layout_marginRight="?listPreferredItemPaddingLeft" />
+
+    <TextView
+        android:id="@+id/purchase_sku"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_marginTop="4dp"
+        android:layout_toEndOf="@+id/purchase_icon"
+        android:layout_toRightOf="@+id/purchase_icon"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:textAppearance="?textAppearanceListItem" />
+
+    <TextView
+        android:id="@+id/purchase_time"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/purchase_sku"
+        android:layout_toEndOf="@+id/purchase_icon"
+        android:layout_toRightOf="@+id/purchase_icon"
+        android:ellipsize="end"
+        android:maxLines="2"
+        android:textAppearance="?textAppearanceListItem"
+        android:textColor="@android:color/tertiary_text_light"
+        android:textSize="14sp" />
+
+</RelativeLayout>
