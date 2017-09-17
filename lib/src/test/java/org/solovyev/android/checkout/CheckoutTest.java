@@ -76,17 +76,17 @@ public class CheckoutTest {
 
     @Test
     public void testAllProductsShouldBeSupported() throws Exception {
-        final CountDownListener l = new CountDownListener();
+        final AwaitingListener l = new AwaitingListener();
 
         mCheckout.whenReady(l);
         mCheckout.start();
 
         l.waitWhileLoading();
 
-        verify(l.listener, times(2)).onReady(any(BillingRequests.class), anyString(), eq(true));
-        verify(l.listener, never()).onReady(any(BillingRequests.class), anyString(), eq(false));
+        verify(l.mListener, times(2)).onReady(any(BillingRequests.class), anyString(), eq(true));
+        verify(l.mListener, never()).onReady(any(BillingRequests.class), anyString(), eq(false));
 
-        verify(l.listener).onReady(any(BillingRequests.class));
+        verify(l.mListener).onReady(any(BillingRequests.class));
     }
 
     @Test
@@ -116,27 +116,26 @@ public class CheckoutTest {
         assertTrue(c1.mProducts.get(IN_APP).getPurchases().size() == 1);
     }
 
-    private final static class CountDownListener implements Checkout.Listener {
+    private final static class AwaitingListener implements Checkout.Listener {
 
         @Nonnull
-        private final CountDownLatch latch = new CountDownLatch(1);
-
+        private final CountDownLatch mLatch = new CountDownLatch(1);
         @Nonnull
-        private final Checkout.Listener listener = mock(Checkout.Listener.class);
+        private final Checkout.Listener mListener = mock(Checkout.Listener.class);
 
         @Override
         public void onReady(@Nonnull BillingRequests requests) {
-            listener.onReady(requests);
-            latch.countDown();
+            mListener.onReady(requests);
+            mLatch.countDown();
         }
 
         @Override
         public void onReady(@Nonnull BillingRequests requests, @Nonnull String product, boolean billingSupported) {
-            listener.onReady(requests, product, billingSupported);
+            mListener.onReady(requests, product, billingSupported);
         }
 
         void waitWhileLoading() throws InterruptedException {
-            if (!latch.await(1, TimeUnit.SECONDS)) {
+            if (!mLatch.await(1, TimeUnit.SECONDS)) {
                 fail("Waiting too long");
             }
         }
