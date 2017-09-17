@@ -78,8 +78,7 @@ public class CheckoutTest {
     public void testAllProductsShouldBeSupported() throws Exception {
         final AwaitingListener l = new AwaitingListener();
 
-        mCheckout.whenReady(l);
-        mCheckout.start();
+        mCheckout.start(l);
 
         l.waitWhileLoading();
 
@@ -93,7 +92,7 @@ public class CheckoutTest {
     public void testShouldLoadPurchasesWhenProductsBecameSupported() throws Exception {
         when(mService.isBillingSupported(eq(3), anyString(), eq(IN_APP))).thenReturn(BILLING_UNAVAILABLE);
         when(mService.isBillingSupported(eq(3), anyString(), eq(SUBSCRIPTION))).thenReturn(BILLING_UNAVAILABLE);
-        when(mService.getPurchases(anyInt(), anyString(), anyString(), isNull(String.class))).thenReturn(newPurchasesBundle(0, true));
+        when(mService.getPurchases(anyInt(), anyString(), anyString(), isNull(String.class))).thenReturn(newPurchasesBundle(0, false));
 
         mCheckout.start();
         final AwaitingCallback c1 = new AwaitingCallback();
@@ -111,9 +110,9 @@ public class CheckoutTest {
         mCheckout.loadInventory(Inventory.Request.create().loadAllPurchases(), c2);
         c2.waitWhileLoading();
 
-        assertTrue(c1.mProducts.get(IN_APP).supported);
-        assertTrue(c1.mProducts.get(SUBSCRIPTION).supported);
-        assertTrue(c1.mProducts.get(IN_APP).getPurchases().size() == 1);
+        assertTrue(c2.mProducts.get(IN_APP).supported);
+        assertTrue(c2.mProducts.get(SUBSCRIPTION).supported);
+        assertTrue(c2.mProducts.get(IN_APP).getPurchases().size() == 1);
     }
 
     private final static class AwaitingListener implements Checkout.Listener {
