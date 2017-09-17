@@ -44,7 +44,7 @@ public class SkusActivity extends AppCompatActivity {
     private ActivityCheckout mCheckout;
     private InventoryCallback mInventoryCallback;
 
-    private static List<String> getInAppSkus() {
+    static List<String> getInAppSkus() {
         final List<String> skus = new ArrayList<>();
         skus.addAll(Arrays.asList("coffee", "beer", "cake", "hamburger"));
         for (int i = 0; i < 20; i++) {

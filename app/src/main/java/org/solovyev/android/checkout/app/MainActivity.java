@@ -40,7 +40,8 @@ public class MainActivity extends AppCompatActivity {
         SKUS(SkusActivity.class, R.string.use_case_title_skus, R.string.use_case_desc_skus),
         SUBSCRIPTIONS(SubscriptionsActivity.class, R.string.use_case_title_subscriptions, R.string.use_case_desc_subscriptions),
         FRAGMENT(BuyConsumeFragmentActivity.class, R.string.use_case_title_fragment, R.string.use_case_desc_fragment),
-        HISTORY(HistoryActivity.class, R.string.use_case_title_history, R.string.use_case_desc_history);
+        HISTORY(HistoryActivity.class, R.string.use_case_title_history, R.string.use_case_desc_history),
+        VR(VirtualRealityActivity.class, R.string.use_case_title_vr, R.string.use_case_desc_vr);
 
         // activity to be started on click
         final Class<? extends Activity> activity;
