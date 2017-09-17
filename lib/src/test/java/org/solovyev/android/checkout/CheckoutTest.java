@@ -35,17 +35,23 @@ import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Nonnull;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Matchers.isNull;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.solovyev.android.checkout.BillingTest.newPurchasesBundle;
 import static org.solovyev.android.checkout.ProductTypes.IN_APP;
 import static org.solovyev.android.checkout.ProductTypes.SUBSCRIPTION;
+import static org.solovyev.android.checkout.ResponseCodes.BILLING_UNAVAILABLE;
 import static org.solovyev.android.checkout.ResponseCodes.OK;
 import static org.solovyev.android.checkout.Tests.newBilling;
 
@@ -54,15 +60,17 @@ import static org.solovyev.android.checkout.Tests.newBilling;
 public class CheckoutTest {
 
     @Nonnull
+    private IInAppBillingService mService;
+    @Nonnull
     private Checkout mCheckout;
 
     @Before
     public void setUp() throws Exception {
         Billing billing = newBilling();
         billing.connect();
-        final IInAppBillingService service = ((TestServiceConnector) billing.getConnector()).mService;
-        when(service.isBillingSupported(eq(3), anyString(), eq(IN_APP))).thenReturn(OK);
-        when(service.isBillingSupported(eq(3), anyString(), eq(SUBSCRIPTION))).thenReturn(OK);
+        mService = ((TestServiceConnector) billing.getConnector()).mService;
+        when(mService.isBillingSupported(eq(3), anyString(), eq(IN_APP))).thenReturn(OK);
+        when(mService.isBillingSupported(eq(3), anyString(), eq(SUBSCRIPTION))).thenReturn(OK);
         mCheckout = Checkout.forApplication(billing);
     }
 
@@ -79,6 +87,33 @@ public class CheckoutTest {
         verify(l.listener, never()).onReady(any(BillingRequests.class), anyString(), eq(false));
 
         verify(l.listener).onReady(any(BillingRequests.class));
+    }
+
+    @Test
+    public void testShouldLoadPurchasesWhenProductsBecameSupported() throws Exception {
+        when(mService.isBillingSupported(eq(3), anyString(), eq(IN_APP))).thenReturn(BILLING_UNAVAILABLE);
+        when(mService.isBillingSupported(eq(3), anyString(), eq(SUBSCRIPTION))).thenReturn(BILLING_UNAVAILABLE);
+        when(mService.getPurchases(anyInt(), anyString(), anyString(), isNull(String.class))).thenReturn(newPurchasesBundle(0, true));
+
+        mCheckout.start();
+        final AwaitingCallback c1 = new AwaitingCallback();
+        mCheckout.loadInventory(Inventory.Request.create().loadAllPurchases(), c1);
+        c1.waitWhileLoading();
+
+        assertFalse(c1.mProducts.get(IN_APP).supported);
+        assertFalse(c1.mProducts.get(SUBSCRIPTION).supported);
+        assertTrue(c1.mProducts.get(IN_APP).getPurchases().isEmpty());
+
+        when(mService.isBillingSupported(eq(3), anyString(), eq(IN_APP))).thenReturn(OK);
+        when(mService.isBillingSupported(eq(3), anyString(), eq(SUBSCRIPTION))).thenReturn(OK);
+
+        final AwaitingCallback c2 = new AwaitingCallback();
+        mCheckout.loadInventory(Inventory.Request.create().loadAllPurchases(), c2);
+        c2.waitWhileLoading();
+
+        assertTrue(c1.mProducts.get(IN_APP).supported);
+        assertTrue(c1.mProducts.get(SUBSCRIPTION).supported);
+        assertTrue(c1.mProducts.get(IN_APP).getPurchases().size() == 1);
     }
 
     private final static class CountDownListener implements Checkout.Listener {
@@ -102,6 +137,25 @@ public class CheckoutTest {
 
         void waitWhileLoading() throws InterruptedException {
             if (!latch.await(1, TimeUnit.SECONDS)) {
+                fail("Waiting too long");
+            }
+        }
+    }
+
+    private static class AwaitingCallback implements Inventory.Callback {
+        @Nonnull
+        private final CountDownLatch mLatch = new CountDownLatch(1);
+        @Nonnull
+        private Inventory.Products mProducts = Inventory.Products.empty();
+
+        @Override
+        public void onLoaded(@Nonnull Inventory.Products products) {
+            mProducts = products;
+            mLatch.countDown();
+        }
+
+        void waitWhileLoading() throws InterruptedException {
+            if (!mLatch.await(1, TimeUnit.SECONDS)) {
                 fail("Waiting too long");
             }
         }
