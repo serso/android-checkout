@@ -223,4 +223,15 @@ public class SkuTest {
 
         assertEquals("1 000 000EUR", sku.introductoryPrice);
     }
+
+    @Test
+    public void testShouldNotPutEmptyFieldsInJson() throws Exception {
+        final Sku sku = Sku.fromJson(newInAppJsonObject("1").toString(), "test");
+        final JSONObject json = sku.toJsonObject();
+
+        assertTrue(!json.has("subscriptionPeriod"));
+        assertTrue(!json.has("freeTrialPeriod"));
+        assertTrue(!json.has("introductoryPricePeriod"));
+        assertTrue(!json.has("introductoryPriceAmountMicros"));
+    }
 }

@@ -163,19 +163,31 @@ public final class Sku {
     }
 
     @Nonnull
-    private JSONObject toJsonObject() throws JSONException {
+    JSONObject toJsonObject() throws JSONException {
         final JSONObject json = new JSONObject();
         json.put("productId", id.code);
         json.put("price", price);
-        json.put("price_amount_micros", detailedPrice.amount);
-        json.put("price_currency_code", detailedPrice.currency);
+        if (detailedPrice.isValid()) {
+            json.put("price_amount_micros", detailedPrice.amount);
+            json.put("price_currency_code", detailedPrice.currency);
+        }
         json.put("title", title);
         json.put("description", description);
-        json.put("subscriptionPeriod", subscriptionPeriod);
-        json.put("freeTrialPeriod", freeTrialPeriod);
-        json.put("introductoryPricePeriod", introductoryPricePeriod);
-        json.put("introductoryPrice", introductoryPrice);
-        json.put("introductoryPriceAmountMicros", detailedIntroductoryPrice.amount);
+        if (!TextUtils.isEmpty(subscriptionPeriod)) {
+            json.put("subscriptionPeriod", subscriptionPeriod);
+        }
+        if (!TextUtils.isEmpty(freeTrialPeriod)) {
+            json.put("freeTrialPeriod", freeTrialPeriod);
+        }
+        if (!TextUtils.isEmpty(introductoryPricePeriod)) {
+            json.put("introductoryPricePeriod", introductoryPricePeriod);
+        }
+        if (!TextUtils.isEmpty(introductoryPrice)) {
+            json.put("introductoryPrice", introductoryPrice);
+        }
+        if (detailedIntroductoryPrice.isValid()) {
+            json.put("introductoryPriceAmountMicros", detailedIntroductoryPrice.amount);
+        }
 
         return json;
     }
