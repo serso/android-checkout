@@ -51,15 +51,24 @@ public final class Sku {
     // description of the product
     @Nonnull
     public final String description;
-    // Subscription period specified in ISO 8601 format, for example, P1W equates to one week
+    // subscription period, specified in ISO 8601 format. For example, P1W equates to one week,
+    // P1M equates to one month, P3M equates to three months, P6M equates to six months, and P1Y
+    // equates to one year.
+    // Note: Returned only for subscriptions.
     @Nullable
     public final String subscriptionPeriod;
+    // formatted introductory price of a subscription, including its currency sign, such as €3.99.
+    // The price doesn't include tax.
+    // Note: Returned only for subscriptions which have an introductory period configured.
     @Nullable
     public final Price introductoryPrice;
-    // Free trial period specified in ISO 8601 format
+    // trial period configured in Google Play Console, specified in ISO 8601 format. For example,
+    // P7D equates to seven days.
+    // Note: Returned only for subscriptions which have a trial period configured.
     @Nullable
     public final String freeTrialPeriod;
-    // Introductory price period specified in ISO 8601 format
+    // the billing period of the introductory price, specified in ISO 8601 format.
+    // Note: Returned only for subscriptions which have an introductory period configured
     @Nullable
     public final String introductoryPricePeriod;
     @Nullable
