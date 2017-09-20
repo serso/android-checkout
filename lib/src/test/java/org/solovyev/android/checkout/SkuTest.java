@@ -140,8 +140,8 @@ public class SkuTest {
     public void testShouldHaveNotValidIntroductoryPriceIfNoDetailedDataAvailable() throws Exception {
         final Sku sku = Sku.fromJson(newSubscriptionJson("1"), "test");
 
-        assertNotNull(sku.introductoryPrice);
-        assertFalse(sku.introductoryPrice.isValid());
+        assertNotNull(sku.detailedIntroductoryPrice);
+        assertFalse(sku.detailedIntroductoryPrice.isValid());
     }
 
     @Test
@@ -175,10 +175,10 @@ public class SkuTest {
         json.put("price_currency_code", currency);
         final Sku sku = Sku.fromJson(json.toString(), "test");
 
-        assertNotNull(sku.introductoryPrice);
-        assertTrue(sku.introductoryPrice.isValid());
-        assertEquals(currency, sku.introductoryPrice.currency);
-        assertEquals(amount, sku.introductoryPrice.amount);
+        assertNotNull(sku.detailedIntroductoryPrice);
+        assertTrue(sku.detailedIntroductoryPrice.isValid());
+        assertEquals(currency, sku.detailedIntroductoryPrice.currency);
+        assertEquals(amount, sku.detailedIntroductoryPrice.amount);
     }
 
     @Test
@@ -212,5 +212,15 @@ public class SkuTest {
         final String displayTitle = sku.getDisplayTitle();
 
         assertEquals("Test #1 (test)", displayTitle);
+    }
+
+    @Test
+    public void testShouldReadIntroductoryPrice() throws Exception {
+        final JSONObject json = newInAppJsonObject("1");
+        json.put("introductoryPrice", "1 000 000EUR");
+
+        final Sku sku = Sku.fromJson(json.toString(), "test");
+
+        assertEquals("1 000 000EUR", sku.introductoryPrice);
     }
 }
