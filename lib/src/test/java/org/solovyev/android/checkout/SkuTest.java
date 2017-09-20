@@ -29,6 +29,8 @@ import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
+import android.text.TextUtils;
+
 import javax.annotation.Nonnull;
 
 import static org.junit.Assert.assertEquals;
@@ -46,9 +48,9 @@ public class SkuTest {
         assertEquals("description_" + id, sku.description);
         assertEquals("title_" + id, sku.title);
 
-        assertTrue(sku.subscriptionPeriod == null || sku.subscriptionPeriod.equals("subscriptionPeriod_" + id));
-        assertTrue(sku.freeTrialPeriod == null || sku.freeTrialPeriod.equals("freeTrialPeriod_" + id));
-        assertTrue(sku.introductoryPricePeriod == null || sku.introductoryPricePeriod.equals("introductoryPricePeriod_" + id));
+        assertTrue(TextUtils.isEmpty(sku.subscriptionPeriod) || sku.subscriptionPeriod.equals("subscriptionPeriod_" + id));
+        assertTrue(TextUtils.isEmpty(sku.freeTrialPeriod) || sku.freeTrialPeriod.equals("freeTrialPeriod_" + id));
+        assertTrue(TextUtils.isEmpty(sku.introductoryPricePeriod) || sku.introductoryPricePeriod.equals("introductoryPricePeriod_" + id));
     }
 
     @Nonnull

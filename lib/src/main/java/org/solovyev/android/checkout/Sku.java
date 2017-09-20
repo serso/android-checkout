@@ -55,21 +55,21 @@ public final class Sku {
     // P1M equates to one month, P3M equates to three months, P6M equates to six months, and P1Y
     // equates to one year.
     // Note: Returned only for subscriptions.
-    @Nullable
+    @Nonnull
     public final String subscriptionPeriod;
     // formatted introductory price of a subscription, including its currency sign, such as €3.99.
     // The price doesn't include tax.
     // Note: Returned only for subscriptions which have an introductory period configured.
-    @Nullable
+    @Nonnull
     public final Price introductoryPrice;
     // trial period configured in Google Play Console, specified in ISO 8601 format. For example,
     // P7D equates to seven days.
     // Note: Returned only for subscriptions which have a trial period configured.
-    @Nullable
+    @Nonnull
     public final String freeTrialPeriod;
     // the billing period of the introductory price, specified in ISO 8601 format.
     // Note: Returned only for subscriptions which have an introductory period configured
-    @Nullable
+    @Nonnull
     public final String introductoryPricePeriod;
     @Nullable
     private String mDisplayTitle;
@@ -80,10 +80,10 @@ public final class Sku {
             @Nonnull Price detailedPrice,
             @Nonnull String title,
             @Nonnull String description,
-            @Nullable Price introductoryPrice,
-            @Nullable String subscriptionPeriod,
-            @Nullable String freeTrialPeriod,
-            @Nullable String introductoryPricePeriod) {
+            @Nonnull Price introductoryPrice,
+            @Nonnull String subscriptionPeriod,
+            @Nonnull String freeTrialPeriod,
+            @Nonnull String introductoryPricePeriod) {
         this.id = new Id(product, code);
         this.price = price;
         this.detailedPrice = detailedPrice;
@@ -102,10 +102,10 @@ public final class Sku {
         detailedPrice = Price.regularPriceFromJson(object);
         title = object.getString("title");
         description = object.optString("description");
-        subscriptionPeriod = object.optString("subscriptionPeriod", null);
+        subscriptionPeriod = object.optString("subscriptionPeriod");
         introductoryPrice = Price.introductoryPriceFromJson(object);
-        freeTrialPeriod = object.optString("freeTrialPeriod", null);
-        introductoryPricePeriod = object.optString("introductoryPricePeriod", null);
+        freeTrialPeriod = object.optString("freeTrialPeriod");
+        introductoryPricePeriod = object.optString("introductoryPricePeriod");
     }
 
     @Nonnull
@@ -166,13 +166,10 @@ public final class Sku {
         json.put("price_currency_code", detailedPrice.currency);
         json.put("title", title);
         json.put("description", description);
-        json.putOpt("subscriptionPeriod", subscriptionPeriod);
-        json.putOpt("freeTrialPeriod", freeTrialPeriod);
-        json.putOpt("introductoryPricePeriod", introductoryPricePeriod);
-
-        if (introductoryPrice != null) {
-            json.put("introductoryPriceAmountMicros", introductoryPrice.amount);
-        }
+        json.put("subscriptionPeriod", subscriptionPeriod);
+        json.put("freeTrialPeriod", freeTrialPeriod);
+        json.put("introductoryPricePeriod", introductoryPricePeriod);
+        json.put("introductoryPriceAmountMicros", introductoryPrice.amount);
 
         return json;
     }
