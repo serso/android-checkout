@@ -22,12 +22,12 @@
 
 package org.solovyev.android.checkout;
 
-import org.json.JSONException;
-
 import android.app.Activity;
 import android.app.PendingIntent;
 import android.content.Intent;
 import android.content.IntentSender;
+
+import org.json.JSONException;
 
 import java.util.List;
 
@@ -119,7 +119,8 @@ public final class PurchaseFlow implements CancellableRequestListener<PendingInt
 
     private void handleError(int response) {
         Billing.error("Error response: " + response + " in Purchase/ChangePurchase request");
-        onError(response, new BillingException(response));
+        String message = ResponseCodes.toString(response);
+        onError(response, new BillingException(response, message));
     }
 
     private void handleError(@Nonnull Exception e) {

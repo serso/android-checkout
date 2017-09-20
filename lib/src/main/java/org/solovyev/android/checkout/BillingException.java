@@ -30,7 +30,8 @@ public final class BillingException extends Exception {
 
     private final int mResponse;
 
-    BillingException(int response) {
+    BillingException(int response, String message) {
+        super(message);
         mResponse = response;
     }
 

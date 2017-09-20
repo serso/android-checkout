@@ -22,11 +22,11 @@
 
 package org.solovyev.android.checkout;
 
-import com.android.vending.billing.IInAppBillingService;
-
 import android.os.Bundle;
 import android.os.RemoteException;
 import android.text.TextUtils;
+
+import com.android.vending.billing.IInAppBillingService;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -142,8 +142,9 @@ abstract class Request<R> {
     }
 
     protected void onError(int response) {
-        Billing.error("Error response: " + ResponseCodes.toString(response) + " in " + this + " request");
-        onError(response, new BillingException(response));
+        String message = ResponseCodes.toString(response);
+        Billing.error("Error response: " + message + " in " + this + " request");
+        onError(response, new BillingException(response, message));
     }
 
     public void onError(@Nonnull Exception e) {
