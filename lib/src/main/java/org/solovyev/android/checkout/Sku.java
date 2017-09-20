@@ -39,43 +39,33 @@ public final class Sku {
 
     @Nonnull
     public final Id id;
-
     // formatted price of the item, including its currency sign. The price does not include tax.
     // See #detailedPrice for parsed values
     @Nonnull
     public final String price;
-
     @Nonnull
     public final Price detailedPrice;
-
     // title of the product
     @Nonnull
     public final String title;
-
     // description of the product
     @Nonnull
     public final String description;
-
     // Subscription period specified in ISO 8601 format, for example, P1W equates to one week
     @Nullable
     public final String subscriptionPeriod;
-
     @Nullable
     public final Price introductoryPrice;
-
     // Free trial period specified in ISO 8601 format
     @Nullable
     public final String freeTrialPeriod;
-
     // Introductory price period specified in ISO 8601 format
     @Nullable
     public final String introductoryPricePeriod;
-
     @Nullable
     private String mDisplayTitle;
 
-    public Sku(
-            @Nonnull String product,
+    public Sku(@Nonnull String product,
             @Nonnull String code,
             @Nonnull String price,
             @Nonnull Price detailedPrice,
@@ -84,8 +74,7 @@ public final class Sku {
             @Nullable Price introductoryPrice,
             @Nullable String subscriptionPeriod,
             @Nullable String freeTrialPeriod,
-            @Nullable String introductoryPricePeriod
-    ) {
+            @Nullable String introductoryPricePeriod) {
         this.id = new Id(product, code);
         this.price = price;
         this.detailedPrice = detailedPrice;
@@ -113,6 +102,45 @@ public final class Sku {
     @Nonnull
     static Sku fromJson(@Nonnull String json, @Nonnull String product) throws JSONException {
         return new Sku(json, product);
+    }
+
+    @Nonnull
+    private static String makeDisplayTitle(String title) {
+        if (TextUtils.isEmpty(title)) {
+            return "";
+        }
+        final char lastChar = title.charAt(title.length() - 1);
+        if (lastChar != ')') {
+            return title;
+        }
+        final int i = indexOfAppName(title);
+        if (i > 0) {
+            return title.substring(0, i).trim();
+        }
+        return title;
+    }
+
+    /**
+     * This method assumes that SKU's title has the following format: "$title$ ($app_name$)", where
+     * $title$ is the SKU's name and $title$ is the application name.
+     *
+     * @param title SKU's title
+     * @return position in the title where application name begins
+     */
+    private static int indexOfAppName(String title) {
+        int depth = 0;
+        for (int i = title.length() - 1; i >= 0; i--) {
+            final char c = title.charAt(i);
+            if (c == ')') {
+                depth++;
+            } else if (c == '(') {
+                depth--;
+            }
+            if (depth == 0) {
+                return i;
+            }
+        }
+        return -1;
     }
 
     @Nonnull
@@ -155,44 +183,6 @@ public final class Sku {
             mDisplayTitle = makeDisplayTitle(title);
         }
         return mDisplayTitle;
-    }
-
-    @Nonnull
-    private static String makeDisplayTitle(String title) {
-        if (TextUtils.isEmpty(title)) {
-            return "";
-        }
-        final char lastChar = title.charAt(title.length() - 1);
-        if (lastChar != ')') {
-            return title;
-        }
-        final int i = indexOfAppName(title);
-        if (i > 0) {
-            return title.substring(0, i).trim();
-        }
-        return title;
-    }
-
-    /**
-     * This method assumes that SKU's title has the following format: "$title$ ($app_name$)", where
-     * $title$ is the SKU's name and $title$ is the application name.
-     * @param title SKU's title
-     * @return position in the title where application name begins
-     */
-    private static int indexOfAppName(String title) {
-        int depth = 0;
-        for (int i = title.length() - 1; i >= 0; i--) {
-            final char c = title.charAt(i);
-            if (c == ')') {
-                depth++;
-            } else if (c == '(') {
-                depth--;
-            }
-            if (depth == 0) {
-                return i;
-            }
-        }
-        return -1;
     }
 
     @Override
