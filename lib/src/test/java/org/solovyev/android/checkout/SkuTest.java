@@ -24,6 +24,7 @@ package org.solovyev.android.checkout;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
@@ -48,9 +49,17 @@ public class SkuTest {
         assertEquals("description_" + id, sku.description);
         assertEquals("title_" + id, sku.title);
 
-        assertTrue(TextUtils.isEmpty(sku.subscriptionPeriod) || sku.subscriptionPeriod.equals("subscriptionPeriod_" + id));
-        assertTrue(TextUtils.isEmpty(sku.freeTrialPeriod) || sku.freeTrialPeriod.equals("freeTrialPeriod_" + id));
-        assertTrue(TextUtils.isEmpty(sku.introductoryPricePeriod) || sku.introductoryPricePeriod.equals("introductoryPricePeriod_" + id));
+        if(sku.id.isInApp()) {
+            assertTrue(TextUtils.isEmpty(sku.subscriptionPeriod));
+            assertTrue(TextUtils.isEmpty(sku.freeTrialPeriod));
+            assertTrue(TextUtils.isEmpty(sku.introductoryPricePeriod));
+        } else if (sku.id.isSubscription()) {
+            assertTrue(sku.subscriptionPeriod.equals("subscriptionPeriod_" + id));
+            assertTrue(sku.freeTrialPeriod.equals("freeTrialPeriod_" + id));
+            assertTrue(sku.introductoryPricePeriod.equals("introductoryPricePeriod_" + id));
+        } else if (!sku.id.product.equals("dummy")) {
+            Assert.fail();
+        }
     }
 
     @Nonnull
@@ -59,13 +68,13 @@ public class SkuTest {
     }
 
     @Nonnull
-    static String newIAPJson(@Nonnull String id) throws JSONException {
-        return newIAPJsonObject(id).toString();
+    static String newInAppJson(@Nonnull String id) throws JSONException {
+        return newInAppJsonObject(id).toString();
     }
 
     @Nonnull
     static JSONObject newSubscriptionJsonObject(String id) throws JSONException {
-        final JSONObject json = newIAPJsonObject(id);
+        final JSONObject json = newInAppJsonObject(id);
         json.put("subscriptionPeriod", "subscriptionPeriod_" + id);
         json.put("freeTrialPeriod", "freeTrialPeriod_" + id);
         json.put("introductoryPricePeriod", "introductoryPricePeriod_" + id);
@@ -74,7 +83,7 @@ public class SkuTest {
     }
 
     @Nonnull
-    static JSONObject newIAPJsonObject(String id) throws JSONException {
+    static JSONObject newInAppJsonObject(String id) throws JSONException {
         final JSONObject json = new JSONObject();
         json.put("productId", id);
         json.put("price", "price_" + id);
@@ -85,22 +94,22 @@ public class SkuTest {
     }
 
     @Test
-    public void testIAPSkuShouldBeCreatedFromJson() throws Exception {
-        final Sku sku = Sku.fromJson(newIAPJson("1"), "test");
+    public void testInAppSkuShouldBeCreatedFromJson() throws Exception {
+        final Sku sku = Sku.fromJson(newInAppJson("1"), ProductTypes.IN_APP);
 
         verifySku(sku, "1");
     }
 
     @Test
     public void testSubscriptionSkuShouldBeCreatedFromJson() throws Exception {
-        final Sku sku = Sku.fromJson(newSubscriptionJson("1"), "test");
+        final Sku sku = Sku.fromJson(newSubscriptionJson("1"), ProductTypes.SUBSCRIPTION);
 
         verifySku(sku, "1");
     }
 
     @Test
     public void testShouldNotCreateIfNoId() throws Exception {
-        final JSONObject json = newIAPJsonObject("2");
+        final JSONObject json = newInAppJsonObject("2");
         json.remove("productId");
         try {
             Sku.fromJson(json.toString(), "test");
@@ -111,7 +120,7 @@ public class SkuTest {
 
     @Test
     public void testShouldCreateWithoutDescription() throws Exception {
-        final JSONObject json = newIAPJsonObject("3");
+        final JSONObject json = newInAppJsonObject("3");
         json.remove("description");
         final Sku sku = Sku.fromJson(json.toString(), "test");
         assertEquals("3", sku.id.code);
@@ -122,7 +131,7 @@ public class SkuTest {
 
     @Test
     public void testShouldHaveNotValidPriceIfNoDetailedDataAvailable() throws Exception {
-        final Sku sku = Sku.fromJson(newIAPJson("1"), "test");
+        final Sku sku = Sku.fromJson(newInAppJson("1"), "test");
 
         assertFalse(sku.detailedPrice.isValid());
     }
@@ -150,7 +159,7 @@ public class SkuTest {
     }
 
     private void testDetailedPrice(long amount, @Nonnull String currency) throws JSONException {
-        final JSONObject json = newIAPJsonObject("1");
+        final JSONObject json = newInAppJsonObject("1");
         json.put("price_amount_micros", amount);
         json.put("price_currency_code", currency);
         final Sku sku = Sku.fromJson(json.toString(), "test");
@@ -174,7 +183,7 @@ public class SkuTest {
 
     @Test
     public void testShouldStripSimpleAppNameFromTitle() throws Exception {
-        final JSONObject json = newIAPJsonObject("1");
+        final JSONObject json = newInAppJsonObject("1");
         json.put("title", "Test #1 (Test App name)");
         final Sku sku = Sku.fromJson(json.toString(), "test");
 
@@ -185,7 +194,7 @@ public class SkuTest {
 
     @Test
     public void testShouldStripSimpleAppNameFromTitleWithBrackets() throws Exception {
-        final JSONObject json = newIAPJsonObject("1");
+        final JSONObject json = newInAppJsonObject("1");
         json.put("title", "Test #1 (test) (Test App name)");
         final Sku sku = Sku.fromJson(json.toString(), "test");
 
@@ -196,7 +205,7 @@ public class SkuTest {
 
     @Test
     public void testShouldStripSimpleAppNameWithBracketsFromTitleWithBrackets() throws Exception {
-        final JSONObject json = newIAPJsonObject("1");
+        final JSONObject json = newInAppJsonObject("1");
         json.put("title", "Test #1 (test) (Test App name (test))");
         final Sku sku = Sku.fromJson(json.toString(), "test");
 
