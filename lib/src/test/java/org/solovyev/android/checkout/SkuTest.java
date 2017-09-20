@@ -153,9 +153,9 @@ public class SkuTest {
 
     @Test
     public void testShouldHaveIntroductoryPrice() throws Exception {
-        testDetailedPrice(Long.MAX_VALUE, "USD");
-        testDetailedPrice(1, "RUB");
-        testDetailedPrice(111, "руб");
+        testIntroductoryPrice(Long.MAX_VALUE, "USD");
+        testIntroductoryPrice(1, "RUB");
+        testIntroductoryPrice(111, "руб");
     }
 
     private void testDetailedPrice(long amount, @Nonnull String currency) throws JSONException {
