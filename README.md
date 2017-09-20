@@ -113,7 +113,11 @@ And `Activity` class like this:
 public class MyActivity extends Activity implements View.OnClickListener {
 
     private class PurchaseListener extends EmptyRequestListener<Purchase> {
-        // your code here
+      
+        @Override
+        public void onSuccess(@Nonnull Purchase purchase) {
+           // Your Success action here. Check out the example application for examples. 
+        }
     }
 
     private class InventoryCallback implements Inventory.Callback {
