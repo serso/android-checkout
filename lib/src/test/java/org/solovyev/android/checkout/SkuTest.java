@@ -234,4 +234,13 @@ public class SkuTest {
         assertTrue(!json.has("introductoryPricePeriod"));
         assertTrue(!json.has("introductoryPriceAmountMicros"));
     }
+
+    @Test
+    public void testShouldReadIntroductoryPriceCycles() throws Exception {
+        final JSONObject json = newInAppJsonObject("1");
+        json.put("introductoryPriceCycles", 42);
+        final Sku sku = Sku.fromJson(json.toString(), "test");
+
+        assertEquals(sku.introductoryPriceCycles, 42);
+    }
 }

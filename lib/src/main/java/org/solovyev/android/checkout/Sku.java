@@ -73,6 +73,10 @@ public final class Sku {
     // Note: Returned only for subscriptions which have an introductory period configured
     @Nonnull
     public final String introductoryPricePeriod;
+    // the number of subscription billing periods for which the user will be given the introductory
+    // price, such as 3.
+    // Note: Returned only for subscriptions which have an introductory period configured.
+    public final int introductoryPriceCycles;
     @Nullable
     private String mDisplayTitle;
 
@@ -86,8 +90,10 @@ public final class Sku {
                @Nonnull Price detailedIntroductoryPrice,
                @Nonnull String subscriptionPeriod,
                @Nonnull String freeTrialPeriod,
-               @Nonnull String introductoryPricePeriod) {
+               @Nonnull String introductoryPricePeriod,
+               int introductoryPriceCycles) {
         this.introductoryPrice = introductoryPrice;
+        this.introductoryPriceCycles = introductoryPriceCycles;
         this.id = new Id(product, code);
         this.price = price;
         this.detailedPrice = detailedPrice;
@@ -111,6 +117,7 @@ public final class Sku {
         detailedIntroductoryPrice = Price.introductoryPriceFromJson(object);
         freeTrialPeriod = object.optString("freeTrialPeriod");
         introductoryPricePeriod = object.optString("introductoryPricePeriod");
+        introductoryPriceCycles = object.optInt("introductoryPriceCycles");
     }
 
     @Nonnull
@@ -187,6 +194,9 @@ public final class Sku {
         }
         if (detailedIntroductoryPrice.isValid()) {
             json.put("introductoryPriceAmountMicros", detailedIntroductoryPrice.amount);
+        }
+        if (introductoryPriceCycles != 0) {
+            json.put("introductoryPriceCycles", introductoryPriceCycles);
         }
 
         return json;

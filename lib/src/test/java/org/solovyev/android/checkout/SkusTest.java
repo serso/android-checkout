@@ -110,6 +110,6 @@ public class SkusTest {
     }
 
     private Sku newSku(String id) {
-        return new Sku("test", id, id, Sku.Price.EMPTY, id, id, id, Sku.Price.EMPTY, id, id, id);
+        return new Sku("test", id, id, Sku.Price.EMPTY, id, id, id, Sku.Price.EMPTY, id, id, id, 0);
     }
 }
