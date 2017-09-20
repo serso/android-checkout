@@ -30,8 +30,8 @@ public final class BillingException extends Exception {
 
     private final int mResponse;
 
-    BillingException(int response, String message) {
-        super(message);
+    BillingException(int response) {
+        super("An error occurred while performing billing request: " + ResponseCodes.toString(response));
         mResponse = response;
     }
 
