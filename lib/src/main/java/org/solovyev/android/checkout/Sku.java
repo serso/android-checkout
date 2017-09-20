@@ -163,7 +163,7 @@ public final class Sku {
     }
 
     @Nonnull
-    protected JSONObject toJsonObject() throws JSONException {
+    private JSONObject toJsonObject() throws JSONException {
         final JSONObject json = new JSONObject();
         json.put("productId", id.code);
         json.put("price", price);
