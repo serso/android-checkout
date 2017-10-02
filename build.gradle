@@ -8,8 +8,8 @@ buildscript {
     ext {
         versions = [libs: [support: "25.1.1"],
                     sdk : [compile: 25, buildTools: "25.0.3", min: 9, target: 25],
-                    code: 42,
-                    name: "1.1.0"]
+                    code: 43,
+                    name: "1.2.0"]
     }
 }
 
