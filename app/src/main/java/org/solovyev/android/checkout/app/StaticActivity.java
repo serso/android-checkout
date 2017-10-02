@@ -3,10 +3,10 @@ package org.solovyev.android.checkout.app;
 import org.solovyev.android.checkout.ActivityCheckout;
 import org.solovyev.android.checkout.Billing;
 import org.solovyev.android.checkout.Checkout;
-import org.solovyev.android.checkout.EmptyRequestListener;
 import org.solovyev.android.checkout.Logger;
 import org.solovyev.android.checkout.ProductTypes;
 import org.solovyev.android.checkout.Purchase;
+import org.solovyev.android.checkout.RequestListener;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -70,9 +70,21 @@ public class StaticActivity extends AppCompatActivity implements View.OnClickLis
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.buy:
+                // prevent starting several purchase flows simultaneously
+                mBuy.setEnabled(false);
                 final String sku = (String) mSkus.getSelectedItem();
                 mConsole.setText("");
-                mCheckout.startPurchaseFlow(ProductTypes.IN_APP, sku, null, new EmptyRequestListener<Purchase>());
+                mCheckout.startPurchaseFlow(ProductTypes.IN_APP, sku, null, new RequestListener<Purchase>() {
+                    @Override
+                    public void onSuccess(@Nonnull Purchase result) {
+                        mBuy.setEnabled(true);
+                    }
+
+                    @Override
+                    public void onError(int response, @Nonnull Exception e) {
+                        mBuy.setEnabled(true);
+                    }
+                });
                 break;
         }
     }
