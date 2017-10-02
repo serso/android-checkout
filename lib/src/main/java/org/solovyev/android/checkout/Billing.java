@@ -1243,7 +1243,7 @@ public final class Billing {
         public CachingRequestListener(@Nonnull Request<R> request, @Nonnull RequestListener<R> listener) {
             super(listener);
             Check.isTrue(mCache.hasCache(), "Cache must exist");
-            this.mRequest = request;
+            mRequest = request;
         }
 
         @Override
