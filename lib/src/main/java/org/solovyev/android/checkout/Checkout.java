@@ -29,9 +29,7 @@ import android.app.Service;
 import android.content.Context;
 import android.os.Build;
 
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Executor;
 
@@ -360,37 +358,6 @@ public class Checkout {
 
         @Override
         public void onReady(@Nonnull BillingRequests requests, @Nonnull String product, boolean billingSupported) {
-        }
-    }
-
-    private static final class Listeners implements Listener {
-        @Nonnull
-        private final List<Listener> mList = new ArrayList<>();
-
-        public void add(@Nonnull Listener l) {
-            if (!mList.contains(l)) {
-                mList.add(l);
-            }
-        }
-
-        @Override
-        public void onReady(@Nonnull BillingRequests requests) {
-            final List<Listener> localList = new ArrayList<>(mList);
-            mList.clear();
-            for (Listener listener : localList) {
-                listener.onReady(requests);
-            }
-        }
-
-        @Override
-        public void onReady(@Nonnull BillingRequests requests, @Nonnull String product, boolean billingSupported) {
-            for (Listener listener : mList) {
-                listener.onReady(requests, product, billingSupported);
-            }
-        }
-
-        public void clear() {
-            mList.clear();
         }
     }
 
