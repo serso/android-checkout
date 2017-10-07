@@ -222,18 +222,18 @@ public class Checkout {
 
         synchronized (mLock) {
             Check.isNotNull(mRequests);
+            final Billing.Requests requests = mRequests;
+
             @Nonnull
             final Set<String> loadingProducts = new HashSet<>(ProductTypes.ALL);
             for (final String product : ProductTypes.ALL) {
-                mRequests.isBillingSupported(product, new RequestListener<Object>() {
+                requests.isBillingSupported(product, new RequestListener<Object>() {
 
                     private void onBillingSupported(boolean supported) {
-                        synchronized (mLock) {
-                            listener.onReady(mRequests, product, supported);
-                            loadingProducts.remove(product);
-                            if (loadingProducts.isEmpty()) {
-                                listener.onReady(mRequests);
-                            }
+                        listener.onReady(requests, product, supported);
+                        loadingProducts.remove(product);
+                        if (loadingProducts.isEmpty()) {
+                            listener.onReady(requests);
                         }
                     }
 
