@@ -9,7 +9,7 @@ buildscript {
         versions = [libs: [support: "25.1.1"],
                     sdk : [compile: 25, buildTools: "25.0.3", min: 9, target: 25],
                     code: 43,
-                    name: "1.2.0"]
+                    name: "1.2.1"]
     }
 }
 

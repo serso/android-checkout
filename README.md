@@ -11,7 +11,7 @@ implementing boring In-App Billing API but should focus on more important
 things - their apps. With this in mind, the library was designed to be
 fast, flexible and secure.
 
-**Current version:** 1.2.0
+**Current version:** 1.2.1
 
 ### Why?
 
@@ -39,7 +39,7 @@ CI:  [![Build Status](https://travis-ci.org/serso/android-checkout.svg)](https:/
 
 - Gradle/Android Studio in `build.gradle`:
 ```groovy
-compile 'org.solovyev.android:checkout:1.2.0'
+compile 'org.solovyev.android:checkout:1.2.1'
 ```
 **Note:** if you get the following warning
 > Conflict with dependency 'com.google.code.findbugs:jsr305'. Resolved versions for app (a.b.c) and test app (x.y.z) differ.
@@ -57,7 +57,7 @@ See [Android Studio](http://g.co/androidstudio/app-test-app-conflict) and [Gradl
 <dependency>
     <groupId>org.solovyev.android</groupId>
     <artifactId>checkout</artifactId>
-    <version>1.2.0</version>
+    <version>1.2.1</version>
     <type>aar</type>
 </dependency>
 ```
