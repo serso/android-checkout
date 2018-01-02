@@ -91,7 +91,7 @@ public class MyApplication extends Application {
     private final Billing mBilling = new Billing(this, new Billing.DefaultConfiguration() {
         @Override
         public String getPublicKey() {
-            return "Your public key, don't forget abput encryption";
+            return "Your public key, don't forget about encryption";
         }
     });
 
