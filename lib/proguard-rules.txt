@@ -9,3 +9,8 @@
 -assumenosideeffects class org.solovyev.android.checkout.Check {
     static *;
 }
+
+-keepclassmembers enum * {
+    public static **[] values();
+    public static ** valueOf(java.lang.String);
+}
