@@ -46,13 +46,12 @@ android {
 }
 
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
-    compile "com.android.support:support-v4:${versions.libs.support}"
-    compile "com.android.support:appcompat-v7:${versions.libs.support}"
-    compile "com.android.support:recyclerview-v7:${versions.libs.support}"
-    compile 'com.jakewharton:butterknife:8.4.0'
+    implementation "com.android.support:support-v4:${versions.libs.support}"
+    implementation "com.android.support:appcompat-v7:${versions.libs.support}"
+    implementation "com.android.support:recyclerview-v7:${versions.libs.support}"
+    implementation 'com.jakewharton:butterknife:8.4.0'
     annotationProcessor 'com.jakewharton:butterknife-compiler:8.4.0'
-    compile project(':lib')
+    implementation project(':lib')
 }
 
 task androidSourcesJar(type: Jar) {
