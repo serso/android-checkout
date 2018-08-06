@@ -196,7 +196,9 @@ public final class Billing {
             final BillingException be = (BillingException) e;
             switch (be.getResponse()) {
                 case ResponseCodes.OK:
+                    sLogger.d(TAG, message, e);
                 case ResponseCodes.USER_CANCELED:
+                    sLogger.w(TAG, message, e);
                 case ResponseCodes.ACCOUNT_ERROR:
                     sLogger.e(TAG, message, e);
                     break;
