@@ -86,6 +86,22 @@ public class SkusActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         mCheckout.onActivityResult(requestCode, resultCode, data);
         super.onActivityResult(requestCode, resultCode, data);
+        
+        // TODO: Do whatever you want once the the purchase flow is complete
+        switch (resultCode){
+            /** Standard activity result: operation canceled. */
+            case RESULT_CANCELED: 
+                // TODO: Use a more relevant message
+                Toast.makeText(this, "Purchase cancelled", Toast.LENGTH_LONG).show();
+                break;
+            /** Standard activity result: operation succeeded. */
+            case RESULT_OK: 
+                // TODO: Use a more relevant message
+                Toast.makeText(this, "Purchase successful", Toast.LENGTH_LONG).show();
+                break;
+            /** Start of user-defined activity results. */
+            case RESULT_FIRST_USER: break;
+        }        
     }
 
     @Override
