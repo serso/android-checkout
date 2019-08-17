@@ -65,6 +65,7 @@ import static org.solovyev.android.checkout.ResponseCodes.ITEM_NOT_OWNED;
  * recommended to use higher abstractions, such as {@link Checkout} and {@link Inventory}, for such
  * purposes.
  */
+@SuppressWarnings("WeakerAccess")
 public final class Billing {
 
     static final int V3 = 3;
@@ -188,7 +189,8 @@ public final class Billing {
     }
 
     static void error(@Nonnull Exception e) {
-        error(e.getMessage(), e);
+        final String msg = e.getMessage();
+        error(msg == null ? "" : msg, e);
     }
 
     static void error(@Nonnull String message, @Nonnull Exception e) {
@@ -1176,6 +1178,7 @@ public final class Billing {
                 super(initialRequest, listener);
             }
 
+            @Nonnull
             @Override
             protected GetPurchasesRequest makeContinuationRequest(@Nonnull BasePurchasesRequest request, @Nonnull String continuationToken) {
                 return new GetPurchasesRequest((GetPurchasesRequest) request, continuationToken);
