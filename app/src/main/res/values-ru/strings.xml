@@ -19,4 +19,8 @@
     <string name="use_case_title_banner">Сценарий №2. Рекламный баннер</string>
     <string name="use_case_desc_subscriptions">Показать список подписок. Дать возможность пользователю купить подписку и изменить её</string>
     <string name="icon">иконка</string>
+    <string name="use_case_desc_fragment">Купить и потребить из фрагмента</string>
+    <string name="use_case_desc_history">Показать историю покупок</string>
+    <string name="use_case_title_fragment">Сценарий №5. Фрагменты</string>
+    <string name="use_case_title_history">Сценарий №6. История покупок</string>
 </resources>
