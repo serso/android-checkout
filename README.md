@@ -11,7 +11,7 @@ implementing boring In-App Billing API but should focus on more important
 things - their apps. With this in mind, the library was designed to be
 fast, flexible and secure.
 
-**Current version:** 1.2.1
+**Current version:** 1.2.2
 
 ### Why?
 

@@ -9,8 +9,8 @@ buildscript {
     ext {
         versions = [libs: [support: "28.0.0"],
                     sdk : [compile: 29, buildTools: "29.0.2", min: 14, target: 29],
-                    code: 43,
-                    name: "1.2.1"]
+                    code: 44,
+                    name: "1.2.2"]
     }
 }
 
