@@ -39,14 +39,14 @@ CI:  [![Build Status](https://travis-ci.org/serso/android-checkout.svg)](https:/
 
 - Gradle/Android Studio in `build.gradle`:
 ```groovy
-compile 'org.solovyev.android:checkout:1.2.2'
+implementation 'org.solovyev.android:checkout:1.2.2'
 ```
 **Note:** if you get the following warning
 > Conflict with dependency 'com.google.code.findbugs:jsr305'. Resolved versions for app (a.b.c) and test app (x.y.z) differ.
 
 you should change the dependencies of `com.android.support.test.espresso:espresso-core` to
 ```groovy
-androidTestCompile('com.android.support.test.espresso:espresso-core:x.y.z', {
+androidTestImplementation('com.android.support.test.espresso:espresso-core:x.y.z', {
     // use version of jsr305 provided by Checkout
     exclude group: 'com.google.code.findbugs', module: 'jsr305'
 })
