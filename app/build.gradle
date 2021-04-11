@@ -21,8 +21,6 @@
  */
 
 apply plugin: 'com.android.application'
-apply plugin: 'maven'
-apply plugin: 'signing'
 
 android {
     compileSdkVersion versions.sdk.compile
@@ -58,72 +56,22 @@ dependencies {
 }
 
 task androidSourcesJar(type: Jar) {
-    classifier = 'sources'
+    archiveExtension.set('sources')
     from android.sourceSets.main.java.srcDirs
 }
 
-artifacts {
-    archives androidSourcesJar
-    archives file: file('build/outputs/apk/release/app-release.apk'), name: 'checkout-app', classifier: 'signed', type: 'apk'
-    archives file: file('build/outputs/mapping/release/mapping.txt'), name: 'checkout-app', classifier: 'proguard', type: 'txt'
-}
+afterEvaluate {
+    publishing {
+        publications {
+            releaseApp(MavenPublication) {
+                from components.release_apk
 
-signing {
-    sign configurations.archives
-}
+                artifact androidSourcesJar
+                artifact source: file('build/outputs/mapping/release/mapping.txt'), classifier: 'proguard', extension: 'txt'
+                artifact source: file('build/outputs/apk/release/app-release.apk'), classifier: 'signed', extension: 'apk'
 
-group = "org.solovyev.android"
-version = android.defaultConfig.versionName
-
-uploadArchives {
-    repositories {
-        mavenDeployer {
-            beforeDeployment { MavenDeployment deployment ->
-                signing.signPom(deployment)
-                // for some reason Gradle :uploadArchives tries to upload null.txt.asc and null.map artifacts.
-                // As we don't want those let's filter them now (note that these files are not included in the
-                // list of project artifacts, so their origin is not clear)
-                def removeCond = { artifact -> return !artifact.classifier && (artifact.type == "map" || artifact.type == "txt.asc") }
-                deployment.artifacts.removeAll(removeCond)
-                deployment.attachedArtifacts.removeAll(removeCond)
-            }
-
-            repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
-                authentication(userName: ossrhUsername, password: ossrhPassword)
-            }
-
-            snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
-                authentication(userName: ossrhUsername, password: ossrhPassword)
-            }
-
-            pom.project {
                 artifactId = 'checkout-app'
-                name 'Android Checkout App'
-                packaging 'apk'
-                description 'Sample App for Android In-App Billing (Version 3)'
-                url 'https://github.com/serso/android-checkout'
-
-                scm {
-                    url 'https://github.com/serso/android-checkout'
-                    connection 'scm:https://serso@github.com/serso/android-checkout.git'
-                    developerConnection 'scm:git://github.com/serso/android-checkout.git'
-                }
-
-                licenses {
-                    license {
-                        name 'The Apache Software License, Version 2.0'
-                        url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
-                        distribution 'repo'
-                    }
-                }
-
-                developers {
-                    developer {
-                        id 'se.solovyev'
-                        name 'Sergey Solovyev'
-                        email 'se.solovyev@gmail.com'
-                    }
-                }
+                configurePublication(releaseApp, 'apk')
             }
         }
     }

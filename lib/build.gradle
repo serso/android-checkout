@@ -21,8 +21,6 @@
  */
 
 apply plugin: 'com.android.library'
-apply plugin: 'maven'
-apply plugin: 'signing'
 
 android {
     compileSdkVersion versions.sdk.compile
@@ -61,68 +59,26 @@ task androidJavadocs(type: Javadoc) {
 }
 
 task androidJavadocsJar(type: Jar, dependsOn: androidJavadocs) {
-    classifier = 'javadoc'
+    archiveExtension.set('javadoc')
     from androidJavadocs.destinationDir
 }
 
 task androidSourcesJar(type: Jar) {
-    classifier = 'sources'
+    archiveExtension.set('sources')
     from android.sourceSets.main.java.srcDirs
 }
 
-artifacts {
-    archives androidSourcesJar
-    archives androidJavadocsJar
-}
+afterEvaluate {
+    publishing {
+        publications {
+            releaseLib(MavenPublication) {
+                from components.release
 
-signing {
-    sign configurations.archives
-}
+                artifact androidSourcesJar
+                artifact androidJavadocsJar
 
-group = "org.solovyev.android"
-version = android.defaultConfig.versionName
-
-uploadArchives {
-    repositories {
-        mavenDeployer {
-            beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
-
-            repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
-                authentication(userName: ossrhUsername, password: ossrhPassword)
-            }
-
-            snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
-                authentication(userName: ossrhUsername, password: ossrhPassword)
-            }
-
-            pom.project {
                 artifactId = 'checkout'
-                name 'Android Checkout Library'
-                packaging 'aar'
-                description 'Library for Android In-App Billing (Version 3)'
-                url 'https://github.com/serso/android-checkout'
-
-                scm {
-                    url 'https://github.com/serso/android-checkout'
-                    connection 'scm:https://serso@github.com/serso/android-checkout.git'
-                    developerConnection 'scm:git://github.com/serso/android-checkout.git'
-                }
-
-                licenses {
-                    license {
-                        name 'The Apache Software License, Version 2.0'
-                        url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
-                        distribution 'repo'
-                    }
-                }
-
-                developers {
-                    developer {
-                        id 'se.solovyev'
-                        name 'Sergey Solovyev'
-                        email 'se.solovyev@gmail.com'
-                    }
-                }
+                configurePublication(releaseLib, 'aar')
             }
         }
     }

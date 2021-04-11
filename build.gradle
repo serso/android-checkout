@@ -20,11 +20,64 @@ allprojects {
         mavenCentral()
     }
 
-    if (!project.hasProperty("ossrhUsername")) {
-        ext.ossrhUsername = "no-username"
+    if (!project.hasProperty("nexusUsername")) {
+        ext.nexusUsername = "no-username"
     }
 
-    if (!project.hasProperty("ossrhPassword")) {
-        ext.ossrhPassword = "no-password"
+    if (!project.hasProperty("nexusPassword")) {
+        ext.nexusPassword = "no-password"
+    }
+
+    apply plugin: 'maven-publish'
+    apply plugin: 'signing'
+
+    publishing {
+        repositories {
+            maven {
+                url "https://oss.sonatype.org/service/local/staging/deploy/maven2"
+                credentials {
+                    username nexusUsername
+                    password nexusPassword
+                }
+            }
+        }
+    }
+}
+
+ext.configurePublication = { MavenPublication pub, _packaging ->
+    pub.groupId = 'org.solovyev.android'
+    pub.version = versions.name
+
+    pub.pom {
+        name = 'Android Checkout Library'
+        packaging = _packaging
+        description = 'Library for Android In-App Billing (Version 3)'
+        url = 'https://github.com/serso/android-checkout'
+
+        scm {
+            url = 'https://github.com/serso/android-checkout'
+            connection = 'scm:https://serso@github.com/serso/android-checkout.git'
+            developerConnection = 'scm:git://github.com/serso/android-checkout.git'
+        }
+
+        licenses {
+            license {
+                name = 'The Apache Software License, Version 2.0'
+                url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                distribution = 'repo'
+            }
+        }
+
+        developers {
+            developer {
+                id = 'se.solovyev'
+                name = 'Sergey Solovyev'
+                email = 'se.solovyev@gmail.com'
+            }
+        }
+    }
+
+    signing {
+        sign pub
     }
 }
