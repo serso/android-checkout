@@ -1,15 +1,5 @@
 package org.solovyev.android.checkout.app;
 
-import org.solovyev.android.checkout.ActivityCheckout;
-import org.solovyev.android.checkout.Billing;
-import org.solovyev.android.checkout.BillingRequests;
-import org.solovyev.android.checkout.Checkout;
-import org.solovyev.android.checkout.Inventory;
-import org.solovyev.android.checkout.ProductTypes;
-import org.solovyev.android.checkout.Purchase;
-import org.solovyev.android.checkout.RequestListener;
-import org.solovyev.android.checkout.Sku;
-
 import android.content.Intent;
 import android.graphics.Paint;
 import android.graphics.drawable.ColorDrawable;
@@ -18,11 +8,24 @@ import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import org.solovyev.android.checkout.ActivityCheckout;
+import org.solovyev.android.checkout.Billing;
+import org.solovyev.android.checkout.BillingRequests;
+import org.solovyev.android.checkout.Checkout;
+import org.solovyev.android.checkout.Inventory;
+import org.solovyev.android.checkout.ProductTypes;
+import org.solovyev.android.checkout.Purchase;
+import org.solovyev.android.checkout.RequestListener;
+import org.solovyev.android.checkout.ResponseCodes;
+import org.solovyev.android.checkout.Sku;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -45,9 +48,7 @@ public class SkusActivity extends AppCompatActivity {
     private InventoryCallback mInventoryCallback;
 
     private static List<String> getInAppSkus() {
-        // TODO: use your own list of SKU IDs
-        final List<String> skus = new ArrayList<>();
-        skus.addAll(Arrays.asList("coffee", "beer", "cake", "hamburger"));
+        final List<String> skus = new ArrayList<>(Arrays.asList("coffee", "beer", "cake", "hamburger"));
         for (int i = 0; i < 20; i++) {
             final int id = i + 1;
             final String sku = id < 10 ? "item_0" + id : "item_" + id;
@@ -87,22 +88,12 @@ public class SkusActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         mCheckout.onActivityResult(requestCode, resultCode, data);
         super.onActivityResult(requestCode, resultCode, data);
-        
-        // TODO: Do whatever you want once the the purchase flow is complete
-        switch (resultCode){
-            /** Standard activity result: operation canceled. */
-            case RESULT_CANCELED: 
-                // TODO: Use a more relevant message
-                Toast.makeText(this, "Purchase cancelled", Toast.LENGTH_LONG).show();
-                break;
-            /** Standard activity result: operation succeeded. */
-            case RESULT_OK: 
-                // TODO: Use a more relevant message
-                Toast.makeText(this, "Purchase successful", Toast.LENGTH_LONG).show();
-                break;
-            /** Start of user-defined activity results. */
-            case RESULT_FIRST_USER: break;
-        }        
+
+        if (resultCode == RESULT_CANCELED) {
+            Toast.makeText(this, "Purchase cancelled", Toast.LENGTH_LONG).show();
+        } else if (resultCode == RESULT_OK) {
+            Toast.makeText(this, "Purchase successful", Toast.LENGTH_LONG).show();
+        }
     }
 
     @Override
@@ -128,24 +119,26 @@ public class SkusActivity extends AppCompatActivity {
 
             @Override
             public void onError(int response, @Nonnull Exception e) {
-                if(BuildConfig.BUILD_TYPE == BuildConfig.DEBUG) 
+                if (BuildConfig.DEBUG)
                     Log.e("SKUActivity ", "Couldn't complete the purchase", e);
-                // TODO Handle the errors the way you like
-                switch(response){
-                    case ITEM_ALREADY_OWNED: break;
-                    case USER_CANCELED: break;
-                    case WRONG_SIGNATURE: break;
-                    case SERVICE_NOT_CONNECTED: break;
-                    case OK: break;
-                    case NULL_INTENT: break;
-                    case ITEM_UNAVAILABLE: break;
-                    case EXCEPTION: break;
-                    case ITEM_NOT_OWNED: break;
-                    case ERROR: break;
-                    case DEVELOPER_ERROR: break;
-                    case BILLING_UNAVAILABLE: break;
-                    case ACCOUNT_ERROR: break;
-                    default: throw new RuntimeException("unhandled response code received");
+                switch (response) {
+                    case ResponseCodes.ITEM_ALREADY_OWNED:
+                    case ResponseCodes.USER_CANCELED:
+                    case ResponseCodes.WRONG_SIGNATURE:
+                    case ResponseCodes.SERVICE_NOT_CONNECTED:
+                    case ResponseCodes.OK:
+                    case ResponseCodes.NULL_INTENT:
+                    case ResponseCodes.ITEM_UNAVAILABLE:
+                    case ResponseCodes.EXCEPTION:
+                    case ResponseCodes.ITEM_NOT_OWNED:
+                    case ResponseCodes.ERROR:
+                    case ResponseCodes.DEVELOPER_ERROR:
+                    case ResponseCodes.BILLING_UNAVAILABLE:
+                    case ResponseCodes.ACCOUNT_ERROR:
+                        // Handle the errors the way you like
+                        break;
+                    default:
+                        throw new RuntimeException("unhandled response code received");
                 }
                 reloadInventory();
             }
