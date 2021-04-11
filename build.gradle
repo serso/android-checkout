@@ -8,7 +8,7 @@ buildscript {
     }
     ext {
         versions = [libs: [androidx: "1.2.0"],
-                    sdk : [compile: 29, buildTools: "29.0.2", min: 14, target: 29],
+                    sdk : [compile: 30, min: 14, target: 30],
                     code: 44,
                     name: "1.2.2"]
     }

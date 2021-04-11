@@ -26,7 +26,6 @@ apply plugin: 'signing'
 
 android {
     compileSdkVersion versions.sdk.compile
-    buildToolsVersion versions.sdk.buildTools
     defaultConfig {
         minSdkVersion versions.sdk.min
         targetSdkVersion versions.sdk.target
