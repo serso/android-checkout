@@ -43,14 +43,18 @@ android {
     lintOptions {
         abortOnError false
     }
+    compileOptions {
+        sourceCompatibility 1.8
+        targetCompatibility 1.8
+    }
 }
 
 dependencies {
-    implementation "com.android.support:support-v4:${versions.libs.support}"
-    implementation "com.android.support:appcompat-v7:${versions.libs.support}"
-    implementation "com.android.support:recyclerview-v7:${versions.libs.support}"
-    implementation 'com.jakewharton:butterknife:8.4.0'
-    annotationProcessor 'com.jakewharton:butterknife-compiler:8.4.0'
+    implementation "androidx.annotation:annotation:${versions.libs.androidx}"
+    implementation "androidx.appcompat:appcompat:${versions.libs.androidx}"
+    implementation "androidx.recyclerview:recyclerview:${versions.libs.androidx}"
+    implementation 'com.jakewharton:butterknife:10.2.3'
+    annotationProcessor 'com.jakewharton:butterknife-compiler:10.2.3'
     implementation project(':lib')
 }
 

@@ -14,7 +14,7 @@ import javax.annotation.Nonnull;
  * {@link android.app.Fragment#startIntentSenderForResult(IntentSender, int, Intent, int, int, int,
  * Bundle)}
  * or
- * {@link android.support.v4.app.Fragment#startIntentSenderForResult(IntentSender, int, Intent, int,
+ * {@link androidx.fragment.app.Fragment#startIntentSenderForResult(IntentSender, int, Intent, int,
  * int, int, Bundle)}.
  * </p>
  * <p>
