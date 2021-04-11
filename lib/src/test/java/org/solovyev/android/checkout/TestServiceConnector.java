@@ -22,17 +22,17 @@
 
 package org.solovyev.android.checkout;
 
-import com.android.vending.billing.IInAppBillingService;
+import com.android.vending.billing.InAppBillingService;
 
 import javax.annotation.Nonnull;
 
 class TestServiceConnector implements Billing.ServiceConnector {
     @Nonnull
-    public final IInAppBillingService mService;
+    public final InAppBillingService mService;
     @Nonnull
     private final Billing mBilling;
 
-    public TestServiceConnector(@Nonnull Billing billing, @Nonnull IInAppBillingService service) {
+    public TestServiceConnector(@Nonnull Billing billing, @Nonnull InAppBillingService service) {
         mBilling = billing;
         mService = service;
     }

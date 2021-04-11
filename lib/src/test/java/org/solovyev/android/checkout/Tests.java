@@ -22,7 +22,8 @@
 
 package org.solovyev.android.checkout;
 
-import com.android.vending.billing.IInAppBillingService;
+import com.android.vending.billing.InAppBillingServiceImpl;
+import com.android.vending.billing.InAppBillingService;
 
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
@@ -84,7 +85,7 @@ public final class Tests {
     static Billing newBilling(@Nonnull Billing.Configuration configuration) {
         final Billing billing = new Billing(RuntimeEnvironment.application, configuration);
         billing.setPurchaseVerifier(Tests.newMockVerifier(true));
-        final IInAppBillingService service = mock(IInAppBillingService.class);
+        final InAppBillingService service = mock(InAppBillingServiceImpl.class);
         setService(billing, service);
         return billing;
     }
@@ -126,7 +127,7 @@ public final class Tests {
     static Billing newSynchronousBilling() {
         final Billing billing = new Billing(RuntimeEnvironment.application, newConfiguration(true, false));
         billing.setPurchaseVerifier(Tests.newMockVerifier(true));
-        final IInAppBillingService service = mock(IInAppBillingService.class);
+        final InAppBillingService service = mock(InAppBillingServiceImpl.class);
         final CancellableExecutor sameThreadExecutor = sameThreadExecutor();
         billing.setBackground(sameThreadExecutor);
         billing.setMainThread(sameThreadExecutor);
@@ -134,7 +135,7 @@ public final class Tests {
         return billing;
     }
 
-    static void setService(@Nonnull final Billing billing, @Nonnull final IInAppBillingService service) {
+    static void setService(@Nonnull final Billing billing, @Nonnull final InAppBillingService service) {
         if (billing.getState() != Billing.State.INITIAL) {
             billing.disconnect();
         }
@@ -179,7 +180,7 @@ public final class Tests {
             list.add(purchase.toJson());
         }
         bundle.putStringArrayList(Purchases.BUNDLE_DATA_LIST, list);
-        final IInAppBillingService service =
+        final InAppBillingService service =
                 ((TestServiceConnector) billing.getConnector()).mService;
         when(service.getPurchases(anyInt(), anyString(), eq(product), isNull(String.class)))
                 .thenReturn(bundle);
@@ -187,7 +188,7 @@ public final class Tests {
 
     static void mockGetSkuDetails(@Nonnull Billing billing, @Nonnull String product,
                                   @Nonnull final List<Sku> skus) throws RemoteException {
-        final IInAppBillingService service =
+        final InAppBillingService service =
                 ((TestServiceConnector) billing.getConnector()).mService;
         when(service.getSkuDetails(anyInt(), anyString(), eq(product), any(Bundle.class)))
                 .thenAnswer(new Answer<Bundle>() {

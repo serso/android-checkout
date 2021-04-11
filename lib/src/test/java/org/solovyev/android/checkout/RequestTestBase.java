@@ -22,7 +22,8 @@
 
 package org.solovyev.android.checkout;
 
-import com.android.vending.billing.IInAppBillingService;
+import com.android.vending.billing.InAppBillingServiceImpl;
+import com.android.vending.billing.InAppBillingService;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -70,7 +71,7 @@ abstract class RequestTestBase {
 
         final Bundle bundle = newBundle(BILLING_UNAVAILABLE);
 
-        final IInAppBillingService service = mock(IInAppBillingService.class);
+        final InAppBillingService service = mock(InAppBillingServiceImpl.class);
         when(service.isBillingSupported(anyInt(), anyString(), anyString())).thenReturn(BILLING_UNAVAILABLE);
         when(service.consumePurchase(anyInt(), anyString(), anyString())).thenReturn(BILLING_UNAVAILABLE);
         when(service.getPurchases(anyInt(), anyString(), anyString(), anyString())).thenReturn(bundle);
@@ -89,7 +90,7 @@ abstract class RequestTestBase {
         final Request r = newRequest();
         final RequestListener l = mock(RequestListener.class);
         r.setListener(l);
-        final IInAppBillingService service = mock(IInAppBillingService.class);
+        final InAppBillingService service = mock(InAppBillingServiceImpl.class);
 
         when(service.isBillingSupported(anyInt(), anyString(), anyString())).thenReturn(OK);
         when(service.consumePurchase(anyInt(), anyString(), anyString())).thenReturn(OK);

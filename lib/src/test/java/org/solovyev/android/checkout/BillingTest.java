@@ -1,6 +1,7 @@
 package org.solovyev.android.checkout;
 
-import com.android.vending.billing.IInAppBillingService;
+import com.android.vending.billing.InAppBillingServiceImpl;
+import com.android.vending.billing.InAppBillingService;
 
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
@@ -111,7 +112,7 @@ public class BillingTest {
     @Test
     public void testShouldExecuteRequestIfConnected() throws Exception {
         final Billing.ServiceConnector connector = mock(Billing.ServiceConnector.class);
-        final IInAppBillingService service = mock(IInAppBillingService.class);
+        final InAppBillingService service = mock(InAppBillingServiceImpl.class);
         when(service.isBillingSupported(anyInt(), anyString(), anyString())).thenReturn(OK);
         when(connector.connect()).then(new Answer<Object>() {
             @Override
@@ -136,7 +137,7 @@ public class BillingTest {
         mBilling.connect();
 
         assertEquals(Billing.State.CONNECTING, mBilling.getState());
-        mBilling.setService(mock(IInAppBillingService.class), true);
+        mBilling.setService(mock(InAppBillingServiceImpl.class), true);
         assertEquals(Billing.State.CONNECTED, mBilling.getState());
         mBilling.disconnect();
         assertEquals(Billing.State.DISCONNECTING, mBilling.getState());
@@ -170,12 +171,12 @@ public class BillingTest {
     public void testShouldConnectOnlyIfConnecting() throws Exception {
         mBilling.setState(Billing.State.CONNECTING);
         mBilling.setState(Billing.State.FAILED);
-        mBilling.setService(mock(IInAppBillingService.class), true);
+        mBilling.setService(mock(InAppBillingServiceImpl.class), true);
 
         assertEquals(Billing.State.FAILED, mBilling.getState());
 
         mBilling.setState(Billing.State.CONNECTING);
-        mBilling.setService(mock(IInAppBillingService.class), true);
+        mBilling.setService(mock(InAppBillingServiceImpl.class), true);
 
         assertEquals(Billing.State.CONNECTED, mBilling.getState());
     }
@@ -195,7 +196,7 @@ public class BillingTest {
         mBilling.setState(Billing.State.CONNECTING);
         mBilling.setState(Billing.State.DISCONNECTED);
 
-        mBilling.setService(mock(IInAppBillingService.class), true);
+        mBilling.setService(mock(InAppBillingServiceImpl.class), true);
 
         assertEquals(Billing.State.DISCONNECTED, mBilling.getState());
         verify(connector, times(1)).disconnect();
@@ -296,7 +297,7 @@ public class BillingTest {
         final CountDownLatch requestWaiter = new CountDownLatch(1);
         final CountDownLatch cancelWaiter = new CountDownLatch(1);
 
-        final IInAppBillingService service = mock(IInAppBillingService.class);
+        final InAppBillingService service = mock(InAppBillingServiceImpl.class);
         when(service.getPurchases(anyInt(), anyString(), anyString(), isNull(String.class))).thenAnswer(new Answer<Object>() {
             @Override
             public Object answer(InvocationOnMock invocation) throws Throwable {
@@ -346,7 +347,7 @@ public class BillingTest {
     }
 
     private void prepareMultiPurchasesService(@Nonnull Billing billing) throws RemoteException, JSONException {
-        final IInAppBillingService service = mock(IInAppBillingService.class);
+        final InAppBillingService service = mock(InAppBillingServiceImpl.class);
 
         when(service.getPurchases(anyInt(), anyString(), anyString(), isNull(String.class))).thenReturn(newPurchasesBundle(0, true));
         when(service.getPurchases(anyInt(), anyString(), anyString(), eq("1"))).thenReturn(newPurchasesBundle(1, true));
@@ -434,7 +435,7 @@ public class BillingTest {
         }
 
         @Override
-        void start(@Nonnull IInAppBillingService service, @Nonnull String packageName) throws RemoteException, RequestException {
+        void start(@Nonnull InAppBillingService service, @Nonnull String packageName) throws RemoteException, RequestException {
             try {
                 Thread.sleep(sleep);
                 onSuccess(new Object());

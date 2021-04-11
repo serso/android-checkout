@@ -28,6 +28,8 @@ import org.json.JSONObject;
 
 import android.os.Bundle;
 
+import com.android.vending.billing.InAppBillingServiceImpl;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -39,7 +41,7 @@ import javax.annotation.concurrent.Immutable;
 
 /**
  * List of the purchases of the {@link #product} type as returned from
- * {@link com.android.vending.billing.IInAppBillingService#getPurchases(int, String, String,
+ * {@link InAppBillingServiceImpl#getPurchases(int, String, String,
  * String)}.
  */
 @Immutable

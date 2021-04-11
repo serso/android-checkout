@@ -22,7 +22,8 @@
 
 package org.solovyev.android.checkout;
 
-import com.android.vending.billing.IInAppBillingService;
+import com.android.vending.billing.InAppBillingServiceImpl;
+import com.android.vending.billing.InAppBillingService;
 
 import org.junit.Test;
 
@@ -67,7 +68,7 @@ public class BillingSupportedRequestTest extends RequestTestBase {
         final Bundle extraParams = new Bundle();
         extraParams.putString("extra", "test");
         final BillingSupportedRequest request = new BillingSupportedRequest("product", Billing.V7, extraParams);
-        final IInAppBillingService service = mock(IInAppBillingService.class);
+        final InAppBillingService service = mock(InAppBillingServiceImpl.class);
 
         request.start(service, "package");
 

@@ -22,7 +22,7 @@
 
 package org.solovyev.android.checkout;
 
-import com.android.vending.billing.IInAppBillingService;
+import com.android.vending.billing.InAppBillingService;
 
 import android.os.RemoteException;
 
@@ -40,7 +40,7 @@ final class ConsumePurchaseRequest extends Request<Object> {
     }
 
     @Override
-    void start(@Nonnull IInAppBillingService service, @Nonnull String packageName) throws RemoteException, RequestException {
+    void start(@Nonnull InAppBillingService service, @Nonnull String packageName) throws RemoteException, RequestException {
         final int response = service.consumePurchase(mApiVersion, packageName, mToken);
         if (!handleError(response)) {
             Billing.waitGooglePlay();

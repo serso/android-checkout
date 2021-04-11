@@ -22,7 +22,8 @@
 
 package org.solovyev.android.checkout;
 
-import com.android.vending.billing.IInAppBillingService;
+import com.android.vending.billing.InAppBillingServiceImpl;
+import com.android.vending.billing.InAppBillingService;
 
 import org.json.JSONObject;
 import org.junit.Test;
@@ -77,7 +78,7 @@ public class GetSkuDetailsRequestTest extends RequestTestBase {
         for (int i = 0; i < 97; i++) {
             skus.add("sku_" + i);
         }
-        final IInAppBillingService service = mock(IInAppBillingService.class);
+        final InAppBillingService service = mock(InAppBillingServiceImpl.class);
         final GetSkuDetailsRequest request = new GetSkuDetailsRequest("test", skus);
         final RequestListenerSpy l = new RequestListenerSpy();
         request.setListener(l);

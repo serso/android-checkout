@@ -22,7 +22,7 @@
 
 package org.solovyev.android.checkout;
 
-import com.android.vending.billing.IInAppBillingService;
+import com.android.vending.billing.InAppBillingService;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -60,7 +60,7 @@ import static org.solovyev.android.checkout.Tests.newBilling;
 public class CheckoutTest {
 
     @Nonnull
-    private IInAppBillingService mService;
+    private InAppBillingService mService;
     @Nonnull
     private Checkout mCheckout;
 

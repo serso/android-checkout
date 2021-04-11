@@ -22,7 +22,7 @@
 
 package org.solovyev.android.checkout;
 
-import com.android.vending.billing.IInAppBillingService;
+import com.android.vending.billing.InAppBillingService;
 
 import android.os.Bundle;
 import android.os.RemoteException;
@@ -82,7 +82,7 @@ abstract class Request<R> {
         return mId;
     }
 
-    abstract void start(@Nonnull IInAppBillingService service, @Nonnull String packageName)
+    abstract void start(@Nonnull InAppBillingService service, @Nonnull String packageName)
             throws RemoteException, RequestException;
 
     /**

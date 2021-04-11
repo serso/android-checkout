@@ -27,6 +27,8 @@ import org.json.JSONObject;
 
 import android.text.TextUtils;
 
+import com.android.vending.billing.InAppBillingServiceImpl;
+
 import javax.annotation.Nonnull;
 import javax.annotation.concurrent.Immutable;
 
@@ -65,7 +67,7 @@ public final class Purchase {
     // date and will lose access at that time unless they re-enable automatic renewal
     public final boolean autoRenewing;
     /**
-     * Raw data returned from {@link com.android.vending.billing.IInAppBillingService#getPurchases}
+     * Raw data returned from {@link InAppBillingServiceImpl#getPurchases}
      */
     @Nonnull
     public final String data;

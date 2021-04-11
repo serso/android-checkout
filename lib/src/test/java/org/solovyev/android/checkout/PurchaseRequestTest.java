@@ -22,7 +22,8 @@
 
 package org.solovyev.android.checkout;
 
-import com.android.vending.billing.IInAppBillingService;
+import com.android.vending.billing.InAppBillingServiceImpl;
+import com.android.vending.billing.InAppBillingService;
 
 import org.junit.Test;
 
@@ -44,7 +45,7 @@ public class PurchaseRequestTest extends RequestTestBase {
         final Bundle extraParams = new Bundle();
         extraParams.putString("extra", "test");
         final PurchaseRequest request = new PurchaseRequest("product", "sku", "payload", extraParams);
-        final IInAppBillingService service = mock(IInAppBillingService.class);
+        final InAppBillingService service = mock(InAppBillingServiceImpl.class);
 
         request.start(service, "package");
 

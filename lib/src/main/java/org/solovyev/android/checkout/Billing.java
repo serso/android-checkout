@@ -22,7 +22,8 @@
 
 package org.solovyev.android.checkout;
 
-import com.android.vending.billing.IInAppBillingService;
+import com.android.vending.billing.InAppBillingServiceImpl;
+import com.android.vending.billing.InAppBillingService;
 
 import android.app.Application;
 import android.content.ComponentName;
@@ -121,7 +122,7 @@ public final class Billing {
     };
     @GuardedBy("mLock")
     @Nullable
-    private IInAppBillingService mService;
+    private InAppBillingService mService;
     @GuardedBy("mLock")
     @Nonnull
     private State mState = State.INITIAL;
@@ -288,7 +289,7 @@ public final class Billing {
         mConnector = connector;
     }
 
-    void setService(@Nullable IInAppBillingService service, boolean connecting) {
+    void setService(@Nullable InAppBillingService service, boolean connecting) {
         synchronized (mLock) {
             final State newState;
             if (connecting) {
@@ -819,7 +820,7 @@ public final class Billing {
 
             // request is alive, let's check the service state
             final State localState;
-            final IInAppBillingService localService;
+            final InAppBillingService localService;
             synchronized (mLock) {
                 localState = mState;
                 localService = mService;
@@ -1303,7 +1304,7 @@ public final class Billing {
             @Override
             public void onServiceConnected(ComponentName name,
                                            IBinder service) {
-                setService(IInAppBillingService.Stub.asInterface(service), true);
+                setService(InAppBillingServiceImpl.make(service), true);
             }
         };
 

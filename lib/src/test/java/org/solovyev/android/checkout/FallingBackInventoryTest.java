@@ -22,7 +22,7 @@
 
 package org.solovyev.android.checkout;
 
-import com.android.vending.billing.IInAppBillingService;
+import com.android.vending.billing.InAppBillingService;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -54,7 +54,7 @@ public class FallingBackInventoryTest extends InventoryTestBase {
 
         super.setUp();
 
-        final IInAppBillingService service = ((TestServiceConnector) mBilling.getConnector()).mService;
+        final InAppBillingService service = ((TestServiceConnector) mBilling.getConnector()).mService;
         when(service.isBillingSupported(anyInt(), anyString(), eq(SUBSCRIPTION))).thenReturn(ResponseCodes.ERROR);
     }
 

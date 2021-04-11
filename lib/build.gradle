@@ -39,8 +39,8 @@ android {
 }
 
 dependencies {
-    implementation fileTree(dir: 'libs', include: '*.jar')
     api 'com.google.code.findbugs:jsr305:3.0.2'
+    implementation "com.android.billingclient:billing:${versions.libs.billing}"
 
     testImplementation 'junit:junit:4.13.1'
     testImplementation 'org.robolectric:robolectric:4.5.1'

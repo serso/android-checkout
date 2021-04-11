@@ -1,6 +1,6 @@
 package org.solovyev.android.checkout;
 
-import com.android.vending.billing.IInAppBillingService;
+import com.android.vending.billing.InAppBillingService;
 
 import org.json.JSONException;
 
@@ -41,7 +41,7 @@ abstract class BasePurchasesRequest extends Request<Purchases> {
     }
 
     @Override
-    final void start(@Nonnull IInAppBillingService service, @Nonnull String packageName) throws RemoteException {
+    final void start(@Nonnull InAppBillingService service, @Nonnull String packageName) throws RemoteException {
         final Bundle bundle = request(service, packageName);
         if (handleError(bundle)) {
             return;
@@ -60,7 +60,7 @@ abstract class BasePurchasesRequest extends Request<Purchases> {
     }
 
     @Nullable
-    protected abstract Bundle request(@Nonnull IInAppBillingService service, @Nonnull String packageName) throws RemoteException;
+    protected abstract Bundle request(@Nonnull InAppBillingService service, @Nonnull String packageName) throws RemoteException;
 
     protected abstract void processPurchases(@Nonnull List<Purchase> purchases, @Nullable String continuationToken);
 

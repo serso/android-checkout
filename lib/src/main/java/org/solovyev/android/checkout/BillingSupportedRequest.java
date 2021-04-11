@@ -22,7 +22,7 @@
 
 package org.solovyev.android.checkout;
 
-import com.android.vending.billing.IInAppBillingService;
+import com.android.vending.billing.InAppBillingService;
 
 import android.os.Bundle;
 import android.os.RemoteException;
@@ -51,7 +51,7 @@ final class BillingSupportedRequest extends Request<Object> {
     }
 
     @Override
-    public void start(@Nonnull IInAppBillingService service, @Nonnull String packageName) throws RemoteException {
+    public void start(@Nonnull InAppBillingService service, @Nonnull String packageName) throws RemoteException {
         final int response = mExtraParams != null ? service.isBillingSupportedExtraParams(mApiVersion, packageName, mProduct, mExtraParams) : service.isBillingSupported(mApiVersion, packageName, mProduct);
         if (!handleError(response)) {
             onSuccess(new Object());

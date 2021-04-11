@@ -26,6 +26,8 @@ import org.json.JSONException;
 
 import android.os.Bundle;
 
+import com.android.vending.billing.InAppBillingServiceImpl;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -35,7 +37,7 @@ import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 /**
- * List of SKUs as returned from {@link com.android.vending.billing.IInAppBillingService#getSkuDetails(int,
+ * List of SKUs as returned from {@link InAppBillingServiceImpl#getSkuDetails(int,
  * String, String, Bundle)} method.
  */
 @Immutable

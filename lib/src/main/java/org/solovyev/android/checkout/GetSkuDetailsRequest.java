@@ -22,7 +22,7 @@
 
 package org.solovyev.android.checkout;
 
-import com.android.vending.billing.IInAppBillingService;
+import com.android.vending.billing.InAppBillingService;
 
 import android.os.Bundle;
 import android.os.RemoteException;
@@ -55,7 +55,7 @@ final class GetSkuDetailsRequest extends Request<Skus> {
     }
 
     @Override
-    void start(@Nonnull IInAppBillingService service, @Nonnull String packageName) throws RemoteException, RequestException {
+    void start(@Nonnull InAppBillingService service, @Nonnull String packageName) throws RemoteException, RequestException {
         final List<Sku> allSkuDetails = new ArrayList<>();
         for (int start = 0; start < mSkus.size(); start += MAX_SIZE_PER_REQUEST) {
             final int end = Math.min(mSkus.size(), start + MAX_SIZE_PER_REQUEST);
@@ -72,8 +72,8 @@ final class GetSkuDetailsRequest extends Request<Skus> {
     }
 
     @Nullable
-    private Skus getSkuDetails(@Nonnull IInAppBillingService service, @Nonnull String packageName,
-            ArrayList<String> skuBatch) throws RemoteException, RequestException {
+    private Skus getSkuDetails(@Nonnull InAppBillingService service, @Nonnull String packageName,
+                               ArrayList<String> skuBatch) throws RemoteException, RequestException {
         Check.isTrue(skuBatch.size() <= MAX_SIZE_PER_REQUEST, "SKU list is too big");
         final Bundle skusBundle = new Bundle();
         skusBundle.putStringArrayList("ITEM_ID_LIST", skuBatch);

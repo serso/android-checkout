@@ -22,7 +22,7 @@
 
 package org.solovyev.android.checkout;
 
-import com.android.vending.billing.IInAppBillingService;
+import com.android.vending.billing.InAppBillingService;
 
 import android.app.PendingIntent;
 import android.os.Bundle;
@@ -55,7 +55,7 @@ final class PurchaseRequest extends Request<PendingIntent> {
     }
 
     @Override
-    void start(@Nonnull IInAppBillingService service, @Nonnull String packageName) throws RemoteException, RequestException {
+    void start(@Nonnull InAppBillingService service, @Nonnull String packageName) throws RemoteException, RequestException {
         final String payload = mPayload == null ? "" : mPayload;
         final Bundle bundle = mExtraParams != null ? service.getBuyIntentExtraParams(mApiVersion, packageName, mSku, mProduct, payload, mExtraParams) : service.getBuyIntent(mApiVersion, packageName, mSku, mProduct, payload);
         if (handleError(bundle)) {

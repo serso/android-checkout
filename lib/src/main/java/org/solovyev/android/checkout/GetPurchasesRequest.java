@@ -22,7 +22,7 @@
 
 package org.solovyev.android.checkout;
 
-import com.android.vending.billing.IInAppBillingService;
+import com.android.vending.billing.InAppBillingService;
 
 import android.os.Bundle;
 import android.os.RemoteException;
@@ -59,7 +59,7 @@ final class GetPurchasesRequest extends BasePurchasesRequest {
     }
 
     @Override
-    protected Bundle request(@Nonnull IInAppBillingService service, @Nonnull String packageName) throws RemoteException {
+    protected Bundle request(@Nonnull InAppBillingService service, @Nonnull String packageName) throws RemoteException {
         return service.getPurchases(mApiVersion, packageName, mProduct, mContinuationToken);
     }
 

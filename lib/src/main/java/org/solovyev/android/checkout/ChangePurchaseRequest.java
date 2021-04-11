@@ -1,6 +1,6 @@
 package org.solovyev.android.checkout;
 
-import com.android.vending.billing.IInAppBillingService;
+import com.android.vending.billing.InAppBillingService;
 
 import android.app.PendingIntent;
 import android.os.Bundle;
@@ -36,7 +36,7 @@ final class ChangePurchaseRequest extends Request<PendingIntent> {
     }
 
     @Override
-    void start(@Nonnull IInAppBillingService service, @Nonnull String packageName) throws
+    void start(@Nonnull InAppBillingService service, @Nonnull String packageName) throws
             RemoteException, RequestException {
         final Bundle bundle = service.getBuyIntentToReplaceSkus(mApiVersion, packageName, mOldSkus, mNewSku, mProduct, mPayload == null ? "" : mPayload);
         if (handleError(bundle)) {

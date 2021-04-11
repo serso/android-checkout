@@ -22,7 +22,8 @@
 
 package org.solovyev.android.checkout;
 
-import com.android.vending.billing.IInAppBillingService;
+import com.android.vending.billing.InAppBillingServiceImpl;
+import com.android.vending.billing.InAppBillingService;
 
 import org.json.JSONException;
 import org.junit.Test;
@@ -91,7 +92,7 @@ public class GetPurchasesRequestTest extends RequestTestBase {
         final GetPurchasesRequest request = newRequest();
         final RequestListener l = mock(RequestListener.class);
         request.setListener(l);
-        final IInAppBillingService service = mock(IInAppBillingService.class);
+        final InAppBillingService service = mock(InAppBillingServiceImpl.class);
         final Bundle bundle = newBundle(OK);
         final ArrayList<String> datas = new ArrayList<String>();
         datas.add("test");
@@ -108,7 +109,7 @@ public class GetPurchasesRequestTest extends RequestTestBase {
         final GetPurchasesRequest request = new GetPurchasesRequest("test", null, new AsyncPurchaseVerifier());
         final PurchasesAwareRequestListener l = new PurchasesAwareRequestListener();
         request.setListener(l);
-        final IInAppBillingService service = mock(IInAppBillingService.class);
+        final InAppBillingService service = mock(InAppBillingServiceImpl.class);
         final ArrayList<String> list = new ArrayList<String>();
         list.add(PurchaseTest.newJson(0, Purchase.State.REFUNDED));
         list.add(PurchaseTest.newJson(1, Purchase.State.REFUNDED));
@@ -134,7 +135,7 @@ public class GetPurchasesRequestTest extends RequestTestBase {
         final RequestListener listener = mock(RequestListener.class);
         request.setListener(listener);
 
-        final IInAppBillingService service = mock(IInAppBillingService.class);
+        final InAppBillingService service = mock(InAppBillingServiceImpl.class);
         when(service.getPurchases(anyInt(), anyString(), anyString(), anyString())).thenReturn(newBundle(OK));
         request.start(service, "test");
 

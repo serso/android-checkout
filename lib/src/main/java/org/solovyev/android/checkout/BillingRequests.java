@@ -24,6 +24,8 @@ package org.solovyev.android.checkout;
 
 import android.os.Bundle;
 
+import com.android.vending.billing.InAppBillingServiceImpl;
+
 import java.util.List;
 
 import javax.annotation.Nonnull;
@@ -31,7 +33,7 @@ import javax.annotation.Nullable;
 
 /**
  * Interface that defines all billing methods available in the library. This includes not only the
- * methods that come directly from {@link com.android.vending.billing.IInAppBillingService}
+ * methods that come directly from {@link InAppBillingServiceImpl}
  * (such as {@link #isBillingSupported(String)} and {@link #consume(String, RequestListener)}) but
  * also some wrapper or utility methods defined by the library (such as
  * {@link #getAllPurchases(String, RequestListener)} and {@link #cancelAll()}).

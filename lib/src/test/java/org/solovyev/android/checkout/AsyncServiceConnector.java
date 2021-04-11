@@ -22,7 +22,8 @@
 
 package org.solovyev.android.checkout;
 
-import com.android.vending.billing.IInAppBillingService;
+import com.android.vending.billing.InAppBillingServiceImpl;
+import com.android.vending.billing.InAppBillingService;
 
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -45,11 +46,11 @@ class AsyncServiceConnector implements Billing.ServiceConnector {
 
     @Override
     public boolean connect() {
-        setService(mock(IInAppBillingService.class));
+        setService(mock(InAppBillingServiceImpl.class));
         return true;
     }
 
-    private void setService(final IInAppBillingService service) {
+    private void setService(final InAppBillingService service) {
         mBackground.execute(new Runnable() {
             @Override
             public void run() {
