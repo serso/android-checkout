@@ -23,7 +23,7 @@
 package org.solovyev.android.checkout;
 
 /**
- * Billing response codes, codes >= 10000 are defined by this library.
+ * Billing response codes, codes {@literal >=} 10000 are defined by this library.
  * See <a href="http://developer.android.com/google/play/billing/index.html">In-App Billing</a> docs
  * for more information.
  */

@@ -13,9 +13,7 @@ import javax.annotation.Nonnull;
  * int)},
  * {@link android.app.Fragment#startIntentSenderForResult(IntentSender, int, Intent, int, int, int,
  * Bundle)}
- * or
- * {@link androidx.fragment.app.Fragment#startIntentSenderForResult(IntentSender, int, Intent, int,
- * int, int, Bundle)}.
+ * or its AndroidX counterpart.
  * </p>
  * <p>
  * The reason for this interface is to avoid a dependency between this library and the support

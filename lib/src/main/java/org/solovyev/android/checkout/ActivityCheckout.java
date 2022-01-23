@@ -34,8 +34,8 @@ import javax.annotation.Nonnull;
  * {@link android.app.Fragment#onActivityResult} is *not* be called in that case - it's a
  * developers' responsibility to dispatch a {@link Activity#onActivityResult} call themselves to
  * an appropriate {@link android.app.Fragment} instance.</p>
- * <p>In order to conduct purchases inside a {@link android.app.Fragment} (or {@link
- * androidx.fragment.app.Fragment}) a special version of {@link UiCheckout} should be used - it can
+ * <p>In order to conduct purchases inside a {@link android.app.Fragment} (or its AndroidX counterpart)
+ * a special version of {@link UiCheckout} should be used - it can
  * be obtained via {@link Checkout#forFragment} or, for a more generic case, via
  * {@link Checkout#forUi}.</p>
  *
