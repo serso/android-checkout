@@ -25,6 +25,4 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     package="org.solovyev.android.checkout">
 
-    <uses-permission android:name="com.android.vending.BILLING" />
-
 </manifest>

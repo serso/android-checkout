@@ -64,16 +64,6 @@ See [Android Studio](http://g.co/androidstudio/app-test-app-conflict) and [Gradl
 - Download sources from github and either copy them to your project or import them as a project dependency
 - Download artifacts from the [repository](https://oss.sonatype.org/content/repositories/releases/org/solovyev/android/checkout/)
 
-### Permissions
-
-In-app billing requires `com.android.vending.BILLING` permission to be
-set in the app. This permission is automatically added to your app's
-`AndroidManifest.xml` by Gradle. You can declare this permission
-explicitly by adding the following line to the `AndroidManifest.xml`:
-```xml
-<uses-permission android:name="com.android.vending.BILLING" />
-```
-
 ### Tutorial
 
 A tutorial for the sample app is available on [Medium](https://medium.com/@se.solovyev/implementing-in-app-billing-in-android-4896232c7d6b).

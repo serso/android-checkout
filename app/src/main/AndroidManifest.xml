@@ -32,8 +32,6 @@
     <supports-screens android:xlargeScreens="true" />
     <supports-screens android:anyDensity="true" />
 
-    <uses-permission android:name="com.android.vending.BILLING" />
-
     <application
         android:name=".CheckoutApplication"
         android:allowBackup="true"
