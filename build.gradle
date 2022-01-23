@@ -7,7 +7,7 @@ buildscript {
         classpath 'com.android.tools.build:gradle:7.0.4'
     }
     ext {
-        versions = [libs: [androidx: "1.2.0", billing: "4.0.0"],
+        versions = [libs: [billing: "4.0.0"],
                     sdk : [compile: 31, min: 14, target: 31],
                     code: 45,
                     name: "1.2.3"]
