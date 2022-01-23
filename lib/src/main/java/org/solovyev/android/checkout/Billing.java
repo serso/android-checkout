@@ -1112,8 +1112,13 @@ public final class Billing {
 
         @Override
         public int consume(@Nonnull String token, @Nonnull RequestListener<Object> listener) {
+            return consume(token, null, listener);
+        }
+
+        @Override
+        public int consume(@Nonnull String token, @Nullable Bundle extraParams, @Nonnull RequestListener<Object> listener) {
             Check.isNotEmpty(token);
-            return runWhenConnected(new ConsumePurchaseRequest(token), wrapListener(listener), mTag);
+            return runWhenConnected(new ConsumePurchaseRequest(token, extraParams), wrapListener(listener), mTag);
         }
 
         @Override

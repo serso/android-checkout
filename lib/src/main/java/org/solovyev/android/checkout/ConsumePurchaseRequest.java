@@ -22,9 +22,10 @@
 
 package org.solovyev.android.checkout;
 
-import com.android.vending.billing.InAppBillingService;
-
+import android.os.Bundle;
 import android.os.RemoteException;
+
+import com.android.vending.billing.InAppBillingService;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -33,14 +34,25 @@ final class ConsumePurchaseRequest extends Request<Object> {
 
     @Nonnull
     private final String mToken;
+    @Nullable
+    private final Bundle mExtraParams;
 
-    ConsumePurchaseRequest(@Nonnull String token) {
-        super(RequestType.CONSUME_PURCHASE);
+    ConsumePurchaseRequest(@Nonnull String token, @Nullable Bundle extraParams) {
+        super(RequestType.CONSUME_PURCHASE, extraParams != null ? Billing.V7 : Billing.V3);
         mToken = token;
+        mExtraParams = extraParams;
     }
 
     @Override
     void start(@Nonnull InAppBillingService service, @Nonnull String packageName) throws RemoteException, RequestException {
+        if (mExtraParams != null) {
+            final Bundle response = service.consumePurchaseExtraParams(mApiVersion, packageName, mToken, mExtraParams);
+            if (!handleError(response)) {
+                Billing.waitGooglePlay();
+                onSuccess(new Object());
+            }
+            return;
+        }
         final int response = service.consumePurchase(mApiVersion, packageName, mToken);
         if (!handleError(response)) {
             Billing.waitGooglePlay();

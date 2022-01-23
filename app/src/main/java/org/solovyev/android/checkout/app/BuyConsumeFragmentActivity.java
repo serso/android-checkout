@@ -109,7 +109,8 @@ public class BuyConsumeFragmentActivity extends AppCompatActivity {
                 mCheckout.whenReady(new Checkout.EmptyListener() {
                     @Override
                     public void onReady(@Nonnull BillingRequests requests) {
-                        requests.consume(purchase.token, new ConsumeListener());
+                        Bundle extraParams = new Bundle();
+                        requests.consume(purchase.token, extraParams, new ConsumeListener());
                     }
                 });
             }

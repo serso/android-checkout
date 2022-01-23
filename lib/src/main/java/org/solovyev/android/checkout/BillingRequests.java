@@ -246,6 +246,11 @@ public interface BillingRequests {
     int consume(@Nonnull String token, @Nonnull RequestListener<Object> listener);
 
     /**
+     * Same as {@link #consume(String, RequestListener)} but with additional <var>extraParams</var> parameter.
+     */
+    int consume(@Nonnull String token, @Nullable Bundle extraParams, @Nonnull RequestListener<Object> listener);
+
+    /**
      * Cancels all pending requests created by this {@link BillingRequests} instance.
      */
     void cancelAll();

@@ -37,7 +37,7 @@ public class ConsumePurchaseRequestTest extends RequestTestBase {
 
     @Nonnull
     private ConsumePurchaseRequest newRequest(@Nonnull String token) {
-        return new ConsumePurchaseRequest(token);
+        return new ConsumePurchaseRequest(token, null);
     }
 
     @Test
