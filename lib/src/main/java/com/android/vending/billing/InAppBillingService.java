@@ -20,13 +20,5 @@ public interface InAppBillingService {
 
     int isBillingSupportedExtraParams(int var1, String var2, String var3, Bundle var4) throws RemoteException;
 
-    Bundle getSubscriptionManagementIntent(int var1, String var2, String var3, String var4, Bundle var5) throws RemoteException;
-
-    Bundle getPurchasesExtraParams(int var1, String var2, String var3, String var4, Bundle var5) throws RemoteException;
-
     Bundle consumePurchaseExtraParams(int var1, String var2, String var3, Bundle var4) throws RemoteException;
-
-    Bundle getSkuDetailsExtraParams(int var1, String var2, String var3, Bundle var4, Bundle var5) throws RemoteException;
-
-    Bundle acknowledgePurchaseExtraParams(int var1, String var2, String var3, Bundle var4) throws RemoteException;
 }

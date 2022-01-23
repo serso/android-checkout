@@ -70,27 +70,7 @@ public class InAppBillingServiceImpl implements InAppBillingService {
     }
 
     @Override
-    public Bundle getSubscriptionManagementIntent(int var1, String var2, String var3, String var4, Bundle var5) throws RemoteException {
-        return api.zzj(var1, var2, var3, var4, var5);
-    }
-
-    @Override
-    public Bundle getPurchasesExtraParams(int var1, String var2, String var3, String var4, Bundle var5) throws RemoteException {
-        return api.zzm(var1, var2, var3, var4, var5);
-    }
-
-    @Override
     public Bundle consumePurchaseExtraParams(int var1, String var2, String var3, Bundle var4) throws RemoteException {
         return api.zze(var1, var2, var3, var4);
-    }
-
-    @Override
-    public Bundle getSkuDetailsExtraParams(int var1, String var2, String var3, Bundle var4, Bundle var5) throws RemoteException {
-        return api.zzl(var1, var2, var3, var4, var5);
-    }
-
-    @Override
-    public Bundle acknowledgePurchaseExtraParams(int var1, String var2, String var3, Bundle var4) throws RemoteException{
-        return api.zzk(var1, var2, var3, var4);
     }
 }
