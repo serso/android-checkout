@@ -1,10 +1,10 @@
 package org.solovyev.android.checkout;
 
-import com.android.vending.billing.InAppBillingService;
-
 import android.app.PendingIntent;
 import android.os.Bundle;
 import android.os.RemoteException;
+
+import com.android.vending.billing.InAppBillingService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,7 +18,7 @@ final class ChangePurchaseRequest extends Request<PendingIntent> {
     private final String mProduct;
 
     @Nonnull
-    private final List<String> mOldSkus;
+    private final ArrayList<String> mOldSkus;
 
     @Nonnull
     private final String mNewSku;
@@ -27,7 +27,7 @@ final class ChangePurchaseRequest extends Request<PendingIntent> {
     private final String mPayload;
 
     ChangePurchaseRequest(@Nonnull String product, @Nonnull List<String> oldSkus, @Nonnull String newSku, @Nullable String payload) {
-        super(RequestType.CHANGE_PURCHASE, Billing.V5);
+        super(RequestType.CHANGE_PURCHASE, Billing.V7);
         Check.isTrue(!oldSkus.isEmpty(), "There must be at least one old SKU to be changed");
         mProduct = product;
         mOldSkus = new ArrayList<>(oldSkus);
@@ -38,7 +38,9 @@ final class ChangePurchaseRequest extends Request<PendingIntent> {
     @Override
     void start(@Nonnull InAppBillingService service, @Nonnull String packageName) throws
             RemoteException, RequestException {
-        final Bundle bundle = service.getBuyIntentToReplaceSkus(mApiVersion, packageName, mOldSkus, mNewSku, mProduct, mPayload == null ? "" : mPayload);
+        final Bundle extraParams = new Bundle();
+        extraParams.putStringArrayList("skusToReplace", mOldSkus);
+        final Bundle bundle = service.getBuyIntentExtraParams(mApiVersion, packageName, mNewSku, mProduct, mPayload == null ? "" : mPayload, extraParams);
         if (handleError(bundle)) {
             return;
         }

@@ -3,8 +3,6 @@ package com.android.vending.billing;
 import android.os.Bundle;
 import android.os.RemoteException;
 
-import java.util.List;
-
 public interface InAppBillingService {
     int isBillingSupported(int var1, String var2, String var3) throws RemoteException;
 
@@ -15,8 +13,6 @@ public interface InAppBillingService {
     Bundle getPurchases(int var1, String var2, String var3, String var4) throws RemoteException;
 
     int consumePurchase(int var1, String var2, String var3) throws RemoteException;
-
-    Bundle getBuyIntentToReplaceSkus(int var1, String var2, List<String> var3, String var4, String var5, String var6) throws RemoteException;
 
     Bundle getBuyIntentExtraParams(int var1, String var2, String var3, String var4, String var5, Bundle var6) throws RemoteException;
 

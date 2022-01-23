@@ -7,8 +7,6 @@ import android.os.RemoteException;
 import com.google.android.gms.internal.play_billing.zzc;
 import com.google.android.gms.internal.play_billing.zzd;
 
-import java.util.List;
-
 import javax.annotation.Nonnull;
 
 /**
@@ -18,7 +16,7 @@ import javax.annotation.Nonnull;
 public class InAppBillingServiceImpl implements InAppBillingService {
 
     // This field might need to be updated every time the billing client library is updated as
-    // it points to the internal obfuscate class representing the billing interface.
+    // it points to the internal obfuscated class representing the billing interface.
     @Nonnull
     private final zzd api;
 
@@ -28,37 +26,32 @@ public class InAppBillingServiceImpl implements InAppBillingService {
 
     @Nonnull
     public static InAppBillingService make(@Nonnull IBinder service) {
-        return new InAppBillingServiceImpl(zzc.zzo(service));
+        return new InAppBillingServiceImpl(zzc.zzn(service));
     }
 
     @Override
     public int isBillingSupported(int var1, String var2, String var3) throws RemoteException {
-        return api.zza(var1, var2, var3);
+        return api.zzb(var1, var2, var3);
     }
 
     @Override
     public Bundle getSkuDetails(int var1, String var2, String var3, Bundle var4) throws RemoteException {
-        return api.zzb(var1, var2, var3, var4);
+        return api.zzk(var1, var2, var3, var4);
     }
 
     @Override
     public Bundle getBuyIntent(int var1, String var2, String var3, String var4, String var5) throws RemoteException {
-        return api.zzc(var1, var2, var3, var4, var5);
+        return api.zzf(var1, var2, var3, var4, var5);
     }
 
     @Override
     public Bundle getPurchases(int var1, String var2, String var3, String var4) throws RemoteException {
-        return api.zzd(var1, var2, var3, var4);
+        return api.zzi(var1, var2, var3, var4);
     }
 
     @Override
     public int consumePurchase(int var1, String var2, String var3) throws RemoteException {
-        return api.zze(var1, var2, var3);
-    }
-
-    @Override
-    public Bundle getBuyIntentToReplaceSkus(int var1, String var2, List<String> var3, String var4, String var5, String var6) throws RemoteException {
-        return api.zzf(var1, var2, var3, var4, var5, var6);
+        return api.zza(var1, var2, var3);
     }
 
     @Override
@@ -73,7 +66,7 @@ public class InAppBillingServiceImpl implements InAppBillingService {
 
     @Override
     public int isBillingSupportedExtraParams(int var1, String var2, String var3, Bundle var4) throws RemoteException {
-        return api.zzi(var1, var2, var3, var4);
+        return api.zzc(var1, var2, var3, var4);
     }
 
     @Override
@@ -83,21 +76,21 @@ public class InAppBillingServiceImpl implements InAppBillingService {
 
     @Override
     public Bundle getPurchasesExtraParams(int var1, String var2, String var3, String var4, Bundle var5) throws RemoteException {
-        return api.zzk(var1, var2, var3, var4, var5);
-    }
-
-    @Override
-    public Bundle consumePurchaseExtraParams(int var1, String var2, String var3, Bundle var4) throws RemoteException {
-        return api.zzl(var1, var2, var3, var4);
-    }
-
-    @Override
-    public Bundle getSkuDetailsExtraParams(int var1, String var2, String var3, Bundle var4, Bundle var5) throws RemoteException {
         return api.zzm(var1, var2, var3, var4, var5);
     }
 
     @Override
+    public Bundle consumePurchaseExtraParams(int var1, String var2, String var3, Bundle var4) throws RemoteException {
+        return api.zze(var1, var2, var3, var4);
+    }
+
+    @Override
+    public Bundle getSkuDetailsExtraParams(int var1, String var2, String var3, Bundle var4, Bundle var5) throws RemoteException {
+        return api.zzl(var1, var2, var3, var4, var5);
+    }
+
+    @Override
     public Bundle acknowledgePurchaseExtraParams(int var1, String var2, String var3, Bundle var4) throws RemoteException{
-        return api.zzn(var1, var2, var3, var4);
+        return api.zzk(var1, var2, var3, var4);
     }
 }
