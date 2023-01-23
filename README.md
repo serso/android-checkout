@@ -1,4 +1,6 @@
-# Checkout (Android In-App Billing Library)
+# [Deprecated] Checkout (Android In-App Billing Library)
+
+The libary is not actively maintained and no new verions are planned in the future. Use [the official billing libary](https://developer.android.com/google/play/billing/integrate) instead.
 
 ## Description
 
