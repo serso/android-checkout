@@ -22,7 +22,6 @@
   -->
 
 <manifest
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    package="org.solovyev.android.checkout">
+    xmlns:android="http://schemas.android.com/apk/res/android">
 
 </manifest>

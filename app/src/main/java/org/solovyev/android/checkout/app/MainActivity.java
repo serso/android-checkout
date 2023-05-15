@@ -3,32 +3,31 @@ package org.solovyev.android.checkout.app;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
-import androidx.annotation.Nullable;
-import androidx.annotation.StringRes;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import butterknife.BindView;
-import butterknife.ButterKnife;
+import androidx.annotation.Nullable;
+import androidx.annotation.StringRes;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.view.ViewCompat;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 /**
  * Shows a list of use cases covered in the app.
  */
 public class MainActivity extends AppCompatActivity {
 
-    @BindView(R.id.recycler)
     RecyclerView mRecycler;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        ButterKnife.bind(this);
+        mRecycler = ActivityCompat.requireViewById(this, R.id.recycler);
 
         mRecycler.setLayoutManager(new LinearLayoutManager(this));
         mRecycler.setAdapter(new Adapter(this));
@@ -59,9 +58,7 @@ public class MainActivity extends AppCompatActivity {
     static class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
         private final Activity mActivity;
-        @BindView(R.id.use_case_title)
         TextView mTitle;
-        @BindView(R.id.use_case_description)
         TextView mDescription;
         @Nullable
         private UseCase mUseCase;
@@ -70,7 +67,8 @@ public class MainActivity extends AppCompatActivity {
         ViewHolder(Activity activity, View view) {
             super(view);
             mActivity = activity;
-            ButterKnife.bind(this, view);
+            mTitle = ViewCompat.requireViewById(view, R.id.use_case_title);
+            mDescription = ViewCompat.requireViewById(view, R.id.use_case_description);
 
             view.setOnClickListener(this);
         }

@@ -12,7 +12,11 @@ import javax.annotation.concurrent.ThreadSafe;
 @ThreadSafe
 class DefaultLogger implements Logger {
 
-    private boolean mEnabled = BuildConfig.DEBUG;
+    private boolean mEnabled = false;
+
+    public DefaultLogger(boolean enabled) {
+        mEnabled = enabled;
+    }
 
     @Override
     public void e(@Nonnull String tag, @Nonnull String msg) {

@@ -1,5 +1,20 @@
 package org.solovyev.android.checkout.app;
 
+import android.graphics.drawable.ColorDrawable;
+import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.TextView;
+
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.view.ViewCompat;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
 import org.solovyev.android.checkout.Billing;
 import org.solovyev.android.checkout.BillingRequests;
 import org.solovyev.android.checkout.Checkout;
@@ -9,32 +24,16 @@ import org.solovyev.android.checkout.Purchase;
 import org.solovyev.android.checkout.Purchases;
 import org.solovyev.android.checkout.RequestListener;
 
-import android.graphics.drawable.ColorDrawable;
-import android.os.Bundle;
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.ImageView;
-import android.widget.TextView;
-
 import java.text.DateFormat;
 import java.util.Date;
 
 import javax.annotation.Nonnull;
-
-import butterknife.BindView;
-import butterknife.ButterKnife;
 
 /**
  * Shows a list of recently purchased/consumed items.
  */
 public class HistoryActivity extends AppCompatActivity {
 
-    @BindView(R.id.recycler)
     RecyclerView mRecycler;
     private Checkout mCheckout;
 
@@ -43,7 +42,7 @@ public class HistoryActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_history);
-        ButterKnife.bind(this);
+        mRecycler = ActivityCompat.requireViewById(this, R.id.recycler);
 
         final Adapter adapter = new Adapter();
         mRecycler.setLayoutManager(new LinearLayoutManager(this));
@@ -90,16 +89,15 @@ public class HistoryActivity extends AppCompatActivity {
 
     static class ViewHolder extends RecyclerView.ViewHolder {
 
-        @BindView(R.id.purchase_sku)
         TextView mSku;
-        @BindView(R.id.purchase_time)
         TextView mTime;
-        @BindView(R.id.purchase_icon)
         ImageView mIcon;
 
         ViewHolder(View view) {
             super(view);
-            ButterKnife.bind(this, view);
+            mSku = ViewCompat.requireViewById(view, R.id.purchase_sku);
+            mTime = ViewCompat.requireViewById(view, R.id.purchase_time);
+            mIcon = ViewCompat.requireViewById(view, R.id.purchase_icon);
         }
 
         void onBind(Purchase purchase) {

@@ -248,7 +248,7 @@ public final class Billing {
      */
     @Nonnull
     public static Logger newLogger() {
-        return new DefaultLogger();
+        return new DefaultLogger(true);
     }
 
     /**

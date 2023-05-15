@@ -1,5 +1,27 @@
 package org.solovyev.android.checkout.app;
 
+import static org.solovyev.android.checkout.ProductTypes.SUBSCRIPTION;
+
+import android.app.Activity;
+import android.content.Context;
+import android.content.Intent;
+import android.database.DataSetObserver;
+import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
+import android.widget.Spinner;
+
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.view.ViewCompat;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
 import org.solovyev.android.checkout.ActivityCheckout;
 import org.solovyev.android.checkout.Billing;
 import org.solovyev.android.checkout.BillingRequests;
@@ -10,23 +32,6 @@ import org.solovyev.android.checkout.PurchaseFlow;
 import org.solovyev.android.checkout.RequestListener;
 import org.solovyev.android.checkout.Sku;
 
-import android.app.Activity;
-import android.content.Context;
-import android.content.Intent;
-import android.database.DataSetObserver;
-import android.os.Bundle;
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
-import android.widget.CheckBox;
-import android.widget.CompoundButton;
-import android.widget.Spinner;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -36,27 +41,17 @@ import java.util.Set;
 
 import javax.annotation.Nonnull;
 
-import butterknife.BindView;
-import butterknife.ButterKnife;
-
-import static org.solovyev.android.checkout.ProductTypes.SUBSCRIPTION;
-
 public class SubscriptionsActivity extends AppCompatActivity {
 
     private static final List<String> SKUS = Arrays.asList("sub_01", "sub_02", "sub_03");
 
     private final List<Inventory.Callback> mInventoryCallbacks = new ArrayList<>();
 
-    @BindView(R.id.buy)
     View mBuy;
-    @BindView(R.id.available_skus)
     Spinner mAvailableSkus;
 
-    @BindView(R.id.purchased_skus)
     RecyclerView mPurchasedSkus;
-    @BindView(R.id.change)
     View mChange;
-    @BindView(R.id.target_skus)
     Spinner mTargetSkus;
     private PurchasedSkusAdapter mPurchasedSkusAdapter;
     private TargetSkusAdapter mTargetSkusAdapter;
@@ -68,7 +63,11 @@ public class SubscriptionsActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_subscriptions);
-        ButterKnife.bind(this);
+        mBuy = ActivityCompat.requireViewById(this, R.id.buy);
+        mAvailableSkus = ActivityCompat.requireViewById(this, R.id.available_skus);
+        mPurchasedSkus = ActivityCompat.requireViewById(this, R.id.purchased_skus);
+        mChange = ActivityCompat.requireViewById(this, R.id.change);
+        mTargetSkus = ActivityCompat.requireViewById(this, R.id.target_skus);
 
         initAvailableSkus();
         initPurchasedSkus();
@@ -221,7 +220,6 @@ public class SubscriptionsActivity extends AppCompatActivity {
     static class ViewHolder extends RecyclerView.ViewHolder implements CompoundButton.OnCheckedChangeListener {
 
         private final PurchasedSkusAdapter mAdapter;
-        @BindView(R.id.subscription)
         CheckBox mSubscription;
         @Nullable
         private Sku mSku;
@@ -230,7 +228,7 @@ public class SubscriptionsActivity extends AppCompatActivity {
             super(view);
             mAdapter = adapter;
 
-            ButterKnife.bind(this, view);
+            mSubscription = ViewCompat.requireViewById(view, R.id.subscription);
             mSubscription.setOnCheckedChangeListener(this);
         }
 
@@ -252,7 +250,7 @@ public class SubscriptionsActivity extends AppCompatActivity {
     private static class AvailableSkusAdapter extends ArrayAdapter<SkuItem> implements Inventory.Callback {
 
         public AvailableSkusAdapter(Context context) {
-            super(context, R.layout.support_simple_spinner_dropdown_item);
+            super(context, androidx.appcompat.R.layout.support_simple_spinner_dropdown_item);
         }
 
         @Override
@@ -273,7 +271,7 @@ public class SubscriptionsActivity extends AppCompatActivity {
     private static class TargetSkusAdapter extends ArrayAdapter<SkuItem> implements Inventory.Callback {
 
         public TargetSkusAdapter(Context context) {
-            super(context, R.layout.support_simple_spinner_dropdown_item);
+            super(context, androidx.appcompat.R.layout.support_simple_spinner_dropdown_item);
         }
 
         @Override

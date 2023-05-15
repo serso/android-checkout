@@ -1,5 +1,17 @@
 package org.solovyev.android.checkout.app;
 
+import android.content.Intent;
+import android.os.Bundle;
+import android.text.TextUtils;
+import android.view.View;
+import android.widget.ArrayAdapter;
+import android.widget.Spinner;
+import android.widget.TextView;
+
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+
 import org.solovyev.android.checkout.ActivityCheckout;
 import org.solovyev.android.checkout.Billing;
 import org.solovyev.android.checkout.Checkout;
@@ -8,31 +20,15 @@ import org.solovyev.android.checkout.ProductTypes;
 import org.solovyev.android.checkout.Purchase;
 import org.solovyev.android.checkout.RequestListener;
 
-import android.content.Intent;
-import android.os.Bundle;
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
-import android.text.TextUtils;
-import android.view.View;
-import android.widget.ArrayAdapter;
-import android.widget.Spinner;
-import android.widget.TextView;
-
 import javax.annotation.Nonnull;
-
-import butterknife.BindView;
-import butterknife.ButterKnife;
 
 /**
  * Shows a list of the static responses. Each response can be triggered by pressing Buy button.
  */
 public class StaticActivity extends AppCompatActivity implements View.OnClickListener {
 
-    @BindView(R.id.buy)
     View mBuy;
-    @BindView(R.id.skus)
     Spinner mSkus;
-    @BindView(R.id.console)
     TextView mConsole;
     private ActivityCheckout mCheckout;
 
@@ -41,10 +37,12 @@ public class StaticActivity extends AppCompatActivity implements View.OnClickLis
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_static);
-        ButterKnife.bind(this);
+        mBuy = ActivityCompat.requireViewById(this, R.id.buy);
+        mSkus = ActivityCompat.requireViewById(this, R.id.skus);
+        mConsole = ActivityCompat.requireViewById(this, R.id.console);
 
         mBuy.setOnClickListener(this);
-        mSkus.setAdapter(new ArrayAdapter<>(this, R.layout.support_simple_spinner_dropdown_item, new String[]{"android.test.purchased", "android.test.canceled", "android.test.refunded", "android.test.item_unavailable"}));
+        mSkus.setAdapter(new ArrayAdapter<>(this, androidx.appcompat.R.layout.support_simple_spinner_dropdown_item, new String[]{"android.test.purchased", "android.test.canceled", "android.test.refunded", "android.test.item_unavailable"}));
         mSkus.setSelection(0);
         Billing.setLogger(Billing.newMainThreadLogger(new BillingLogger(mConsole)));
 
@@ -68,24 +66,22 @@ public class StaticActivity extends AppCompatActivity implements View.OnClickLis
 
     @Override
     public void onClick(View v) {
-        switch (v.getId()) {
-            case R.id.buy:
-                // prevent starting several purchase flows simultaneously
-                mBuy.setEnabled(false);
-                final String sku = (String) mSkus.getSelectedItem();
-                mConsole.setText("");
-                mCheckout.startPurchaseFlow(ProductTypes.IN_APP, sku, null, new RequestListener<Purchase>() {
-                    @Override
-                    public void onSuccess(@Nonnull Purchase result) {
-                        mBuy.setEnabled(true);
-                    }
+        if (v.getId() == R.id.buy) {
+            // prevent starting several purchase flows simultaneously
+            mBuy.setEnabled(false);
+            final String sku = (String) mSkus.getSelectedItem();
+            mConsole.setText("");
+            mCheckout.startPurchaseFlow(ProductTypes.IN_APP, sku, null, new RequestListener<Purchase>() {
+                @Override
+                public void onSuccess(@Nonnull Purchase result) {
+                    mBuy.setEnabled(true);
+                }
 
-                    @Override
-                    public void onError(int response, @Nonnull Exception e) {
-                        mBuy.setEnabled(true);
-                    }
-                });
-                break;
+                @Override
+                public void onError(int response, @Nonnull Exception e) {
+                    mBuy.setEnabled(true);
+                }
+            });
         }
     }
 

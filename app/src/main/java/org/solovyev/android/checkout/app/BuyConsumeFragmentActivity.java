@@ -1,5 +1,22 @@
 package org.solovyev.android.checkout.app;
 
+import android.app.Activity;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentSender;
+import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.TextView;
+
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.view.ViewCompat;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+
 import org.solovyev.android.checkout.Billing;
 import org.solovyev.android.checkout.BillingRequests;
 import org.solovyev.android.checkout.Checkout;
@@ -10,25 +27,7 @@ import org.solovyev.android.checkout.ProductTypes;
 import org.solovyev.android.checkout.Purchase;
 import org.solovyev.android.checkout.UiCheckout;
 
-import android.app.Activity;
-import android.content.Context;
-import android.content.Intent;
-import android.content.IntentSender;
-import android.os.Bundle;
-import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
-import androidx.appcompat.app.AppCompatActivity;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.TextView;
-
 import javax.annotation.Nonnull;
-
-import butterknife.BindView;
-import butterknife.ButterKnife;
 
 public class BuyConsumeFragmentActivity extends AppCompatActivity {
 
@@ -48,9 +47,7 @@ public class BuyConsumeFragmentActivity extends AppCompatActivity {
     public static final class MyFragment extends Fragment implements View.OnClickListener {
 
         private static final String AD_FREE = "ad_free";
-        @BindView(R.id.item)
         TextView mItem;
-        @BindView(R.id.buy_consume)
         Button mBuyConsume;
         private UiCheckout mCheckout;
         @Nullable
@@ -82,7 +79,8 @@ public class BuyConsumeFragmentActivity extends AppCompatActivity {
         @Override
         public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
             super.onViewCreated(view, savedInstanceState);
-            ButterKnife.bind(this, view);
+            mItem = ViewCompat.requireViewById(view, R.id.item);
+            mBuyConsume = ViewCompat.requireViewById(view, R.id.buy_consume);
             mItem.setText(AD_FREE);
             mBuyConsume.setOnClickListener(this);
             mCheckout.loadInventory(Inventory.Request.create().loadAllPurchases(), new InventoryCallback());

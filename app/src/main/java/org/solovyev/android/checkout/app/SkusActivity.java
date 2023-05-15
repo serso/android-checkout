@@ -4,10 +4,6 @@ import android.content.Intent;
 import android.graphics.Paint;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,6 +11,13 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.view.ViewCompat;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import org.solovyev.android.checkout.ActivityCheckout;
 import org.solovyev.android.checkout.Billing;
@@ -33,16 +36,12 @@ import java.util.List;
 
 import javax.annotation.Nonnull;
 
-import butterknife.BindView;
-import butterknife.ButterKnife;
-
 /**
  * Shows a list of SKUs available for purchase. User can purchase/consume an item by selecting it
  * from the list. Purchased items are strikethroughed.
  */
 public class SkusActivity extends AppCompatActivity {
 
-    @BindView(R.id.recycler)
     RecyclerView mRecycler;
     private ActivityCheckout mCheckout;
     private InventoryCallback mInventoryCallback;
@@ -62,7 +61,7 @@ public class SkusActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_skus);
-        ButterKnife.bind(this);
+        mRecycler = ActivityCompat.requireViewById(this, R.id.recycler);
 
         final Adapter adapter = new Adapter();
         mInventoryCallback = new InventoryCallback(adapter);
@@ -119,8 +118,7 @@ public class SkusActivity extends AppCompatActivity {
 
             @Override
             public void onError(int response, @Nonnull Exception e) {
-                if (BuildConfig.DEBUG)
-                    Log.e("SKUActivity ", "Couldn't complete the purchase", e);
+                Log.e("SKUActivity ", "Couldn't complete the purchase", e);
                 switch (response) {
                     case ResponseCodes.ITEM_ALREADY_OWNED:
                     case ResponseCodes.USER_CANCELED:
@@ -157,13 +155,9 @@ public class SkusActivity extends AppCompatActivity {
     static class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
         private final Adapter mAdapter;
-        @BindView(R.id.sku_title)
         TextView mTitle;
-        @BindView(R.id.sku_description)
         TextView mDescription;
-        @BindView(R.id.sku_price)
         TextView mPrice;
-        @BindView(R.id.sku_icon)
         ImageView mIcon;
 
         @Nullable
@@ -172,7 +166,10 @@ public class SkusActivity extends AppCompatActivity {
         ViewHolder(View view, Adapter adapter) {
             super(view);
             mAdapter = adapter;
-            ButterKnife.bind(this, view);
+            mTitle = ViewCompat.requireViewById(view, R.id.sku_title);
+            mDescription = ViewCompat.requireViewById(view, R.id.sku_description);
+            mPrice = ViewCompat.requireViewById(view, R.id.sku_price);
+            mIcon = ViewCompat.requireViewById(view, R.id.sku_icon);
 
             view.setOnClickListener(this);
         }

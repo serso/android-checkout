@@ -1,5 +1,16 @@
 package org.solovyev.android.checkout.app;
 
+import android.content.Intent;
+import android.net.Uri;
+import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.View;
+
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+
 import org.solovyev.android.checkout.ActivityCheckout;
 import org.solovyev.android.checkout.Billing;
 import org.solovyev.android.checkout.Checkout;
@@ -8,19 +19,8 @@ import org.solovyev.android.checkout.Inventory;
 import org.solovyev.android.checkout.ProductTypes;
 import org.solovyev.android.checkout.Purchase;
 
-import android.content.Intent;
-import android.net.Uri;
-import android.os.Bundle;
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.view.View;
-
 import javax.annotation.Nonnull;
 
-import butterknife.BindView;
-import butterknife.ButterKnife;
 
 /**
  * Shows some text and an advertisement below it. The ad banner is removed when user purchases
@@ -29,7 +29,6 @@ import butterknife.ButterKnife;
 public class BannerActivity extends AppCompatActivity implements View.OnClickListener {
 
     private static final String AD_FREE = "ad_free";
-    @BindView(R.id.ad)
     View mAd;
     private ActivityCheckout mCheckout;
     private boolean mAdFree = true;
@@ -39,7 +38,7 @@ public class BannerActivity extends AppCompatActivity implements View.OnClickLis
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_banner);
-        ButterKnife.bind(this);
+        mAd = ActivityCompat.requireViewById(this, R.id.ad);
         mAd.setOnClickListener(this);
 
         final Billing billing = CheckoutApplication.get(this).getBilling();
@@ -69,10 +68,9 @@ public class BannerActivity extends AppCompatActivity implements View.OnClickLis
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.menu_buy_ad_free:
-                buyAdFree();
-                return true;
+        if (item.getItemId() == R.id.menu_buy_ad_free) {
+            buyAdFree();
+            return true;
         }
         return super.onOptionsItemSelected(item);
     }
@@ -99,10 +97,8 @@ public class BannerActivity extends AppCompatActivity implements View.OnClickLis
 
     @Override
     public void onClick(View v) {
-        switch (v.getId()) {
-            case R.id.ad:
-                startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/serso/android-checkout")));
-                break;
+        if (v.getId() == R.id.ad) {
+            startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/serso/android-checkout")));
         }
     }
 

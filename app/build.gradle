@@ -44,29 +44,28 @@ android {
         sourceCompatibility 1.8
         targetCompatibility 1.8
     }
+    namespace 'org.solovyev.android.checkout.app'
+    publishing {
+        singleVariant('release') {
+            withSourcesJar()
+            withJavadocJar()
+        }
+    }
 }
 
 dependencies {
     implementation "androidx.annotation:annotation:1.3.0"
     implementation "androidx.appcompat:appcompat:1.4.1"
     implementation "androidx.recyclerview:recyclerview:1.2.1"
-    implementation 'com.jakewharton:butterknife:10.2.3'
-    annotationProcessor 'com.jakewharton:butterknife-compiler:10.2.3'
     implementation project(':lib')
-}
-
-task androidSourcesJar(type: Jar) {
-    archiveExtension.set('sources')
-    from android.sourceSets.main.java.srcDirs
 }
 
 afterEvaluate {
     publishing {
         publications {
             releaseApp(MavenPublication) {
-                from components.release_apk
+                from components.release
 
-                artifact androidSourcesJar
                 artifact source: file('build/outputs/mapping/release/mapping.txt'), classifier: 'proguard', extension: 'txt'
                 artifact source: file('build/outputs/apk/release/app-release.apk'), classifier: 'signed', extension: 'apk'
 

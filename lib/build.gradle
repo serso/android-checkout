@@ -36,6 +36,13 @@ android {
     lintOptions {
         abortOnError false
     }
+    publishing {
+        singleVariant('release') {
+            withSourcesJar()
+            withJavadocJar()
+        }
+    }
+    namespace 'org.solovyev.android.checkout'
 }
 
 dependencies {
@@ -53,77 +60,11 @@ tasks.withType(Test) {
     include "**/*Test.class"
 }
 
-configurations {
-    // A bogus config just to get hold of the module classpath and not fail with the following error:
-    //   Resolving dependency configuration 'implementation' is not allowed as it is defined as 'canBeResolved=false'.
-    //   Instead, a resolvable ('canBeResolved=true') dependency configuration that extends 'implementation' should
-    //   be resolved.
-    myConfig.extendsFrom implementation
-}
-
-task androidJavadocs(type: Javadoc) {
-    source = android.sourceSets.main.java.srcDirs
-    classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
-    configurations.myConfig.each { File file -> classpath += project.files(file.path) }
-
-    // Copied from https://stackoverflow.com/a/43007253.
-    // Abstract: Javadoc doesn't support .aar archives in the classpath. Let's collect all
-    // .aar archives, extract their 'classes.jar' into a temporary build folder and use them
-    // instead of the .aar files.
-    afterEvaluate {
-        // Process AAR dependencies
-        def aarDependencies = classpath.filter { it.name.endsWith('.aar') }
-        classpath -= aarDependencies
-        aarDependencies.each { aar ->
-            // Extract classes.jar from the AAR dependency, and add it to the javadoc classpath
-            def outputPath = "$buildDir/tmp/aarJar/${aar.name.replace('.aar', '.jar')}"
-            classpath += files(outputPath)
-
-            // Use a task so the actual extraction only happens before the javadoc task is run
-            dependsOn task("extractAar${aar.name}").doLast {
-                extractEntry(aar, 'classes.jar', outputPath)
-            }
-        }
-    }
-}
-
-// Utility method to extract only one entry in a zip file
-private static def extractEntry(archive, entryPath, outputPath) {
-    if (!archive.exists()) {
-        throw new GradleException("archive $archive not found")
-    }
-
-    def zip = new ZipFile(archive)
-    zip.entries().each {
-        if (it.name == entryPath) {
-            def path = Paths.get(outputPath)
-            if (!Files.exists(path)) {
-                Files.createDirectories(path.getParent())
-                Files.copy(zip.getInputStream(it), path)
-            }
-        }
-    }
-    zip.close()
-}
-
-task androidJavadocsJar(type: Jar, dependsOn: androidJavadocs) {
-    archiveExtension.set('javadoc')
-    from androidJavadocs.destinationDir
-}
-
-task androidSourcesJar(type: Jar) {
-    archiveExtension.set('sources')
-    from android.sourceSets.main.java.srcDirs
-}
-
 afterEvaluate {
     publishing {
         publications {
             releaseLib(MavenPublication) {
                 from components.release
-
-                artifact androidSourcesJar
-                artifact androidJavadocsJar
 
                 artifactId = 'checkout'
                 configurePublication(releaseLib, 'aar')

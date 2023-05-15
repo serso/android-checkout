@@ -23,8 +23,7 @@
 
 <manifest
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    package="org.solovyev.android.checkout.app">
+    xmlns:tools="http://schemas.android.com/tools">
 
     <supports-screens android:smallScreens="true" />
     <supports-screens android:normalScreens="true" />
