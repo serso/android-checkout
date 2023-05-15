@@ -69,7 +69,7 @@ afterEvaluate {
                 from components.release
 
                 artifact source: file('build/outputs/mapping/release/mapping.txt'), classifier: 'proguard', extension: 'txt'
-                artifact source: file('build/outputs/apk/release/app-release.apk'), classifier: 'signed', extension: 'apk'
+                artifact source: file('build/outputs/bundle/release/app-release.aab'), classifier: 'signed', extension: 'aab'
 
                 artifactId = 'checkout-app'
                 configurePublication(releaseApp, 'apk')
