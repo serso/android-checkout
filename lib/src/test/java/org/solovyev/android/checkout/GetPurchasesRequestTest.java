@@ -22,13 +22,31 @@
 
 package org.solovyev.android.checkout;
 
-import com.android.vending.billing.InAppBillingServiceImpl;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyList;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.solovyev.android.checkout.Purchase.State.PURCHASED;
+import static org.solovyev.android.checkout.ResponseCodes.EXCEPTION;
+import static org.solovyev.android.checkout.ResponseCodes.OK;
+
+import android.os.Bundle;
+
 import com.android.vending.billing.InAppBillingService;
 
 import org.json.JSONException;
 import org.junit.Test;
-
-import android.os.Bundle;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,26 +57,6 @@ import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.anyInt;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.anyList;
-import static org.mockito.Mockito.anyObject;
-import static org.mockito.Mockito.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static org.solovyev.android.checkout.Purchase.State.PURCHASED;
-import static org.solovyev.android.checkout.ResponseCodes.EXCEPTION;
-import static org.solovyev.android.checkout.ResponseCodes.OK;
 
 public class GetPurchasesRequestTest extends RequestTestBase {
 
@@ -92,12 +90,12 @@ public class GetPurchasesRequestTest extends RequestTestBase {
         final GetPurchasesRequest request = newRequest();
         final RequestListener l = mock(RequestListener.class);
         request.setListener(l);
-        final InAppBillingService service = mock(InAppBillingServiceImpl.class);
+        final InAppBillingService service = mock(InAppBillingService.class);
         final Bundle bundle = newBundle(OK);
         final ArrayList<String> datas = new ArrayList<String>();
         datas.add("test");
         bundle.putStringArrayList(Purchases.BUNDLE_DATA_LIST, datas);
-        when(service.getPurchases(anyInt(), anyString(), anyString(), anyString())).thenReturn(bundle);
+        when(service.getPurchases(anyInt(), any(), any(), any())).thenReturn(bundle);
 
         request.start(service, "test");
 
@@ -109,7 +107,7 @@ public class GetPurchasesRequestTest extends RequestTestBase {
         final GetPurchasesRequest request = new GetPurchasesRequest("test", null, new AsyncPurchaseVerifier());
         final PurchasesAwareRequestListener l = new PurchasesAwareRequestListener();
         request.setListener(l);
-        final InAppBillingService service = mock(InAppBillingServiceImpl.class);
+        final InAppBillingService service = mock(InAppBillingService.class);
         final ArrayList<String> list = new ArrayList<String>();
         list.add(PurchaseTest.newJson(0, Purchase.State.REFUNDED));
         list.add(PurchaseTest.newJson(1, Purchase.State.REFUNDED));
@@ -120,7 +118,7 @@ public class GetPurchasesRequestTest extends RequestTestBase {
         list.add(PurchaseTest.newJson(6, PURCHASED));
         final Bundle bundle = newBundle(OK);
         bundle.putStringArrayList(Purchases.BUNDLE_DATA_LIST, list);
-        when(service.getPurchases(anyInt(), anyString(), anyString(), anyString())).thenReturn(bundle);
+        when(service.getPurchases(anyInt(), any(), any(), any())).thenReturn(bundle);
 
         request.start(service, "test");
 
@@ -135,12 +133,12 @@ public class GetPurchasesRequestTest extends RequestTestBase {
         final RequestListener listener = mock(RequestListener.class);
         request.setListener(listener);
 
-        final InAppBillingService service = mock(InAppBillingServiceImpl.class);
-        when(service.getPurchases(anyInt(), anyString(), anyString(), anyString())).thenReturn(newBundle(OK));
+        final InAppBillingService service = mock(InAppBillingService.class);
+        when(service.getPurchases(anyInt(), any(), any(), any())).thenReturn(newBundle(OK));
         request.start(service, "test");
 
         verify(verifier, never()).verify(anyList(), any(RequestListener.class));
-        verify(listener, times(1)).onSuccess(anyObject());
+        verify(listener, times(1)).onSuccess(any());
     }
 
     private static class AsyncPurchaseVerifier implements PurchaseVerifier {

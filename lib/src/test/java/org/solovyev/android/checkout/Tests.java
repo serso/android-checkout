@@ -22,15 +22,28 @@
 
 package org.solovyev.android.checkout;
 
-import com.android.vending.billing.InAppBillingServiceImpl;
+import static org.junit.Assert.fail;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+import static org.solovyev.android.checkout.RequestTestBase.newBundle;
+import static org.solovyev.android.checkout.ResponseCodes.OK;
+
+import android.os.Bundle;
+import android.os.RemoteException;
+
 import com.android.vending.billing.InAppBillingService;
+import com.android.vending.billing.InAppBillingServiceImpl;
 
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.robolectric.RuntimeEnvironment;
-
-import android.os.Bundle;
-import android.os.RemoteException;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -40,22 +53,9 @@ import java.util.concurrent.Executor;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-import static org.junit.Assert.fail;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyInt;
-import static org.mockito.Matchers.anyList;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Matchers.isNull;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-import static org.solovyev.android.checkout.RequestTestBase.newBundle;
-import static org.solovyev.android.checkout.ResponseCodes.OK;
-
 public final class Tests {
 
-    private static final long TIMEOUT = BuildConfig.DEBUG ? Long.MAX_VALUE : 1000L;
+    private static final long TIMEOUT = 1000L;
 
     private Tests() {
         throw new AssertionError();
@@ -85,7 +85,7 @@ public final class Tests {
     static Billing newBilling(@Nonnull Billing.Configuration configuration) {
         final Billing billing = new Billing(RuntimeEnvironment.application, configuration);
         billing.setPurchaseVerifier(Tests.newMockVerifier(true));
-        final InAppBillingService service = mock(InAppBillingServiceImpl.class);
+        final InAppBillingService service = mock(InAppBillingService.class);
         setService(billing, service);
         return billing;
     }
@@ -127,7 +127,7 @@ public final class Tests {
     static Billing newSynchronousBilling() {
         final Billing billing = new Billing(RuntimeEnvironment.application, newConfiguration(true, false));
         billing.setPurchaseVerifier(Tests.newMockVerifier(true));
-        final InAppBillingService service = mock(InAppBillingServiceImpl.class);
+        final InAppBillingService service = mock(InAppBillingService.class);
         final CancellableExecutor sameThreadExecutor = sameThreadExecutor();
         billing.setBackground(sameThreadExecutor);
         billing.setMainThread(sameThreadExecutor);
@@ -182,7 +182,7 @@ public final class Tests {
         bundle.putStringArrayList(Purchases.BUNDLE_DATA_LIST, list);
         final InAppBillingService service =
                 ((TestServiceConnector) billing.getConnector()).mService;
-        when(service.getPurchases(anyInt(), anyString(), eq(product), isNull(String.class)))
+        when(service.getPurchases(anyInt(), any(), eq(product), isNull(String.class)))
                 .thenReturn(bundle);
     }
 
@@ -190,7 +190,7 @@ public final class Tests {
                                   @Nonnull final List<Sku> skus) throws RemoteException {
         final InAppBillingService service =
                 ((TestServiceConnector) billing.getConnector()).mService;
-        when(service.getSkuDetails(anyInt(), anyString(), eq(product), any(Bundle.class)))
+        when(service.getSkuDetails(anyInt(), any(), eq(product), any(Bundle.class)))
                 .thenAnswer(new Answer<Bundle>() {
                     @Override
                     public Bundle answer(InvocationOnMock invocation) throws Throwable {

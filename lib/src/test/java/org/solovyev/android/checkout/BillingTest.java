@@ -9,6 +9,7 @@ import org.json.JSONException;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.internal.hamcrest.HamcrestArgumentMatcher;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.robolectric.RobolectricTestRunner;
@@ -33,8 +34,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyInt;
-import static org.mockito.Mockito.anyObject;
-import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.argThat;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.isNull;
@@ -112,8 +112,8 @@ public class BillingTest {
     @Test
     public void testShouldExecuteRequestIfConnected() throws Exception {
         final Billing.ServiceConnector connector = mock(Billing.ServiceConnector.class);
-        final InAppBillingService service = mock(InAppBillingServiceImpl.class);
-        when(service.isBillingSupported(anyInt(), anyString(), anyString())).thenReturn(OK);
+        final InAppBillingService service = mock(InAppBillingService.class);
+        when(service.isBillingSupported(anyInt(), any(), any())).thenReturn(OK);
         when(connector.connect()).then(new Answer<Object>() {
             @Override
             public Object answer(InvocationOnMock invocation) throws Throwable {
@@ -137,7 +137,7 @@ public class BillingTest {
         mBilling.connect();
 
         assertEquals(Billing.State.CONNECTING, mBilling.getState());
-        mBilling.setService(mock(InAppBillingServiceImpl.class), true);
+        mBilling.setService(mock(InAppBillingService.class), true);
         assertEquals(Billing.State.CONNECTED, mBilling.getState());
         mBilling.disconnect();
         assertEquals(Billing.State.DISCONNECTING, mBilling.getState());
@@ -171,12 +171,12 @@ public class BillingTest {
     public void testShouldConnectOnlyIfConnecting() throws Exception {
         mBilling.setState(Billing.State.CONNECTING);
         mBilling.setState(Billing.State.FAILED);
-        mBilling.setService(mock(InAppBillingServiceImpl.class), true);
+        mBilling.setService(mock(InAppBillingService.class), true);
 
         assertEquals(Billing.State.FAILED, mBilling.getState());
 
         mBilling.setState(Billing.State.CONNECTING);
-        mBilling.setService(mock(InAppBillingServiceImpl.class), true);
+        mBilling.setService(mock(InAppBillingService.class), true);
 
         assertEquals(Billing.State.CONNECTED, mBilling.getState());
     }
@@ -196,7 +196,7 @@ public class BillingTest {
         mBilling.setState(Billing.State.CONNECTING);
         mBilling.setState(Billing.State.DISCONNECTED);
 
-        mBilling.setService(mock(InAppBillingServiceImpl.class), true);
+        mBilling.setService(mock(InAppBillingService.class), true);
 
         assertEquals(Billing.State.DISCONNECTED, mBilling.getState());
         verify(connector, times(1)).disconnect();
@@ -275,7 +275,7 @@ public class BillingTest {
         billing.getRequests().getAllPurchases(ProductTypes.IN_APP, l);
 
         assertTrue(latch.await(1, SECONDS));
-        verify(l.listener).onSuccess(argThat(new PurchasesMatcher()));
+        verify(l.listener).onSuccess(argThat(new HamcrestArgumentMatcher<>(new PurchasesMatcher())));
     }
 
     @Test
@@ -287,7 +287,7 @@ public class BillingTest {
         billing.getRequests().getWholePurchaseHistory(ProductTypes.IN_APP, null, l);
 
         assertTrue(latch.await(1, SECONDS));
-        verify(l.listener).onSuccess(argThat(new PurchasesMatcher()));
+        verify(l.listener).onSuccess(argThat(new HamcrestArgumentMatcher<>(new PurchasesMatcher())));
     }
 
     @Test
@@ -297,15 +297,15 @@ public class BillingTest {
         final CountDownLatch requestWaiter = new CountDownLatch(1);
         final CountDownLatch cancelWaiter = new CountDownLatch(1);
 
-        final InAppBillingService service = mock(InAppBillingServiceImpl.class);
-        when(service.getPurchases(anyInt(), anyString(), anyString(), isNull(String.class))).thenAnswer(new Answer<Object>() {
+        final InAppBillingService service = mock(InAppBillingService.class);
+        when(service.getPurchases(anyInt(), any(), any(), isNull(String.class))).thenAnswer(new Answer<Object>() {
             @Override
             public Object answer(InvocationOnMock invocation) throws Throwable {
                 requestWaiter.countDown();
                 return newPurchasesBundle(0, true);
             }
         });
-        when(service.getPurchases(anyInt(), anyString(), anyString(), eq("1"))).thenAnswer(new Answer<Bundle>() {
+        when(service.getPurchases(anyInt(), any(), any(), eq("1"))).thenAnswer(new Answer<Bundle>() {
             @Override
             public Bundle answer(InvocationOnMock invocation) throws Throwable {
                 cancelWaiter.await(1, SECONDS);
@@ -322,7 +322,7 @@ public class BillingTest {
         requests.cancelAll();
         cancelWaiter.countDown();
 
-        verify(l, never()).onSuccess(anyObject());
+        verify(l, never()).onSuccess(any());
         verify(l, never()).onError(anyInt(), any(Exception.class));
     }
 
@@ -347,19 +347,19 @@ public class BillingTest {
     }
 
     private void prepareMultiPurchasesService(@Nonnull Billing billing) throws RemoteException, JSONException {
-        final InAppBillingService service = mock(InAppBillingServiceImpl.class);
+        final InAppBillingService service = mock(InAppBillingService.class);
 
-        when(service.getPurchases(anyInt(), anyString(), anyString(), isNull(String.class))).thenReturn(newPurchasesBundle(0, true));
-        when(service.getPurchases(anyInt(), anyString(), anyString(), eq("1"))).thenReturn(newPurchasesBundle(1, true));
-        when(service.getPurchases(anyInt(), anyString(), anyString(), eq("2"))).thenReturn(newPurchasesBundle(2, true));
-        when(service.getPurchases(anyInt(), anyString(), anyString(), eq("3"))).thenReturn(newPurchasesBundle(3, true));
-        when(service.getPurchases(anyInt(), anyString(), anyString(), eq("4"))).thenReturn(newPurchasesBundle(4, false));
+        when(service.getPurchases(anyInt(), any(), any(), isNull(String.class))).thenReturn(newPurchasesBundle(0, true));
+        when(service.getPurchases(anyInt(), any(), any(), eq("1"))).thenReturn(newPurchasesBundle(1, true));
+        when(service.getPurchases(anyInt(), any(), any(), eq("2"))).thenReturn(newPurchasesBundle(2, true));
+        when(service.getPurchases(anyInt(), any(), any(), eq("3"))).thenReturn(newPurchasesBundle(3, true));
+        when(service.getPurchases(anyInt(), any(), any(), eq("4"))).thenReturn(newPurchasesBundle(4, false));
 
-        when(service.getPurchaseHistory(anyInt(), anyString(), anyString(), isNull(String.class), any(Bundle.class))).thenReturn(newPurchasesBundle(0, true, true));
-        when(service.getPurchaseHistory(anyInt(), anyString(), anyString(), eq("1"), any(Bundle.class))).thenReturn(newPurchasesBundle(1, true, true));
-        when(service.getPurchaseHistory(anyInt(), anyString(), anyString(), eq("2"), any(Bundle.class))).thenReturn(newPurchasesBundle(2, true, true));
-        when(service.getPurchaseHistory(anyInt(), anyString(), anyString(), eq("3"), any(Bundle.class))).thenReturn(newPurchasesBundle(3, true, true));
-        when(service.getPurchaseHistory(anyInt(), anyString(), anyString(), eq("4"), any(Bundle.class))).thenReturn(newPurchasesBundle(4, false, true));
+        when(service.getPurchaseHistory(anyInt(), any(), any(), isNull(String.class), any(Bundle.class))).thenReturn(newPurchasesBundle(0, true, true));
+        when(service.getPurchaseHistory(anyInt(), any(), any(), eq("1"), any(Bundle.class))).thenReturn(newPurchasesBundle(1, true, true));
+        when(service.getPurchaseHistory(anyInt(), any(), any(), eq("2"), any(Bundle.class))).thenReturn(newPurchasesBundle(2, true, true));
+        when(service.getPurchaseHistory(anyInt(), any(), any(), eq("3"), any(Bundle.class))).thenReturn(newPurchasesBundle(3, true, true));
+        when(service.getPurchaseHistory(anyInt(), any(), any(), eq("4"), any(Bundle.class))).thenReturn(newPurchasesBundle(4, false, true));
 
         Tests.setService(billing, service);
     }

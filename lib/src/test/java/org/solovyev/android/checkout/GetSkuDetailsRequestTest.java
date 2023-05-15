@@ -42,9 +42,9 @@ import static java.util.Arrays.asList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyInt;
-import static org.mockito.Matchers.anyString;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -78,11 +78,11 @@ public class GetSkuDetailsRequestTest extends RequestTestBase {
         for (int i = 0; i < 97; i++) {
             skus.add("sku_" + i);
         }
-        final InAppBillingService service = mock(InAppBillingServiceImpl.class);
+        final InAppBillingService service = mock(InAppBillingService.class);
         final GetSkuDetailsRequest request = new GetSkuDetailsRequest("test", skus);
         final RequestListenerSpy l = new RequestListenerSpy();
         request.setListener(l);
-        when(service.getSkuDetails(anyInt(), anyString(), anyString(), any(Bundle.class))).thenAnswer(new Answer<Bundle>() {
+        when(service.getSkuDetails(anyInt(), any(), any(), any(Bundle.class))).thenAnswer(new Answer<Bundle>() {
             @Override
             public Bundle answer(InvocationOnMock invocation) throws Throwable {
                 final Bundle bundle = (Bundle) invocation.getArguments()[3];

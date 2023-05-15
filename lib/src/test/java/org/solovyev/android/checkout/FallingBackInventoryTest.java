@@ -36,9 +36,9 @@ import javax.annotation.Nonnull;
 
 import static java.util.Arrays.asList;
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Matchers.anyInt;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.solovyev.android.checkout.ProductTypes.IN_APP;
 import static org.solovyev.android.checkout.ProductTypes.SUBSCRIPTION;
@@ -55,7 +55,7 @@ public class FallingBackInventoryTest extends InventoryTestBase {
         super.setUp();
 
         final InAppBillingService service = ((TestServiceConnector) mBilling.getConnector()).mService;
-        when(service.isBillingSupported(anyInt(), anyString(), eq(SUBSCRIPTION))).thenReturn(ResponseCodes.ERROR);
+        when(service.isBillingSupported(anyInt(), any(), eq(SUBSCRIPTION))).thenReturn(ResponseCodes.ERROR);
     }
 
     @Test

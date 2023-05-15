@@ -40,9 +40,8 @@ import javax.annotation.Nonnull;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyObject;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.solovyev.android.checkout.PurchaseFlowTest.newOkIntent;
@@ -150,7 +149,7 @@ public class ActivityCheckoutTest {
 
         mCheckout.onActivityResult(ActivityCheckout.DEFAULT_REQUEST_CODE, Activity.RESULT_OK, newOkIntent());
 
-        verify(l).onSuccess(anyObject());
+        verify(l).onSuccess(any());
         verifyPurchaseFlowDoesntExist();
     }
 

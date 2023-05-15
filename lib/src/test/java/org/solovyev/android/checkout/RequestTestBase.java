@@ -40,10 +40,9 @@ import java.util.ArrayList;
 import javax.annotation.Nonnull;
 
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyInt;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.anyObject;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -71,13 +70,13 @@ abstract class RequestTestBase {
 
         final Bundle bundle = newBundle(BILLING_UNAVAILABLE);
 
-        final InAppBillingService service = mock(InAppBillingServiceImpl.class);
-        when(service.isBillingSupported(anyInt(), anyString(), anyString())).thenReturn(BILLING_UNAVAILABLE);
-        when(service.consumePurchase(anyInt(), anyString(), anyString())).thenReturn(BILLING_UNAVAILABLE);
-        when(service.getPurchases(anyInt(), anyString(), anyString(), anyString())).thenReturn(bundle);
-        when(service.getPurchaseHistory(anyInt(), anyString(), anyString(), anyString(), any(Bundle.class))).thenReturn(bundle);
-        when(service.getSkuDetails(anyInt(), anyString(), anyString(), any(Bundle.class))).thenReturn(bundle);
-        when(service.getBuyIntent(anyInt(), anyString(), anyString(), anyString(), anyString())).thenReturn(bundle);
+        final InAppBillingService service = mock(InAppBillingService.class);
+        when(service.isBillingSupported(anyInt(), any(), any())).thenReturn(BILLING_UNAVAILABLE);
+        when(service.consumePurchase(anyInt(), any(), any())).thenReturn(BILLING_UNAVAILABLE);
+        when(service.getPurchases(anyInt(), any(), any(), any())).thenReturn(bundle);
+        when(service.getPurchaseHistory(anyInt(), any(), any(), any(), any(Bundle.class))).thenReturn(bundle);
+        when(service.getSkuDetails(anyInt(), any(), any(), any(Bundle.class))).thenReturn(bundle);
+        when(service.getBuyIntent(anyInt(), any(), any(), any(), any())).thenReturn(bundle);
 
         request.start(service, "testse");
 
@@ -90,24 +89,24 @@ abstract class RequestTestBase {
         final Request r = newRequest();
         final RequestListener l = mock(RequestListener.class);
         r.setListener(l);
-        final InAppBillingService service = mock(InAppBillingServiceImpl.class);
+        final InAppBillingService service = mock(InAppBillingService.class);
 
-        when(service.isBillingSupported(anyInt(), anyString(), anyString())).thenReturn(OK);
-        when(service.consumePurchase(anyInt(), anyString(), anyString())).thenReturn(OK);
+        when(service.isBillingSupported(anyInt(), any(), any())).thenReturn(OK);
+        when(service.consumePurchase(anyInt(), any(), any())).thenReturn(OK);
         final Bundle purchases = new Bundle();
         purchases.putStringArrayList("INAPP_PURCHASE_DATA_LIST", new ArrayList<String>());
-        when(service.getPurchases(anyInt(), anyString(), anyString(), anyString())).thenReturn(purchases);
-        when(service.getPurchaseHistory(anyInt(), anyString(), anyString(), anyString(), any(Bundle.class))).thenReturn(purchases);
+        when(service.getPurchases(anyInt(), any(), any(), any())).thenReturn(purchases);
+        when(service.getPurchaseHistory(anyInt(), any(), any(), any(), any(Bundle.class))).thenReturn(purchases);
         final Bundle skuDetails = new Bundle();
         skuDetails.putStringArrayList("DETAILS_LIST", new ArrayList<String>());
-        when(service.getSkuDetails(anyInt(), anyString(), anyString(), any(Bundle.class))).thenReturn(skuDetails);
+        when(service.getSkuDetails(anyInt(), any(), any(), any(Bundle.class))).thenReturn(skuDetails);
         final Bundle buyIntent = new Bundle();
         buyIntent.putParcelable("BUY_INTENT", PendingIntent.getActivity(RuntimeEnvironment.application, 100, new Intent(), 0));
-        when(service.getBuyIntent(anyInt(), anyString(), anyString(), anyString(), anyString())).thenReturn(buyIntent);
+        when(service.getBuyIntent(anyInt(), any(), any(), any(), any())).thenReturn(buyIntent);
 
         r.start(service, "");
 
-        verify(l).onSuccess(anyObject());
+        verify(l).onSuccess(any());
         verify(l, never()).onError(anyInt(), any(Exception.class));
     }
 

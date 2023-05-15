@@ -36,9 +36,8 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import static android.app.Activity.RESULT_OK;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyObject;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.anyInt;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -88,7 +87,7 @@ public class PurchaseFlowTest {
 
     private void verifyError(int responseCode, Class<? extends Exception> exceptionClass) {
         verify(mListener).onError(eq(responseCode), any(exceptionClass));
-        verify(mListener, never()).onSuccess(anyObject());
+        verify(mListener, never()).onSuccess(any());
     }
 
     @Test
@@ -130,7 +129,7 @@ public class PurchaseFlowTest {
     public void testShouldErrorWithEmptySignature() throws Exception {
         mFlow.onActivityResult(1, RESULT_OK, newIntent(OK, "{productId:'test', purchaseTime:1000}", ""));
 
-        verifyError(ResponseCodes.WRONG_SIGNATURE, RuntimeException.class);
+        verifyError(ResponseCodes.WRONG_SIGNATURE, BillingException.class);
     }
 
     @Test
@@ -138,7 +137,7 @@ public class PurchaseFlowTest {
         Tests.mockVerifier(mVerifier, false);
         mFlow.onActivityResult(1, RESULT_OK, newIntent(OK, "{productId:'test', purchaseTime:1000}", "signature"));
 
-        verifyError(ResponseCodes.WRONG_SIGNATURE, RuntimeException.class);
+        verifyError(ResponseCodes.WRONG_SIGNATURE, BillingException.class);
 
     }
 

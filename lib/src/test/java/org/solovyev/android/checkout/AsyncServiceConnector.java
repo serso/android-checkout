@@ -46,7 +46,7 @@ class AsyncServiceConnector implements Billing.ServiceConnector {
 
     @Override
     public boolean connect() {
-        setService(mock(InAppBillingServiceImpl.class));
+        setService(mock(InAppBillingService.class));
         return true;
     }
 

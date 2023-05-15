@@ -33,7 +33,7 @@ import javax.annotation.Nonnull;
 
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNull;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
@@ -68,7 +68,7 @@ public class BillingSupportedRequestTest extends RequestTestBase {
         final Bundle extraParams = new Bundle();
         extraParams.putString("extra", "test");
         final BillingSupportedRequest request = new BillingSupportedRequest("product", Billing.V7, extraParams);
-        final InAppBillingService service = mock(InAppBillingServiceImpl.class);
+        final InAppBillingService service = mock(InAppBillingService.class);
 
         request.start(service, "package");
 

@@ -50,8 +50,8 @@ dependencies {
     implementation "com.android.billingclient:billing:${versions.libs.billing}"
 
     testImplementation 'junit:junit:4.13.2'
-    testImplementation 'org.robolectric:robolectric:4.5.1'
-    testImplementation "org.mockito:mockito-all:1.9.5"
+    testImplementation 'org.robolectric:robolectric:4.9.2'
+    testImplementation "org.mockito:mockito-core:5.3.1"
     testImplementation "org.skyscreamer:jsonassert:1.5.0"
 }
 

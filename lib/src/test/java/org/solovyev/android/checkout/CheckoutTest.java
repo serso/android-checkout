@@ -38,10 +38,10 @@ import javax.annotation.Nonnull;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.mockito.Matchers.anyInt;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Matchers.isNull;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -69,8 +69,8 @@ public class CheckoutTest {
         Billing billing = newBilling();
         billing.connect();
         mService = ((TestServiceConnector) billing.getConnector()).mService;
-        when(mService.isBillingSupported(eq(3), anyString(), eq(IN_APP))).thenReturn(OK);
-        when(mService.isBillingSupported(eq(3), anyString(), eq(SUBSCRIPTION))).thenReturn(OK);
+        when(mService.isBillingSupported(eq(3), any(), eq(IN_APP))).thenReturn(OK);
+        when(mService.isBillingSupported(eq(3), any(), eq(SUBSCRIPTION))).thenReturn(OK);
         mCheckout = Checkout.forApplication(billing);
     }
 
@@ -82,17 +82,17 @@ public class CheckoutTest {
 
         l.waitWhileLoading();
 
-        verify(l.mListener, times(2)).onReady(any(BillingRequests.class), anyString(), eq(true));
-        verify(l.mListener, never()).onReady(any(BillingRequests.class), anyString(), eq(false));
+        verify(l.mListener, times(2)).onReady(any(BillingRequests.class), any(), eq(true));
+        verify(l.mListener, never()).onReady(any(BillingRequests.class), any(), eq(false));
 
         verify(l.mListener).onReady(any(BillingRequests.class));
     }
 
     @Test
     public void testShouldLoadPurchasesWhenProductsBecameSupported() throws Exception {
-        when(mService.isBillingSupported(eq(3), anyString(), eq(IN_APP))).thenReturn(BILLING_UNAVAILABLE);
-        when(mService.isBillingSupported(eq(3), anyString(), eq(SUBSCRIPTION))).thenReturn(BILLING_UNAVAILABLE);
-        when(mService.getPurchases(anyInt(), anyString(), anyString(), isNull(String.class))).thenReturn(newPurchasesBundle(0, false));
+        when(mService.isBillingSupported(eq(3), any(), eq(IN_APP))).thenReturn(BILLING_UNAVAILABLE);
+        when(mService.isBillingSupported(eq(3), any(), eq(SUBSCRIPTION))).thenReturn(BILLING_UNAVAILABLE);
+        when(mService.getPurchases(anyInt(), any(), any(), isNull(String.class))).thenReturn(newPurchasesBundle(0, false));
 
         mCheckout.start();
         final AwaitingCallback c1 = new AwaitingCallback();
@@ -103,8 +103,8 @@ public class CheckoutTest {
         assertFalse(c1.mProducts.get(SUBSCRIPTION).supported);
         assertTrue(c1.mProducts.get(IN_APP).getPurchases().isEmpty());
 
-        when(mService.isBillingSupported(eq(3), anyString(), eq(IN_APP))).thenReturn(OK);
-        when(mService.isBillingSupported(eq(3), anyString(), eq(SUBSCRIPTION))).thenReturn(OK);
+        when(mService.isBillingSupported(eq(3), any(), eq(IN_APP))).thenReturn(OK);
+        when(mService.isBillingSupported(eq(3), any(), eq(SUBSCRIPTION))).thenReturn(OK);
 
         final AwaitingCallback c2 = new AwaitingCallback();
         mCheckout.loadInventory(Inventory.Request.create().loadAllPurchases(), c2);
