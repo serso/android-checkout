@@ -24,6 +24,7 @@ package org.solovyev.android.checkout;
 
 import com.android.vending.billing.InAppBillingServiceImpl;
 import com.android.vending.billing.InAppBillingService;
+import com.google.android.gms.internal.play_billing.InAppBillingServiceFactory;
 
 import android.app.Application;
 import android.content.ComponentName;
@@ -1309,7 +1310,7 @@ public final class Billing {
             @Override
             public void onServiceConnected(ComponentName name,
                                            IBinder service) {
-                setService(InAppBillingServiceImpl.make(service), true);
+                setService(InAppBillingServiceFactory.create(service), true);
             }
         };
 

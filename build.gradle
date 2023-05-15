@@ -5,10 +5,11 @@ buildscript {
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:8.0.1'
+        classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:1.8.21'
     }
     ext {
-        versions = [libs: [billing: "4.0.0"],
-                    sdk : [compile: 31, min: 14, target: 31],
+        versions = [libs: [billing: "6.0.0"],
+                    sdk : [compile: 33, min: 14, target: 33],
                     code: 48,
                     name: "1.2.5"]
     }

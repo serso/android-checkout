@@ -1,11 +1,9 @@
 package com.android.vending.billing;
 
 import android.os.Bundle;
-import android.os.IBinder;
 import android.os.RemoteException;
 
 import com.google.android.gms.internal.play_billing.zzc;
-import com.google.android.gms.internal.play_billing.zzd;
 
 import javax.annotation.Nonnull;
 
@@ -18,20 +16,15 @@ public class InAppBillingServiceImpl implements InAppBillingService {
     // This field might need to be updated every time the billing client library is updated as
     // it points to the internal obfuscated class representing the billing interface.
     @Nonnull
-    private final zzd api;
+    private final zzc api;
 
-    public InAppBillingServiceImpl(@Nonnull zzd api) {
+    public InAppBillingServiceImpl(@Nonnull zzc api) {
         this.api = api;
-    }
-
-    @Nonnull
-    public static InAppBillingService make(@Nonnull IBinder service) {
-        return new InAppBillingServiceImpl(zzc.zzn(service));
     }
 
     @Override
     public int isBillingSupported(int var1, String var2, String var3) throws RemoteException {
-        return api.zzb(var1, var2, var3);
+        return api.zza(var1, var2, var3);
     }
 
     @Override
