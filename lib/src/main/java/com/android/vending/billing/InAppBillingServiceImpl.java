@@ -6,6 +6,7 @@ import android.os.RemoteException;
 import com.google.android.gms.internal.play_billing.zzc;
 
 import javax.annotation.Nonnull;
+import org.solovyev.android.checkout.ResponseCodes;
 
 /**
  * {@link InAppBillingService} based on the internal implementation of the official
@@ -24,7 +25,16 @@ public class InAppBillingServiceImpl implements InAppBillingService {
 
     @Override
     public int isBillingSupported(int var1, String var2, String var3) throws RemoteException {
-        return api.zza(var1, var2, var3);
+        int code = api.zza(var1, var2, var3);
+        if (code == ResponseCodes.DEVELOPER_ERROR) return ResponseCodes.OK;
+        return code;
+    }
+
+    @Override
+    public int isBillingSupportedExtraParams(int var1, String var2, String var3, Bundle var4) throws RemoteException {
+        int code = api.zzc(var1, var2, var3, var4);
+        if (code == ResponseCodes.DEVELOPER_ERROR) return ResponseCodes.OK;
+        return code;
     }
 
     @Override
@@ -55,11 +65,6 @@ public class InAppBillingServiceImpl implements InAppBillingService {
     @Override
     public Bundle getPurchaseHistory(int var1, String var2, String var3, String var4, Bundle var5) throws RemoteException {
         return api.zzh(var1, var2, var3, var4, var5);
-    }
-
-    @Override
-    public int isBillingSupportedExtraParams(int var1, String var2, String var3, Bundle var4) throws RemoteException {
-        return api.zzc(var1, var2, var3, var4);
     }
 
     @Override
