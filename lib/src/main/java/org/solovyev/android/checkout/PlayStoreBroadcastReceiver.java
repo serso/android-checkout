@@ -4,11 +4,11 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.os.Build;
 import android.text.TextUtils;
-
+import androidx.core.content.ContextCompat;
 import java.util.ArrayList;
 import java.util.List;
-
 import javax.annotation.Nonnull;
 import javax.annotation.concurrent.GuardedBy;
 
@@ -38,7 +38,7 @@ class PlayStoreBroadcastReceiver extends BroadcastReceiver {
             Check.isTrue(!mListeners.contains(listener), "Listener " + listener + " is already in the list");
             mListeners.add(listener);
             if (mListeners.size() == 1) {
-                mContext.registerReceiver(this, new IntentFilter(ACTION));
+                ContextCompat.registerReceiver(mContext, this, new IntentFilter(ACTION), ContextCompat.RECEIVER_EXPORTED);
             }
         }
     }

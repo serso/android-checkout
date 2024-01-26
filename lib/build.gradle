@@ -23,8 +23,8 @@
 apply plugin: 'com.android.library'
 
 android {
-    compileSdkVersion versions.sdk.compile
     defaultConfig {
+        compileSdk versions.sdk.compile
         minSdkVersion versions.sdk.min
         targetSdkVersion versions.sdk.target
         consumerProguardFiles 'proguard-rules.txt'
@@ -47,6 +47,7 @@ android {
 
 dependencies {
     api 'com.google.code.findbugs:jsr305:3.0.2'
+    implementation "androidx.core:core:1.12.0"
     implementation "com.android.billingclient:billing:${versions.libs.billing}"
 
     testImplementation 'junit:junit:4.13.2'
