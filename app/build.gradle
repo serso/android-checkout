@@ -38,9 +38,6 @@ android {
             zipAlignEnabled true
         }
     }
-    lintOptions {
-        abortOnError false
-    }
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_11
         targetCompatibility JavaVersion.VERSION_11
@@ -51,6 +48,9 @@ android {
             withSourcesJar()
             withJavadocJar()
         }
+    }
+    lint {
+        abortOnError false
     }
 }
 

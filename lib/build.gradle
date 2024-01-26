@@ -29,9 +29,6 @@ android {
         targetSdkVersion versions.sdk.target
         consumerProguardFiles 'proguard-rules.txt'
     }
-    lintOptions {
-        abortOnError false
-    }
     publishing {
         singleVariant('release') {
             withSourcesJar()
@@ -43,6 +40,9 @@ android {
         targetCompatibility JavaVersion.VERSION_11
     }
     namespace 'org.solovyev.android.checkout'
+    lint {
+        abortOnError false
+    }
 }
 
 dependencies {
